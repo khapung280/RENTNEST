@@ -1,0 +1,897 @@
+import { useState, useMemo, useEffect } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { 
+  Search, 
+  Shield, 
+  Star, 
+  MapPin, 
+  Bed, 
+  Bath, 
+  Square, 
+  CheckCircle, 
+  ArrowRight,
+  Home as HomeIcon,
+  Building2,
+  MessageCircle,
+  Lock,
+  DollarSign,
+  TrendingUp,
+  Lightbulb,
+  Calculator,
+  Info
+} from 'lucide-react'
+import { properties } from '../data/properties'
+import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
+import CompareBar from '../components/CompareBar'
+import CompareModal from '../components/CompareModal'
+import { calculateRentConfidence, getBestForLabel, getCityLivingCost, getCityInsights } from '../utils/propertyUtils'
+import { isAuthenticated } from '../utils/auth'
+
+const Home = () => {
+  // Get user data for role-based content
+  const [user, setUser] = useState(null)
+  
+  useEffect(() => {
+    if (isAuthenticated()) {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        try {
+          setUser(JSON.parse(storedUser))
+        } catch (e) {
+          console.error('Error parsing user data:', e)
+        }
+      }
+    }
+  }, [])
+  // Search state
+  const [searchLocation, setSearchLocation] = useState('')
+  const [propertyType, setPropertyType] = useState('all')
+  const [priceRange, setPriceRange] = useState('all')
+  const [bedrooms, setBedrooms] = useState('all')
+  const [sortBy, setSortBy] = useState('recommended')
+  const [showLocationError, setShowLocationError] = useState(false)
+  const [locationTouched, setLocationTouched] = useState(false)
+  
+  // Compare state
+  const [compareProperties, setCompareProperties] = useState([])
+  const [showCompareModal, setShowCompareModal] = useState(false)
+  
+  // Decision Helper Mode
+  const [decisionHelperMode, setDecisionHelperMode] = useState(false)
+  
+  // Living Cost Estimator
+  const [selectedCity, setSelectedCity] = useState('Kathmandu')
+  
+  const navigate = useNavigate()
+
+  // Transform properties with ratings, confidence scores, and best for labels
+  const allProperties = useMemo(() => properties.map(prop => ({
+    ...prop,
+    rating: 4.5 + (prop.id % 5) * 0.1,
+    type: prop.type === 'house' ? 'House' : prop.type === 'flat_apartment' ? 'Apartment' : prop.type,
+    confidenceScore: calculateRentConfidence(prop),
+    bestFor: getBestForLabel(prop),
+  })), [])
+
+  // Load last search from localStorage
+  useEffect(() => {
+    const lastSearch = localStorage.getItem('rentnest_last_search')
+    if (lastSearch) {
+      try {
+        const parsed = JSON.parse(lastSearch)
+        if (parsed.location) setSearchLocation(parsed.location)
+        if (parsed.type) setPropertyType(parsed.type)
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+  }, [])
+
+  // Save search to localStorage
+  const saveSearch = (location, type) => {
+    if (location || type !== 'all') {
+      localStorage.setItem('rentnest_last_search', JSON.stringify({ location, type }))
+    }
+  }
+
+  // Handle search submission
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const location = searchLocation.trim()
+    
+    setLocationTouched(true)
+    
+    if (!location) {
+      setShowLocationError(true)
+      return
+    }
+
+    setShowLocationError(false)
+    saveSearch(location, propertyType)
+    
+    // Build query params
+    const params = new URLSearchParams()
+    params.set('location', location)
+    if (priceRange !== 'all') {
+      const [min, max] = priceRange.split('-')
+      if (min) params.set('min', min)
+      if (max) params.set('max', max)
+    }
+    if (bedrooms !== 'all') params.set('beds', bedrooms)
+    
+    // Determine route
+    let route = '/houses'
+    if (propertyType === 'flats') {
+      route = '/flats-apartments'
+    }
+    
+    navigate(`${route}?${params.toString()}`)
+  }
+
+  // Live Results Preview - Filter properties as user types
+  const liveResults = useMemo(() => {
+    let filtered = [...allProperties]
+    
+    // Filter by location if typed
+    if (searchLocation.trim()) {
+      filtered = filtered.filter(p =>
+        p.location.toLowerCase().includes(searchLocation.toLowerCase().trim())
+      )
+    }
+    
+    // Filter by property type
+    if (propertyType === 'houses') {
+      filtered = filtered.filter(p => p.type === 'house')
+    } else if (propertyType === 'flats') {
+      filtered = filtered.filter(p => p.type === 'flat_apartment')
+    }
+    
+    // Filter by budget range
+    if (priceRange !== 'all') {
+      const [minStr, maxStr] = priceRange.split('-')
+      const min = minStr ? parseInt(minStr) : null
+      const max = maxStr ? parseInt(maxStr) : null
+      
+      filtered = filtered.filter(p => {
+        if (min !== null && p.price < min) return false
+        if (max !== null && p.price > max) return false
+        return true
+      })
+    }
+    
+    // Filter by bedrooms
+    if (bedrooms !== 'all') {
+      const beds = parseInt(bedrooms)
+      filtered = filtered.filter(p => p.bedrooms >= beds)
+    }
+    
+    // Sort
+    if (decisionHelperMode) {
+      // Decision Helper Mode: Sort by Rent Confidence Score
+      filtered.sort((a, b) => {
+        const scoreA = a.confidenceScore || calculateRentConfidence(a)
+        const scoreB = b.confidenceScore || calculateRentConfidence(b)
+        return scoreB - scoreA
+      })
+    } else if (sortBy === 'price-low') {
+      filtered.sort((a, b) => a.price - b.price)
+    } else if (sortBy === 'price-high') {
+      filtered.sort((a, b) => b.price - a.price)
+    }
+    // 'recommended' keeps original order
+    
+    return filtered.slice(0, 4)
+  }, [searchLocation, propertyType, priceRange, bedrooms, sortBy, allProperties])
+
+  // Trending properties (when no search input)
+  const trendingProperties = useMemo(() => {
+    let sorted = [...allProperties]
+    
+    if (decisionHelperMode) {
+      sorted.sort((a, b) => (b.confidenceScore || 0) - (a.confidenceScore || 0))
+    } else {
+      sorted.sort((a, b) => b.rating - a.rating)
+    }
+    
+    return sorted
+      .slice(0, 4)
+      .map(prop => ({
+        ...prop,
+        tags: decisionHelperMode && (prop.confidenceScore || 0) >= 80 
+          ? ['Best Value'] 
+          : prop.price <= 15000 
+            ? ['Best Value'] 
+            : ['Trending']
+      }))
+  }, [allProperties, decisionHelperMode])
+
+  // Personalized Recommendations (from localStorage or best value)
+  const personalizedRecommendations = useMemo(() => {
+    const lastSearch = localStorage.getItem('rentnest_last_search')
+    
+    if (lastSearch) {
+      try {
+        const parsed = JSON.parse(lastSearch)
+        let filtered = [...allProperties]
+        
+        if (parsed.location) {
+          filtered = filtered.filter(p =>
+            p.location.toLowerCase().includes(parsed.location.toLowerCase())
+          )
+        }
+        
+        if (parsed.type === 'houses') {
+          filtered = filtered.filter(p => p.type === 'house')
+        } else if (parsed.type === 'flats') {
+          filtered = filtered.filter(p => p.type === 'flat_apartment')
+        }
+        
+        if (filtered.length > 0) {
+          // Sort by confidence if Decision Helper is on
+          if (decisionHelperMode) {
+            filtered.sort((a, b) => (b.confidenceScore || 0) - (a.confidenceScore || 0))
+          } else {
+            filtered.sort((a, b) => a.price - b.price)
+          }
+          
+          return filtered.slice(0, 4).map(prop => ({
+            ...prop,
+            tags: decisionHelperMode && (prop.confidenceScore || 0) >= 80
+              ? ['Best Value']
+              : prop.price <= 15000
+                ? ['Best Value']
+                : ['Recommended']
+          }))
+        }
+      } catch (e) {
+        // Fall through to best value
+      }
+    }
+    
+    // Best value recommendations
+    let sorted = [...allProperties]
+    if (decisionHelperMode) {
+      sorted.sort((a, b) => (b.confidenceScore || 0) - (a.confidenceScore || 0))
+    } else {
+      sorted.sort((a, b) => a.price - b.price)
+    }
+    
+    return sorted
+      .slice(0, 4)
+      .map(prop => ({
+        ...prop,
+        tags: ['Best Value']
+      }))
+  }, [allProperties, decisionHelperMode])
+
+  // Popular Properties (6 max)
+  const popularProperties = useMemo(() => {
+    let sorted = [...allProperties]
+    
+    if (decisionHelperMode) {
+      sorted.sort((a, b) => (b.confidenceScore || 0) - (a.confidenceScore || 0))
+    }
+    
+    return sorted.slice(0, 6).map((prop) => {
+      let tags = []
+      if (decisionHelperMode && (prop.confidenceScore || 0) >= 80) {
+        tags.push('Best Value')
+      } else if (prop.price <= 15000) {
+        tags.push('Best Value')
+      }
+      if (prop.bedrooms >= 3) tags.push('Family Choice')
+      if (prop.price <= 18000 && prop.bedrooms >= 2) tags.push('Long Stay Friendly')
+      if (tags.length === 0) tags.push('Popular')
+      return { ...prop, tags: tags.slice(0, 1) }
+    })
+  }, [allProperties, decisionHelperMode])
+  
+  // Living cost data
+  const livingCost = useMemo(() => getCityLivingCost(selectedCity), [selectedCity])
+  const cityInsight = useMemo(() => getCityInsights(selectedCity), [selectedCity])
+
+  // Compare functionality
+  const handleToggleCompare = (propertyId) => {
+    const property = allProperties.find(p => p.id === propertyId)
+    if (!property) return
+    
+    const isSelected = compareProperties.some(p => p.id === propertyId)
+    
+    if (isSelected) {
+      setCompareProperties(prev => prev.filter(p => p.id !== propertyId))
+    } else {
+      if (compareProperties.length < 3) {
+        setCompareProperties(prev => [...prev, property])
+      }
+    }
+  }
+
+  const handleCompare = () => {
+    if (compareProperties.length >= 2) {
+      setShowCompareModal(true)
+    }
+  }
+
+  const handleClearCompare = () => {
+    setCompareProperties([])
+  }
+
+  // Quick Actions
+  const quickActions = [
+    {
+      icon: <MapPin className="w-5 h-5" />,
+      label: 'Rent in Kathmandu',
+      link: '/houses?location=Kathmandu'
+    },
+    {
+      icon: <MapPin className="w-5 h-5" />,
+      label: 'Rent in Pokhara',
+      link: '/houses?location=Pokhara'
+    },
+    {
+      icon: <CheckCircle className="w-5 h-5" />,
+      label: 'Verified Listings',
+      link: '/houses?verified=true'
+    },
+    {
+      icon: <DollarSign className="w-5 h-5" />,
+      label: 'Budget under 25k',
+      link: '/houses?max=25000'
+    },
+    {
+      icon: <Bed className="w-5 h-5" />,
+      label: 'Family (3+ beds)',
+      link: '/houses?beds=3'
+    },
+    {
+      icon: <TrendingUp className="w-5 h-5" />,
+      label: 'Long-stay friendly',
+      link: '/houses?longstay=true'
+    },
+  ]
+
+  // Hero background image
+  const heroBackgroundImage = 'https://www.realtynepal.com/uploads/2023/06/viber_image_2023-06-25_17-37-19-205-750x750.jpg'
+
+  // Check user role
+  const isOwner = user?.accountType === 'owner'
+  const isRenter = user?.accountType === 'renter' || !user
+
+  return (
+    <div className={`min-h-screen bg-black ${compareProperties.length > 0 ? 'pb-24' : ''}`}>
+      {/* Role-based Welcome Banner */}
+      {isOwner && (
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              <span className="font-medium">
+                👋 Welcome back, {user?.name || 'Owner'}! Manage your properties and bookings.
+              </span>
+            </div>
+            <Link
+              to="/owner-dashboard"
+              className="bg-white text-blue-600 px-4 py-1.5 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors flex items-center gap-2"
+            >
+              Go to Dashboard
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      )}
+      {/* 1. HERO Section with Smart Search */}
+      <section className="relative text-white py-20 md:py-28 overflow-hidden">
+        <div className="absolute inset-0">
+          <img 
+            src={heroBackgroundImage}
+            alt="Nepal property background"
+            className="w-full h-full object-cover"
+            style={{ objectPosition: 'center' }}
+          />
+          <div className="absolute inset-0 bg-black/50"></div>
+        </div>
+        
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
+              Find a place you'll love to call home in Nepal
+            </h1>
+            <p className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
+              Search thousands of verified rental properties across Nepal's most beautiful locations
+            </p>
+
+            {/* Smart Search Form */}
+            <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 border border-white/20">
+                {/* Property Type Selector */}
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setPropertyType('all')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      propertyType === 'all'
+                        ? 'bg-white text-gray-900'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPropertyType('houses')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      propertyType === 'houses'
+                        ? 'bg-white text-gray-900'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Houses
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPropertyType('flats')}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      propertyType === 'flats'
+                        ? 'bg-white text-gray-900'
+                        : 'bg-white/10 text-white hover:bg-white/20'
+                    }`}
+                  >
+                    Flats & Apartments
+                  </button>
+                </div>
+                
+                {/* Search Inputs Row */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                  {/* Location */}
+                  <div className="md:col-span-2">
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 w-5 h-5" />
+                      <input
+                        type="text"
+                        placeholder="Search by location"
+                        value={searchLocation}
+                        onChange={(e) => {
+                          setSearchLocation(e.target.value)
+                          if (e.target.value.trim()) {
+                            setShowLocationError(false)
+                          }
+                        }}
+                        onBlur={() => {
+                          setLocationTouched(true)
+                          if (!searchLocation.trim()) {
+                            setShowLocationError(true)
+                          }
+                        }}
+                        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white placeholder-white/70 text-base ${
+                          showLocationError && locationTouched
+                            ? 'border-red-400/50'
+                            : 'border-white/20'
+                        }`}
+                      />
+                    </div>
+                    {showLocationError && locationTouched && !searchLocation.trim() && (
+                      <p className="text-red-300 text-xs mt-2 ml-1">
+                        Enter a location
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Budget Dropdown */}
+                  <div className="relative">
+                    <select
+                      value={priceRange}
+                      onChange={(e) => setPriceRange(e.target.value)}
+                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
+                    >
+                      <option value="all" className="bg-gray-900">Any</option>
+                      <option value="0-20000" className="bg-gray-900">&lt;20k</option>
+                      <option value="20000-30000" className="bg-gray-900">20k–30k</option>
+                      <option value="30000-" className="bg-gray-900">30k+</option>
+                    </select>
+                  </div>
+                  
+                  {/* Bedrooms */}
+                  <div className="relative">
+                    <select
+                      value={bedrooms}
+                      onChange={(e) => setBedrooms(e.target.value)}
+                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
+                    >
+                      <option value="all" className="bg-gray-900">All Beds</option>
+                      <option value="1" className="bg-gray-900">1+ Bedroom</option>
+                      <option value="2" className="bg-gray-900">2+ Bedrooms</option>
+                      <option value="3" className="bg-gray-900">3+ Bedrooms</option>
+                      <option value="4" className="bg-gray-900">4+ Bedrooms</option>
+                    </select>
+                  </div>
+                </div>
+                
+                {/* Search Button */}
+                <button 
+                  type="submit"
+                  className="w-full bg-white text-gray-900 font-bold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <Search className="w-5 h-5" />
+                  <span>Search Properties</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. QUICK ACTIONS Section */}
+      <section className="py-16 bg-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {quickActions.map((action, index) => (
+              <Link
+                key={index}
+                to={action.link}
+                className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 border border-gray-800 hover:border-gray-700 hover:bg-gray-900 transition-all group text-center"
+              >
+                <div className="flex flex-col items-center">
+                  <div className="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center mb-2 text-indigo-400 group-hover:bg-indigo-600/30 transition-colors">
+                    {action.icon}
+                  </div>
+                  <span className="text-white font-medium text-xs">{action.label}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 3. LIVE RESULTS PREVIEW Section */}
+      <section className="py-16 bg-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                {searchLocation.trim() ? 'Homes you might like' : 'Trending in Nepal'}
+              </h2>
+              <p className="text-gray-400 text-base">
+                {searchLocation.trim() 
+                  ? `Found ${liveResults.length} properties matching your search`
+                  : 'Most popular properties right now'}
+              </p>
+            </div>
+            
+            {/* Sort Dropdown and Decision Helper Toggle */}
+            <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={decisionHelperMode}
+                  onChange={(e) => setDecisionHelperMode(e.target.checked)}
+                  className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                />
+                <div className="flex items-center gap-2">
+                  <Lightbulb className={`w-4 h-4 ${decisionHelperMode ? 'text-yellow-400' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-medium ${decisionHelperMode ? 'text-yellow-400' : 'text-gray-400'}`}>
+                    Help me decide
+                  </span>
+                </div>
+              </label>
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                disabled={decisionHelperMode}
+                className="bg-gray-900 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="recommended">Recommended</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Property Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {(searchLocation.trim() ? liveResults : trendingProperties).map((property) => (
+              <PropertyCardWithCompare
+                key={property.id}
+                property={property}
+                isSelected={compareProperties.some(p => p.id === property.id)}
+                onToggleCompare={handleToggleCompare}
+              />
+            ))}
+          </div>
+
+          {/* View All Results Button */}
+          {searchLocation.trim() && (
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  const params = new URLSearchParams()
+                  params.set('location', searchLocation.trim())
+                  if (priceRange !== 'all') {
+                    const [min, max] = priceRange.split('-')
+                    if (min) params.set('min', min)
+                    if (max) params.set('max', max)
+                  }
+                  if (bedrooms !== 'all') params.set('beds', bedrooms)
+                  
+                  let route = '/houses'
+                  if (propertyType === 'flats') route = '/flats-apartments'
+                  
+                  navigate(`${route}?${params.toString()}`)
+                }}
+                className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+              >
+                <span>View all results</span>
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 4. LIVING COST ESTIMATOR Section */}
+      <section className="py-16 bg-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-800 p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+              <div className="mb-4 md:mb-0">
+                <div className="flex items-center gap-3 mb-2">
+                  <Calculator className="w-6 h-6 text-indigo-400" />
+                  <h2 className="text-2xl md:text-3xl font-bold text-white">
+                    Living Cost Estimator
+                  </h2>
+                </div>
+                <p className="text-gray-400 text-sm">
+                  Estimate your monthly living expenses in major Nepali cities
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <select
+                  value={selectedCity}
+                  onChange={(e) => setSelectedCity(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="Kathmandu">Kathmandu</option>
+                  <option value="Lalitpur">Lalitpur</option>
+                  <option value="Bhaktapur">Bhaktapur</option>
+                  <option value="Pokhara">Pokhara</option>
+                  <option value="Chitwan">Chitwan</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="text-gray-400 text-xs mb-1">Rent</div>
+                <div className="text-white font-bold text-lg">Rs. {livingCost.rent.toLocaleString()}</div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="text-gray-400 text-xs mb-1">Food</div>
+                <div className="text-white font-bold text-lg">Rs. {livingCost.food.toLocaleString()}</div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="text-gray-400 text-xs mb-1">Transport</div>
+                <div className="text-white font-bold text-lg">Rs. {livingCost.transport.toLocaleString()}</div>
+              </div>
+              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
+                <div className="text-gray-400 text-xs mb-1">Utilities</div>
+                <div className="text-white font-bold text-lg">Rs. {livingCost.utilities.toLocaleString()}</div>
+              </div>
+              <div className="bg-indigo-600/20 rounded-lg p-4 border border-indigo-600/30 col-span-2 md:col-span-1">
+                <div className="text-indigo-300 text-xs mb-1">Total</div>
+                <div className="text-white font-bold text-xl">Rs. {livingCost.total.toLocaleString()}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. NEPAL LOCAL INSIGHTS Section */}
+      <section className="py-16 bg-black border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <Info className="w-6 h-6 text-indigo-400" />
+              <h2 className="text-3xl md:text-4xl font-bold text-white">
+                Local Insights
+              </h2>
+            </div>
+            <p className="text-gray-400 text-base">
+              Know before you rent: City-specific tips for Nepal
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {['Kathmandu', 'Lalitpur', 'Pokhara', 'Bhaktapur', 'Chitwan'].map((city) => {
+              const insight = getCityInsights(city)
+              return (
+                <div key={city} className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <MapPin className="w-5 h-5 text-indigo-400" />
+                    <h3 className="text-xl font-bold text-white">{city}</h3>
+                  </div>
+                  <p className="text-gray-300 text-sm mb-3 leading-relaxed">
+                    {insight.tip}
+                  </p>
+                  <div className="bg-indigo-600/10 border border-indigo-600/20 rounded-lg p-3">
+                    <p className="text-indigo-300 text-xs leading-relaxed">
+                      {insight.highlight}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. TRUST STATS Section */}
+      <section className="py-16 bg-black">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-600 rounded-lg mb-4">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-4xl font-bold text-white mb-2">500+</div>
+              <div className="text-gray-300 text-sm font-medium">Verified Properties</div>
+            </div>
+            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-lg mb-4">
+                <HomeIcon className="w-6 h-6 text-white" />
+              </div>
+              <div className="text-4xl font-bold text-white mb-2">10,000+</div>
+              <div className="text-gray-300 text-sm font-medium">Happy Renters</div>
+            </div>
+            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-600 rounded-lg mb-4">
+                <Star className="w-6 h-6 text-white fill-white" />
+              </div>
+              <div className="text-4xl font-bold text-white mb-2">4.8★</div>
+              <div className="text-gray-300 text-sm font-medium">Average Rating</div>
+            </div>
+          </div>
+          <p className="text-center text-gray-400 text-sm max-w-2xl mx-auto">
+            Every listing is manually reviewed by our team to ensure quality and accuracy.
+          </p>
+        </div>
+      </section>
+
+      {/* 7. TRUST & SAFETY Section */}
+      <section className="py-16 bg-black border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Trust & Safety
+            </h2>
+            <p className="text-gray-400 text-base">Your peace of mind is our priority</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-600/20 rounded-lg mb-4 text-green-400">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Verified Properties</h3>
+              <p className="text-gray-400 text-sm">Every listing is manually reviewed and verified</p>
+            </div>
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600/20 rounded-lg mb-4 text-indigo-400">
+                <DollarSign className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Transparent Pricing</h3>
+              <p className="text-gray-400 text-sm">FairFlex pricing with no hidden fees</p>
+            </div>
+            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
+              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600/20 rounded-lg mb-4 text-purple-400">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Secure Booking Process</h3>
+              <p className="text-gray-400 text-sm">Safe and secure transactions every time</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. PERSONALIZED RECOMMENDATIONS Section */}
+      <section className="py-16 bg-black border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Recommended for you
+            </h2>
+            <p className="text-gray-400 text-base">Handpicked properties based on your search history</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {personalizedRecommendations.map((property) => (
+              <PropertyCardWithCompare
+                key={property.id}
+                property={property}
+                isSelected={compareProperties.some(p => p.id === property.id)}
+                onToggleCompare={handleToggleCompare}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 9. POPULAR PROPERTIES Section */}
+      <section className="py-16 bg-black border-t border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              Popular Properties
+            </h2>
+            <p className="text-gray-400 text-base">Handpicked properties just for you</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {popularProperties.map((property) => (
+              <PropertyCardWithCompare
+                key={property.id}
+                property={property}
+                isSelected={compareProperties.some(p => p.id === property.id)}
+                onToggleCompare={handleToggleCompare}
+              />
+            ))}
+          </div>
+
+          <div className="text-center">
+            <Link
+              to="/houses"
+              className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+            >
+              <span>View all properties</span>
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 10. FINAL CTA Section */}
+      <section className="py-16 bg-black border-t border-gray-800">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Ready to find your next home?
+          </h2>
+          <p className="text-gray-400 text-base mb-8 max-w-2xl mx-auto">
+            Start your search today and connect with property owners who care about finding you the perfect place.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
+              to="/houses"
+              className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+            >
+              <span>Browse all properties</span>
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Link>
+            <Link
+              to="/houses"
+              className="inline-flex items-center bg-gray-900 border-2 border-gray-700 text-white font-bold px-8 py-3 rounded-lg hover:bg-gray-800 transition-all"
+            >
+              <MessageCircle className="w-5 h-5 mr-2" />
+              <span>Talk to property owners</span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Compare Bar (Sticky) */}
+      <CompareBar
+        selectedProperties={compareProperties}
+        onRemove={(id) => handleToggleCompare(id)}
+        onCompare={handleCompare}
+        onClose={handleClearCompare}
+      />
+
+      {/* Compare Modal */}
+      {showCompareModal && (
+        <CompareModal
+          properties={compareProperties}
+          onClose={() => setShowCompareModal(false)}
+        />
+      )}
+    </div>
+  )
+}
+
+export default Home
