@@ -30,23 +30,28 @@ const PORT = process.env.PORT || 5000;
 
 // CORS - Allow frontend to make requests (development + production)
 const allowedOrigins = [
-  'http://localhost:5173',                    // local dev (Vite default)
-  'http://localhost:5174',
-  'http://127.0.0.1:5173',
-  'https://rentnest-eight.vercel.app',     // production frontend (Vercel)
-  process.env.FRONTEND_URL                  // optional override (e.g. custom domain)
-].filter(Boolean);
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.FRONTEND_URL,
+];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-    callback(null, false);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Convert JSON data from requests into JavaScript objects
 // When frontend sends JSON, we can read it easily
