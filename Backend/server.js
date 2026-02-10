@@ -29,12 +29,12 @@ const PORT = process.env.PORT || 5000;
 // Middleware processes requests before they reach our routes
 
 // CORS - Allow frontend to make requests (development + production)
-// FRONTEND_URL in production (e.g. https://rentnest.vercel.app)
 const allowedOrigins = [
-  'http://localhost:5173',
+  'http://localhost:5173',                    // local dev (Vite default)
   'http://localhost:5174',
   'http://127.0.0.1:5173',
-  process.env.FRONTEND_URL
+  'https://rentnest-eight.vercel.app',     // production frontend (Vercel)
+  process.env.FRONTEND_URL                  // optional override (e.g. custom domain)
 ].filter(Boolean);
 
 app.use(cors({
@@ -101,6 +101,12 @@ app.use(errorHandler);
 // ============================================
 // Start listening for requests on the port
 // When someone visits our API, server responds
+
+// TEMP: Auto seed in production
+if (process.env.NODE_ENV === "production") {
+  require("./seed");
+}
+
 app.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
 });
