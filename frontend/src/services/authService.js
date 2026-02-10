@@ -7,8 +7,8 @@
 // Import Axios - library to make API calls
 import axios from 'axios';
 
-// Set API base URL from environment (e.g. Render backend URL)
-const API = import.meta.env.VITE_API_URL;
+// Set API base URL from environment (Render backend); fallback for production
+const API = import.meta.env.VITE_API_URL || "https://rentnest-backend-wpqh.onrender.com";
 
 // Create Axios instance - configured to talk to our backend
 const api = axios.create({

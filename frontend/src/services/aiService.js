@@ -11,8 +11,8 @@
 // Import Axios to make API calls
 import axios from 'axios';
 
-// Set backend API base URL from environment (e.g. Render backend URL)
-const API = import.meta.env.VITE_API_URL;
+// Set backend API base URL from environment (Render backend); fallback for production
+const API = import.meta.env.VITE_API_URL || "https://rentnest-backend-wpqh.onrender.com";
 
 // Helper function to get token from browser storage
 const getAuthToken = () => {
