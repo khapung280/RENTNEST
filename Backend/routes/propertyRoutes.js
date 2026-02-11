@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult, query } = require('express-validator');
 const Property = require('../models/Property');
 const User = require('../models/User');
@@ -117,12 +118,46 @@ router.get('/', [
   }
 });
 
+// @route   GET /api/properties/owner/my-properties
+// @desc    Get current owner's properties
+// @access  Private (Owner/Admin)
+router.get('/owner/my-properties', protect, authorize('owner', 'admin'), async (req, res) => {
+  try {
+    const properties = await Property.find({ owner: req.user.id })
+      .populate('owner', 'name email phone')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: properties.length,
+      data: properties
+    });
+  } catch (error) {
+    console.error('Get my properties error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching properties',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
 // @route   GET /api/properties/:id
 // @desc    Get single property by ID
 // @access  Public
 router.get('/:id', async (req, res) => {
   try {
-    const property = await Property.findById(req.params.id)
+    const { id } = req.params;
+
+    // Validate ObjectId
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid property ID'
+      });
+    }
+
+    const property = await Property.findById(id)
       .populate('owner', 'name email phone accountType');
 
     if (!property) {
@@ -142,22 +177,15 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       data: property
     });
   } catch (error) {
-    console.error('Get property error:', error);
-    if (error.name === 'CastError') {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
+    console.error('Get property by ID error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while fetching property',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
+      message: 'Server error'
     });
   }
 });
@@ -378,30 +406,6 @@ router.delete('/:id', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while deleting property',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
-    });
-  }
-});
-
-// @route   GET /api/properties/owner/my-properties
-// @desc    Get current owner's properties
-// @access  Private (Owner/Admin)
-router.get('/owner/my-properties', protect, authorize('owner', 'admin'), async (req, res) => {
-  try {
-    const properties = await Property.find({ owner: req.user.id })
-      .populate('owner', 'name email phone')
-      .sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      count: properties.length,
-      data: properties
-    });
-  } catch (error) {
-    console.error('Get my properties error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error while fetching properties',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
     });
   }
