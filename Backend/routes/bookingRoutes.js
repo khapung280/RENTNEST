@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const { body, validationResult, query } = require('express-validator');
 const Booking = require('../models/Booking');
 const Property = require('../models/Property');
-const { protect, adminOnly } = require('../middleware/auth');
+const { protect, adminOnly, authorize } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -95,6 +95,31 @@ router.post('/', [
     res.status(500).json({
       success: false,
       message: 'Server error while creating booking',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
+// @route   GET /api/bookings/owner/my-bookings
+// @desc    Get bookings for properties owned by current user (owner dashboard)
+// @access  Private (Owner or Admin)
+router.get('/owner/my-bookings', protect, authorize('owner', 'admin'), async (req, res) => {
+  try {
+    const propertyIds = await Property.find({ owner: req.user.id }).distinct('_id');
+    const data = await Booking.find({ property: { $in: propertyIds } })
+      .populate('user', 'name email')
+      .populate('property', 'title location image price')
+      .sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      count: data.length,
+      data
+    });
+  } catch (error) {
+    console.error('Get owner bookings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching bookings',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
     });
   }

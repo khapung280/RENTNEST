@@ -22,30 +22,34 @@ const OwnerDashboard = () => {
   }, [])
 
   const loadData = async () => {
+    setLoading(true)
+    setError(null)
     try {
-      setLoading(true)
-      setError(null)
-
-      // Load properties and bookings in parallel
-      const [propertiesResponse, bookingsResponse] = await Promise.all([
+      const [propertiesResult, bookingsResult] = await Promise.allSettled([
         propertyService.getMyProperties(),
         bookingService.getOwnerBookings()
       ])
 
-      if (propertiesResponse.success) {
-        setProperties(propertiesResponse.data.data || [])
+      const propertiesResponse = propertiesResult.status === 'fulfilled' ? propertiesResult.value : null
+      const bookingsResponse = bookingsResult.status === 'fulfilled' ? bookingsResult.value : null
+
+      if (propertiesResponse?.success && propertiesResponse?.data?.data) {
+        const list = propertiesResponse.data.data
+        setProperties(list)
+        setStats(prev => ({ ...prev, totalProperties: list.length }))
+      } else if (propertiesResult.status === 'rejected') {
+        console.error('Properties load failed:', propertiesResult.reason)
+        setError(propertiesResult.reason?.response?.data?.message || 'Failed to load properties')
       }
 
-      if (bookingsResponse.success) {
-        const bookingsData = bookingsResponse.data.data || []
+      if (bookingsResponse?.success) {
+        const bookingsData = Array.isArray(bookingsResponse.data?.data) ? bookingsResponse.data.data : (bookingsResponse.data ? [bookingsResponse.data] : [])
         setBookings(bookingsData)
-        
-        // Calculate stats
-        setStats({
-          totalProperties: propertiesResponse.data.data?.length || 0,
-          activeBookings: bookingsData.filter(b => b.status === 'approved').length,
+        setStats(prev => ({
+          ...prev,
+          activeBookings: bookingsData.filter(b => b.status === 'confirmed' || b.status === 'approved').length,
           pendingRequests: bookingsData.filter(b => b.status === 'pending').length
-        })
+        }))
       }
     } catch (err) {
       console.error('Error loading dashboard data:', err)

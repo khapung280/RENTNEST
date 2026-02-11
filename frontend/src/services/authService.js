@@ -7,8 +7,10 @@
 // Import Axios - library to make API calls
 import axios from 'axios';
 
-// Set API base URL from environment (Render backend); fallback for production
-const API = import.meta.env.VITE_API_URL || "https://rentnest-backend-wpqh.onrender.com";
+// Backend API base URL (no /api suffix). Use production when unset or when env points to localhost.
+const PRODUCTION_API = "https://rentnest-backend-wpqh.onrender.com";
+const envUrl = import.meta.env.VITE_API_URL;
+const API = (envUrl && !String(envUrl).includes("localhost")) ? String(envUrl).replace(/\/api\/?$/, "") : PRODUCTION_API;
 
 // Create Axios instance - configured to talk to our backend
 const api = axios.create({
