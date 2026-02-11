@@ -1,75 +1,44 @@
 // ============================================
 // AUTHENTICATION UTILITY FUNCTIONS
 // ============================================
-// These functions read user information from the token stored in browser
-// They don't make API calls - just read from token
+// Token is stored in localStorage on login. These helpers decode the JWT
+// to get id and role (no API calls). Used for protected routes.
 
-// Get user ID from token
-// Token is stored in browser when user logs in
-// This function extracts the user ID from that token
-export const getCurrentUserId = () => {
+const TOKEN_KEY = 'token';
+
+/** Decode JWT payload (base64url-safe). Returns null if invalid. */
+export const decodeToken = () => {
   try {
-    // Get token from browser storage
-    const token = localStorage.getItem('token');
-    
-    // If no token, user is not logged in
+    const token = localStorage.getItem(TOKEN_KEY);
     if (!token) return null;
-
-    // Token format: header.payload.signature (separated by dots)
-    // We need the middle part (payload) which has user data
-    // split('.') splits into 3 parts, [1] gets the middle part
-    const payload = token.split('.')[1];
-    
-    // If no payload, token is invalid
-    if (!payload) return null;
-
-    // Decode the payload
-    // atob() decodes base64 string
-    // JSON.parse() converts string to object
-    const decoded = JSON.parse(atob(payload));
-    
-    // Return user ID from decoded data
-    return decoded.id || decoded.userId || null;
-  } catch (error) {
-    // If error, return null (token might be invalid)
-    console.error('Error decoding token:', error);
-    return null;
-  }
-};
-
-// Get all user information from token
-// Returns complete user data (id, email, role, etc.)
-export const getCurrentUser = () => {
-  try {
-    // Get token from browser storage
-    const token = localStorage.getItem('token');
-    
-    // If no token, user not logged in
-    if (!token) return null;
-
-    // Get payload (middle part of token)
-    const payload = token.split('.')[1];
-    
-    // If no payload, token invalid
-    if (!payload) return null;
-
-    // Decode payload to get user data
-    const decoded = JSON.parse(atob(payload));
-    
-    // Return all user data
+    const parts = token.split('.');
+    if (parts.length !== 3 || !parts[1]) return null;
+    const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = JSON.parse(atob(base64));
     return decoded;
-  } catch (error) {
-    console.error('Error decoding token:', error);
+  } catch {
     return null;
   }
 };
 
-// Check if user is logged in
-// Simply checks if token exists in browser storage
-// Returns true if token exists, false if not
-export const isAuthenticated = () => {
-  // Get token and convert to boolean
-  // !! converts to true/false (true if token exists)
-  return !!localStorage.getItem('token');
+/** Get user id from JWT payload. */
+export const getCurrentUserId = () => {
+  const payload = decodeToken();
+  return payload?.id ?? payload?.userId ?? null;
 };
 
+/** Get role from JWT payload (backend sets role = accountType: renter | owner | admin). */
+export const getRoleFromToken = () => {
+  const payload = decodeToken();
+  return payload?.role ?? null;
+};
+
+/** Decoded payload with accountType alias (role) for compatibility. */
+export const getCurrentUser = () => {
+  const payload = decodeToken();
+  if (!payload) return null;
+  return { ...payload, accountType: payload.role };
+};
+
+/** True if token exists in localStorage. */
+export const isAuthenticated = () => !!localStorage.getItem(TOKEN_KEY);

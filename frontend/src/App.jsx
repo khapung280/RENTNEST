@@ -26,7 +26,8 @@ import Profile from './pages/Profile'            // Profile page
 import OwnerDashboard from './pages/OwnerDashboard'  // Owner dashboard
 import AddProperty from './pages/AddProperty'    // Add property
 import OwnerBookings from './pages/OwnerBookings'  // Owner bookings
-import AdminDashboard from './pages/AdminDashboard'  // Admin dashboard
+import Admin from './pages/Admin'                      // Admin dashboard (/admin)
+import AdminDashboard from './pages/AdminDashboard'  // Admin dashboard (legacy)
 import AdminUsers from './pages/admin/AdminUsers'    // Admin users
 import AdminProperties from './pages/admin/AdminProperties'  // Admin properties
 import AdminReports from './pages/admin/AdminReports'  // Admin reports
@@ -70,6 +71,7 @@ function App() {
             <Route path="/owner-dashboard/bookings" element={<ProtectedRoute requiredRole="owner"><OwnerBookings /></ProtectedRoute>} />
             
             {/* ADMIN ROUTES - Must be logged in as admin */}
+            <Route path="/admin" element={<ProtectedRoute requiredRole="admin"><Admin /></ProtectedRoute>} />
             <Route path="/admin-dashboard" element={<ProtectedRoute requiredRole="admin"><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin-dashboard/users" element={<ProtectedRoute requiredRole="admin"><AdminUsers /></ProtectedRoute>} />
             <Route path="/admin-dashboard/properties" element={<ProtectedRoute requiredRole="admin"><AdminProperties /></ProtectedRoute>} />

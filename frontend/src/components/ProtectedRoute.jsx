@@ -1,32 +1,22 @@
 import { Navigate } from 'react-router-dom';
-import { isAuthenticated } from '../utils/auth';
+import { isAuthenticated, getRoleFromToken } from '../utils/auth';
 
 const ProtectedRoute = ({ children, requiredRole = null }) => {
-  if (!isAuthenticated()) {
+  const token = localStorage.getItem('token');
+
+  if (!token || !isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
 
   if (requiredRole) {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      return <Navigate to="/login" replace />;
-    }
-
-    try {
-      const user = JSON.parse(storedUser);
-      if (user.accountType !== requiredRole) {
-        // Redirect to appropriate dashboard based on user's actual role
-        if (user.accountType === 'owner') {
-          return <Navigate to="/owner-dashboard" replace />;
-        } else if (user.accountType === 'admin') {
-          return <Navigate to="/admin-dashboard" replace />;
-        } else {
-          return <Navigate to="/" replace />;
-        }
+    const role = getRoleFromToken();
+    if (role !== requiredRole) {
+      if (requiredRole === 'admin') {
+        return <Navigate to="/login" replace />;
       }
-    } catch (error) {
-      console.error('Error parsing user data:', error);
-      return <Navigate to="/login" replace />;
+      if (role === 'owner') return <Navigate to="/owner-dashboard" replace />;
+      if (role === 'admin') return <Navigate to="/admin" replace />;
+      return <Navigate to="/" replace />;
     }
   }
 

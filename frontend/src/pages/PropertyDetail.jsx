@@ -32,11 +32,11 @@ import {
   Clock,
   Loader2
 } from 'lucide-react'
-import { propertyService } from '../services/aiService'
+import { propertyService, bookingService } from '../services/aiService'
 import { calculateRentConfidence, getBestForLabel, calculateFairFlexSavings } from '../utils/propertyUtils'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import ContactOwnerButton from '../components/ContactOwnerButton'
-import { getCurrentUserId } from '../utils/auth'
+import { getCurrentUserId, isAuthenticated } from '../utils/auth'
 
 // Helper function to get property tags (same logic as Home/Houses pages)
 function getPropertyTags(property) {
@@ -58,6 +58,14 @@ const PropertyDetail = () => {
   
   // Get current user ID for messaging
   const currentUserId = getCurrentUserId()
+  const loggedIn = isAuthenticated()
+
+  // Book Now state
+  const [checkInDate, setCheckInDate] = useState('')
+  const [checkOutDate, setCheckOutDate] = useState('')
+  const [bookingSuccess, setBookingSuccess] = useState(false)
+  const [bookingError, setBookingError] = useState('')
+  const [bookingLoading, setBookingLoading] = useState(false)
 
   // Fetch property from backend API
   useEffect(() => {
@@ -402,10 +410,10 @@ const PropertyDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-white flex items-center justify-center py-32">
+      <div className="bg-surface-50 flex items-center justify-center py-32">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading property...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-primary-500 mx-auto mb-4" />
+          <p className="text-surface-600 font-medium">Loading property...</p>
         </div>
       </div>
     )
@@ -414,14 +422,14 @@ const PropertyDetail = () => {
   // Error state
   if (error || !propertyDetail) {
     return (
-      <div className="bg-white flex items-center justify-center py-32">
+      <div className="bg-surface-50 flex items-center justify-center py-32">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-4">
+          <h2 className="font-display text-2xl font-semibold text-surface-900 mb-4">
             {error || 'Property Not Found'}
           </h2>
           <button
             onClick={() => navigate('/houses')}
-            className="text-indigo-600 hover:text-indigo-700 font-medium"
+            className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
           >
             Back to Houses
           </button>
@@ -431,13 +439,13 @@ const PropertyDetail = () => {
   }
 
   return (
-    <div className="bg-white">
+    <div className="bg-surface-50 min-h-screen">
       {/* Header with Back Button */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className="bg-white border-b border-surface-100 shadow-soft">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition-colors"
+            className="flex items-center gap-2 text-surface-600 hover:text-surface-900 transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium text-sm">Back</span>
@@ -850,15 +858,97 @@ const PropertyDetail = () => {
 
           {/* Right Column - CTA */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-24">
-              {/* Primary CTA */}
+            <div className="card-glass-solid p-6 sticky top-24">
+              {/* Book Now */}
               <div className="mb-4">
-                <Link
-                  to={`/booking/${propertyDetail._id || propertyDetail.id}`}
-                  className="block w-full bg-gray-900 hover:bg-gray-800 text-white font-semibold py-3.5 rounded-lg transition-colors text-base text-center"
-                >
-                  Request to book
-                </Link>
+                {bookingSuccess ? (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm font-medium text-green-800">Booking request sent.</p>
+                    <p className="text-xs text-green-700 mt-1">We&apos;ll confirm your stay soon.</p>
+                  </div>
+                ) : !loggedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/property/${propertyDetail._id || propertyDetail.id}`)}`)}
+                    className="w-full btn-gradient-lg"
+                  >
+                    Book Now
+                  </button>
+                ) : (() => {
+                  const ownerId = propertyDetail.owner?._id || propertyDetail.owner
+                  const isOwnProperty = ownerId && currentUserId && String(ownerId) === String(currentUserId)
+                  if (isOwnProperty) {
+                    return (
+                      <p className="text-sm text-gray-500 py-2 text-center">You can&apos;t book your own property.</p>
+                    )
+                  }
+                  const today = new Date().toISOString().slice(0, 10)
+                  const checkInMin = today
+                  const checkOutMin = checkInDate || today
+                  return (
+                    <>
+                      <p className="text-sm font-medium text-gray-700 mb-3">Select dates</p>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Check-in</label>
+                          <input
+                            type="date"
+                            value={checkInDate}
+                            min={checkInMin}
+                            onChange={(e) => {
+                              setCheckInDate(e.target.value)
+                              if (checkOutDate && e.target.value && checkOutDate <= e.target.value) setCheckOutDate('')
+                              setBookingError('')
+                            }}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">Check-out</label>
+                          <input
+                            type="date"
+                            value={checkOutDate}
+                            min={checkOutMin}
+                            onChange={(e) => { setCheckOutDate(e.target.value); setBookingError('') }}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                          />
+                        </div>
+                        {bookingError && <p className="text-xs text-red-600">{bookingError}</p>}
+                        <button
+                          type="button"
+                          disabled={!checkInDate || !checkOutDate || bookingLoading}
+                          onClick={async () => {
+                            if (!checkInDate || !checkOutDate) return
+                            setBookingError('')
+                            setBookingLoading(true)
+                            try {
+                              const res = await bookingService.create({
+                                property: propertyDetail._id || propertyDetail.id,
+                                checkInDate: new Date(checkInDate).toISOString(),
+                                checkOutDate: new Date(checkOutDate).toISOString()
+                              })
+                              if (res.success) {
+                                setBookingSuccess(true)
+                                setCheckInDate('')
+                                setCheckOutDate('')
+                              } else {
+                                setBookingError(res.message || 'Request failed')
+                              }
+                            } catch (err) {
+                              setBookingError(err.response?.data?.message || 'Failed to send booking request')
+                            } finally {
+                              setBookingLoading(false)
+                            }
+                          }}
+                          className="w-full btn-gradient disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {bookingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                          Send booking request
+                        </button>
+                      </div>
+                    </>
+                  )
+                })()}
               </div>
 
               {/* Secondary CTA - Contact Owner */}

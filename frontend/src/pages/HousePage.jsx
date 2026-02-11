@@ -525,7 +525,7 @@ const HousePage = () => {
             <div className="lg:col-span-3">
               {loading ? (
                 <div className="text-center py-16">
-                  <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-4" />
+                  <Loader2 className="w-8 h-8 animate-spin text-primary-500 mx-auto mb-4" />
                   <p className="text-gray-600">Loading properties...</p>
                 </div>
               ) : error ? (

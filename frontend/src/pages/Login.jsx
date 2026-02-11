@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, ArrowLeft, AlertCircle } from 'lucide-react'
 import { authService } from '../services/authService'
 
 const Login = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -60,7 +62,12 @@ const Login = () => {
         // Store token and user data
         authService.setAuth(response.token, response.user);
         
-        // Redirect based on account type
+        // Redirect to requested page (e.g. after "Book Now" from property detail)
+        if (redirectTo && redirectTo.startsWith('/') && !redirectTo.startsWith('//')) {
+          navigate(redirectTo);
+          return;
+        }
+        // Otherwise redirect based on account type
         if (response.user.accountType === 'owner') {
           navigate('/owner-dashboard');
         } else if (response.user.accountType === 'admin') {
@@ -104,26 +111,23 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-surface-50 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        {/* Back Button */}
         <Link
           to="/"
-          className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6 text-sm font-medium transition-colors"
+          className="inline-flex items-center text-surface-600 hover:text-surface-900 mb-8 text-sm font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
 
-        {/* Login Card */}
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 p-8">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-1.5">
+        <div className="card-glass-solid p-8">
+          <div className="text-center mb-8">
+            <h1 className="font-display text-2xl font-semibold text-surface-900 mb-2">
               Welcome back
             </h1>
-            <p className="text-sm text-gray-600">
-              Sign in to access your account and continue managing your properties
+            <p className="text-sm text-surface-500">
+              Sign in to access your account and continue
             </p>
           </div>
 
@@ -157,10 +161,8 @@ const Login = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
-                    errors.email
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                  className={`input-modern pl-10 ${
+                    errors.email ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' : ''
                   }`}
                   placeholder="you@example.com"
                   aria-invalid={errors.email ? 'true' : 'false'}
@@ -186,7 +188,7 @@ const Login = () => {
                 </label>
                 <Link
                   to="#"
-                  className="text-sm font-medium text-indigo-600 hover:text-indigo-500 transition-colors"
+                  className="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors"
                 >
                   Forgot your password?
                 </Link>
@@ -203,10 +205,8 @@ const Login = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
-                    errors.password
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                  className={`input-modern pl-10 pr-10 ${
+                    errors.password ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' : ''
                   }`}
                   placeholder="Enter your password"
                   aria-invalid={errors.password ? 'true' : 'false'}
@@ -242,25 +242,24 @@ const Login = () => {
                 type="checkbox"
                 checked={formData.rememberMe}
                 onChange={handleChange}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500/20 border-surface-300 rounded cursor-pointer"
               />
               <label 
                 htmlFor="rememberMe" 
-                className="ml-2 block text-sm text-gray-700 cursor-pointer"
+                className="ml-2 block text-sm text-surface-700 cursor-pointer"
               >
                 Keep me signed in
               </label>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+              className="w-full btn-gradient py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -272,23 +271,21 @@ const Login = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="mt-6">
+          <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+                <div className="w-full border-t border-surface-200" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                <span className="px-2 bg-white text-surface-500">Or continue with</span>
               </div>
             </div>
           </div>
 
-          {/* Social Login Buttons */}
           <div className="mt-6 grid grid-cols-2 gap-3">
             <button
               type="button"
-              className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="btn-outline w-full py-2.5"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path
@@ -312,7 +309,7 @@ const Login = () => {
             </button>
             <button
               type="button"
-              className="w-full inline-flex justify-center items-center py-2.5 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+              className="btn-outline w-full py-2.5"
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -322,11 +319,11 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <p className="mt-6 text-center text-sm text-gray-600">
+          <p className="mt-8 text-center text-sm text-surface-600">
             New to RentNest?{' '}
             <Link
               to="/register"
-              className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
+              className="font-semibold text-primary-600 hover:text-primary-500 transition-colors"
             >
               Create an account
             </Link>

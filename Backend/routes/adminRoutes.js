@@ -187,6 +187,37 @@ router.put('/users/:id/activate', async (req, res) => {
 
 // ==================== PROPERTY MANAGEMENT ====================
 
+// @route   GET /api/admin/properties
+// @desc    Get all properties (any status) for admin
+// @access  Private (Admin only)
+router.get('/properties', async (req, res) => {
+  try {
+    const { status, page = 1, limit = 50 } = req.query;
+    const filter = {};
+    if (status) filter.status = status;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    const total = await Property.countDocuments(filter);
+    const properties = await Property.find(filter)
+      .populate('owner', 'name email')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(parseInt(limit));
+    res.json({
+      success: true,
+      count: properties.length,
+      total,
+      data: properties
+    });
+  } catch (error) {
+    console.error('Get admin properties error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
 // @route   PUT /api/admin/properties/:id/approve
 // @desc    Approve a property
 // @access  Private (Admin only)

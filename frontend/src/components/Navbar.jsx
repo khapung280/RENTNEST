@@ -9,37 +9,29 @@ const Navbar = () => {
   const [user, setUser] = useState(null)
   const location = useLocation()
 
-  // Get user data on mount and when location changes
   useEffect(() => {
     const loadUser = () => {
       if (isAuthenticated()) {
-        // Check localStorage for user data stored by authService
         const storedUser = localStorage.getItem('user')
         if (storedUser) {
           try {
             setUser(JSON.parse(storedUser))
           } catch (e) {
-            const userData = getCurrentUser()
-            setUser(userData)
+            setUser(getCurrentUser())
           }
         } else {
-          const userData = getCurrentUser()
-          setUser(userData)
+          setUser(getCurrentUser())
         }
       } else {
         setUser(null)
       }
     }
-    
     loadUser()
-    // Also reload when storage changes (e.g., after login)
     const handleStorageChange = () => loadUser()
     window.addEventListener('storage', handleStorageChange)
-    
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [location])
 
-  // Build nav links based on user state
   const navLinks = useMemo(() => {
     const links = [
       { path: '/', label: 'Home' },
@@ -48,16 +40,12 @@ const Navbar = () => {
       { path: '/about', label: 'About Us' },
       { path: '/messages', label: 'Messages' },
     ]
-
-    // Add role-based links
     if (user?.accountType === 'owner') {
       links.push({ path: '/owner-dashboard', label: 'Owner Dashboard' })
     }
     if (user?.accountType === 'admin') {
-      links.push({ path: '/admin-dashboard', label: 'Admin Dashboard' })
+      links.push({ path: '/admin', label: 'Admin Dashboard' })
     }
-
-    // Add auth links
     if (!isAuthenticated()) {
       links.push({ path: '/login', label: 'Login' })
       links.push({ path: '/register', label: 'Register' })
@@ -65,11 +53,9 @@ const Navbar = () => {
       links.push({ path: '/profile', label: 'Profile' })
       links.push({ path: '/logout', label: 'Logout', isAction: true })
     }
-
     return links
   }, [user])
 
-  // Handle logout
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -79,23 +65,28 @@ const Navbar = () => {
 
   const isActive = (path) => location.pathname === path
 
+  const linkClass = (path) =>
+    `px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
+      isActive(path)
+        ? 'text-primary-600 bg-primary-50'
+        : 'text-surface-600 hover:text-primary-600 hover:bg-surface-100'
+    }`
+
   return (
-    <nav className="sticky top-0 z-50 bg-white shadow-md">
+    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-surface-100 shadow-soft">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
+        <div className="flex justify-between items-center h-18">
+          <Link to="/" className="flex items-center transition-opacity hover:opacity-90">
             <RentNestLogo size={36} />
           </Link>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6">
-            {navLinks.map((link) => 
+          <div className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) =>
               link.isAction ? (
                 <button
                   key={link.path}
                   onClick={handleLogout}
-                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-100 transition-all duration-300"
                 >
                   {link.label}
                 </button>
@@ -103,11 +94,7 @@ const Navbar = () => {
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                    isActive(link.path)
-                      ? 'text-blue-600 bg-blue-50'
-                      : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                  }`}
+                  className={linkClass(link.path)}
                 >
                   {link.label}
                 </Link>
@@ -115,11 +102,10 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none"
+              className="p-2.5 rounded-xl text-surface-600 hover:bg-surface-100 transition-colors"
               aria-label="Toggle menu"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -127,11 +113,10 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 bg-white border-t">
-              {navLinks.map((link) => 
+          <div className="md:hidden py-4 border-t border-surface-100">
+            <div className="flex flex-col gap-1">
+              {navLinks.map((link) =>
                 link.isAction ? (
                   <button
                     key={link.path}
@@ -139,7 +124,7 @@ const Navbar = () => {
                       setIsOpen(false)
                       handleLogout()
                     }}
-                    className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50"
+                    className="text-left px-4 py-3 rounded-xl text-base font-medium text-surface-600 hover:bg-surface-100"
                   >
                     {link.label}
                   </button>
@@ -148,11 +133,7 @@ const Navbar = () => {
                     key={link.path}
                     to={link.path}
                     onClick={() => setIsOpen(false)}
-                    className={`block px-3 py-2 rounded-md text-base font-medium ${
-                      isActive(link.path)
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                    }`}
+                    className={`block px-4 py-3 rounded-xl text-base font-medium ${linkClass(link.path)}`}
                   >
                     {link.label}
                   </Link>
@@ -167,4 +148,3 @@ const Navbar = () => {
 }
 
 export default Navbar
-

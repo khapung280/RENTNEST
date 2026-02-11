@@ -1,6 +1,19 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
+/** Build user payload (no password or internal fields) */
+function toUserPayload(user) {
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone || '',
+    accountType: user.accountType,
+    profilePicture: user.profilePicture || '',
+    isVerified: user.isVerified
+  };
+}
+
 /**
  * @desc    Register a new user
  * @route   POST /api/auth/register
@@ -10,8 +23,8 @@ exports.register = async (req, res, next) => {
   try {
     const { name, email, password, accountType, phone } = req.body;
 
-    // Check if user already exists
-    const userExists = await User.findOne({ email });
+    const normalizedEmail = (email && String(email).trim().toLowerCase()) || '';
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({
         success: false,
@@ -19,35 +32,37 @@ exports.register = async (req, res, next) => {
       });
     }
 
-    // Create user
     const user = await User.create({
-      name,
-      email,
+      name: name && String(name).trim(),
+      email: normalizedEmail,
       password,
-      accountType: accountType || 'renter',
-      phone: phone || ''
+      accountType: accountType && ['renter', 'owner', 'admin'].includes(accountType) ? accountType : 'renter',
+      phone: phone ? String(phone).trim() : ''
     });
 
-    // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.accountType);
 
-    // Return user data (password is excluded by default in model)
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        accountType: user.accountType,
-        profilePicture: user.profilePicture,
-        isVerified: user.isVerified
-      }
+      user: toUserPayload(user)
     });
   } catch (error) {
-    console.error('Register error:', error);
+    if (error.name === 'ValidationError') {
+      const messages = Object.values(error.errors).map(e => e.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: messages
+      });
+    }
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email already registered'
+      });
+    }
     next(error);
   }
 };
@@ -61,8 +76,8 @@ exports.login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Find user and include password (since it's select: false by default)
-    const user = await User.findOne({ email }).select('+password');
+    const normalizedEmail = (email && String(email).trim().toLowerCase()) || '';
+    const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
       return res.status(401).json({
@@ -71,7 +86,6 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Check if user is suspended
     if (user.isSuspended) {
       return res.status(403).json({
         success: false,
@@ -79,7 +93,6 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Check if user is active
     if (!user.isActive) {
       return res.status(403).json({
         success: false,
@@ -87,8 +100,7 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Check password
-    const isMatch = await user.matchPassword(password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -96,26 +108,15 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    // Generate token
-    const token = generateToken(user._id);
+    const token = generateToken(user._id, user.accountType);
 
-    // Return user data
     res.json({
       success: true,
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        accountType: user.accountType,
-        profilePicture: user.profilePicture,
-        isVerified: user.isVerified
-      }
+      user: toUserPayload(user)
     });
   } catch (error) {
-    console.error('Login error:', error);
     next(error);
   }
 };
@@ -139,20 +140,13 @@ exports.getMe = async (req, res, next) => {
     res.json({
       success: true,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        accountType: user.accountType,
-        profilePicture: user.profilePicture,
-        isVerified: user.isVerified,
+        ...toUserPayload(user),
         isActive: user.isActive,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt
       }
     });
   } catch (error) {
-    console.error('Get me error:', error);
     next(error);
   }
 };

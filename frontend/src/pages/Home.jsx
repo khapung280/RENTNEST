@@ -24,6 +24,7 @@ import { propertyService } from '../services/aiService'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import CompareBar from '../components/CompareBar'
 import CompareModal from '../components/CompareModal'
+import Loader from '../components/Loader'
 import { calculateRentConfidence, getBestForLabel, getCityLivingCost, getCityInsights } from '../utils/propertyUtils'
 import { isAuthenticated } from '../utils/auth'
 
@@ -380,20 +381,20 @@ const Home = () => {
   const isRenter = user?.accountType === 'renter' || !user
 
   return (
-    <div className={`min-h-screen bg-black ${compareProperties.length > 0 ? 'pb-24' : ''}`}>
+    <div className={`min-h-screen bg-surface-50 ${compareProperties.length > 0 ? 'pb-24' : ''}`}>
       {/* Role-based Welcome Banner */}
       {isOwner && (
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
+        <div className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-4 px-4 shadow-soft">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Building2 className="w-5 h-5 flex-shrink-0" />
               <span className="font-medium">
-                👋 Welcome back, {user?.name || 'Owner'}! Manage your properties and bookings.
+                Welcome back, {user?.name || 'Owner'}! Manage your properties and bookings.
               </span>
             </div>
             <Link
               to="/owner-dashboard"
-              className="bg-white text-blue-600 px-4 py-1.5 rounded-lg font-semibold text-sm hover:bg-blue-50 transition-colors flex items-center gap-2"
+              className="btn-outline !border-white/40 !text-white hover:!bg-white/20 hover:!border-white/60 flex items-center gap-2 shrink-0"
             >
               Go to Dashboard
               <ArrowRight className="w-4 h-4" />
@@ -402,7 +403,7 @@ const Home = () => {
         </div>
       )}
       {/* 1. HERO Section with Smart Search */}
-      <section className="relative text-white py-20 md:py-28 overflow-hidden">
+      <section className="relative text-white py-24 md:py-32 overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={heroBackgroundImage}
@@ -410,21 +411,21 @@ const Home = () => {
             className="w-full h-full object-cover"
             style={{ objectPosition: 'center' }}
           />
-          <div className="absolute inset-0 bg-black/50"></div>
+          <div className="absolute inset-0 bg-surface-900/60" />
         </div>
         
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              Find a place you'll love to call home in Nepal
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
+              Find a place you&apos;ll love to call home
             </h1>
-            <p className="text-lg md:text-xl mb-8 text-white/90 max-w-2xl mx-auto">
-              Search thousands of verified rental properties across Nepal's most beautiful locations
+            <p className="text-lg md:text-xl mb-10 text-white/90 max-w-2xl mx-auto">
+              Search verified rental properties across Nepal&apos;s most beautiful locations
             </p>
 
             {/* Smart Search Form */}
             <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-6 md:p-8 border border-white/20">
+              <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-soft-xl p-6 md:p-8 border border-white/20">
                 {/* Property Type Selector */}
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <button
@@ -529,9 +530,9 @@ const Home = () => {
                 </div>
                 
                 {/* Search Button */}
-                <button 
+                <button
                   type="submit"
-                  className="w-full bg-white text-gray-900 font-bold px-8 py-4 rounded-xl hover:bg-gray-100 transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="w-full bg-white text-surface-900 font-bold px-8 py-4 rounded-2xl hover:bg-white/95 hover:shadow-soft-lg transition-all duration-300 flex items-center justify-center gap-2"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search Properties</span>
@@ -543,20 +544,20 @@ const Home = () => {
       </section>
 
       {/* 2. QUICK ACTIONS Section */}
-      <section className="py-16 bg-black border-b border-gray-800">
+      <section className="py-20 bg-white border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 to={action.link}
-                className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-4 border border-gray-800 hover:border-gray-700 hover:bg-gray-900 transition-all group text-center"
+                className="card-glass-solid p-5 text-center group hover:-translate-y-0.5"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 bg-indigo-600/20 rounded-lg flex items-center justify-center mb-2 text-indigo-400 group-hover:bg-indigo-600/30 transition-colors">
+                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-3 text-primary-600 group-hover:bg-primary-100 transition-colors duration-300">
                     {action.icon}
                   </div>
-                  <span className="text-white font-medium text-xs">{action.label}</span>
+                  <span className="text-surface-700 font-medium text-sm">{action.label}</span>
                 </div>
               </Link>
             ))}
@@ -565,32 +566,31 @@ const Home = () => {
       </section>
 
       {/* 3. LIVE RESULTS PREVIEW Section */}
-      <section className="py-16 bg-black border-b border-gray-800">
+      <section className="py-20 bg-surface-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
             <div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-2">
                 {searchLocation.trim() ? 'Homes you might like' : 'Trending in Nepal'}
               </h2>
-              <p className="text-gray-400 text-base">
-                {searchLocation.trim() 
+              <p className="text-surface-500 text-base">
+                {searchLocation.trim()
                   ? `Found ${liveResults.length} properties matching your search`
                   : 'Most popular properties right now'}
               </p>
             </div>
             
-            {/* Sort Dropdown and Decision Helper Toggle */}
-            <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-              <label className="flex items-center gap-2 cursor-pointer group">
+            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={decisionHelperMode}
                   onChange={(e) => setDecisionHelperMode(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+                  className="w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-2 focus:ring-primary-500/20"
                 />
                 <div className="flex items-center gap-2">
-                  <Lightbulb className={`w-4 h-4 ${decisionHelperMode ? 'text-yellow-400' : 'text-gray-400'}`} />
-                  <span className={`text-sm font-medium ${decisionHelperMode ? 'text-yellow-400' : 'text-gray-400'}`}>
+                  <Lightbulb className={`w-4 h-4 ${decisionHelperMode ? 'text-primary-500' : 'text-surface-400'}`} />
+                  <span className={`text-sm font-medium ${decisionHelperMode ? 'text-primary-600' : 'text-surface-600'}`}>
                     Help me decide
                   </span>
                 </div>
@@ -599,7 +599,7 @@ const Home = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 disabled={decisionHelperMode}
-                className="bg-gray-900 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="input-modern py-2.5 max-w-[200px] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="recommended">Recommended</option>
                 <option value="price-low">Price: Low to High</option>
@@ -608,60 +608,63 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Property Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            {(searchLocation.trim() ? liveResults : trendingProperties).map((property) => (
-              <PropertyCardWithCompare
-                key={property.id}
-                property={property}
-                isSelected={compareProperties.some(p => p.id === property.id)}
-                onToggleCompare={handleToggleCompare}
-              />
-            ))}
-          </div>
+          {propertiesLoading ? (
+            <Loader className="py-16" />
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                {(searchLocation.trim() ? liveResults : trendingProperties).map((property) => (
+                  <PropertyCardWithCompare
+                    key={property.id}
+                    property={property}
+                    isSelected={compareProperties.some(p => p.id === property.id)}
+                    onToggleCompare={handleToggleCompare}
+                  />
+                ))}
+              </div>
 
-          {/* View All Results Button */}
-          {searchLocation.trim() && (
-            <div className="text-center">
-              <button
-                onClick={() => {
-                  const params = new URLSearchParams()
-                  params.set('location', searchLocation.trim())
-                  if (priceRange !== 'all') {
-                    const [min, max] = priceRange.split('-')
-                    if (min) params.set('min', min)
-                    if (max) params.set('max', max)
-                  }
-                  if (bedrooms !== 'all') params.set('beds', bedrooms)
-                  
-                  let route = '/houses'
-                  if (propertyType === 'flats') route = '/flats-apartments'
-                  
-                  navigate(`${route}?${params.toString()}`)
-                }}
-                className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
-              >
-                <span>View all results</span>
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </button>
-            </div>
+              {searchLocation.trim() && (
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams()
+                      params.set('location', searchLocation.trim())
+                      if (priceRange !== 'all') {
+                        const [min, max] = priceRange.split('-')
+                        if (min) params.set('min', min)
+                        if (max) params.set('max', max)
+                      }
+                      if (bedrooms !== 'all') params.set('beds', bedrooms)
+                      let route = '/houses'
+                      if (propertyType === 'flats') route = '/flats-apartments'
+                      navigate(`${route}?${params.toString()}`)
+                    }}
+                    className="btn-gradient"
+                  >
+                    <span>View all results</span>
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </section>
 
       {/* 4. LIVING COST ESTIMATOR Section */}
-      <section className="py-16 bg-black border-b border-gray-800">
+      <section className="py-20 bg-white border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl border border-gray-800 p-6 md:p-8">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-              <div className="mb-4 md:mb-0">
+          <div className="card-glass-solid p-6 md:p-8">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+              <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Calculator className="w-6 h-6 text-indigo-400" />
-                  <h2 className="text-2xl md:text-3xl font-bold text-white">
+                  <Calculator className="w-6 h-6 text-primary-500" />
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-surface-900">
                     Living Cost Estimator
                   </h2>
                 </div>
-                <p className="text-gray-400 text-sm">
+                <p className="text-surface-500 text-sm">
                   Estimate your monthly living expenses in major Nepali cities
                 </p>
               </div>
@@ -669,7 +672,7 @@ const Home = () => {
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 text-white px-4 py-2 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  className="input-modern py-2.5 max-w-[180px]"
                 >
                   <option value="Kathmandu">Kathmandu</option>
                   <option value="Lalitpur">Lalitpur</option>
@@ -681,62 +684,48 @@ const Home = () => {
             </div>
             
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <div className="text-gray-400 text-xs mb-1">Rent</div>
-                <div className="text-white font-bold text-lg">Rs. {livingCost.rent.toLocaleString()}</div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <div className="text-gray-400 text-xs mb-1">Food</div>
-                <div className="text-white font-bold text-lg">Rs. {livingCost.food.toLocaleString()}</div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <div className="text-gray-400 text-xs mb-1">Transport</div>
-                <div className="text-white font-bold text-lg">Rs. {livingCost.transport.toLocaleString()}</div>
-              </div>
-              <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
-                <div className="text-gray-400 text-xs mb-1">Utilities</div>
-                <div className="text-white font-bold text-lg">Rs. {livingCost.utilities.toLocaleString()}</div>
-              </div>
-              <div className="bg-indigo-600/20 rounded-lg p-4 border border-indigo-600/30 col-span-2 md:col-span-1">
-                <div className="text-indigo-300 text-xs mb-1">Total</div>
-                <div className="text-white font-bold text-xl">Rs. {livingCost.total.toLocaleString()}</div>
+              {[
+                { label: 'Rent', value: livingCost.rent },
+                { label: 'Food', value: livingCost.food },
+                { label: 'Transport', value: livingCost.transport },
+                { label: 'Utilities', value: livingCost.utilities },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-surface-50 rounded-xl p-4 border border-surface-200">
+                  <div className="text-surface-500 text-xs mb-1">{label}</div>
+                  <div className="text-surface-900 font-bold text-lg">Rs. {value.toLocaleString()}</div>
+                </div>
+              ))}
+              <div className="bg-primary-50 rounded-xl p-4 border border-primary-200 col-span-2 md:col-span-1">
+                <div className="text-primary-600 text-xs mb-1">Total</div>
+                <div className="text-surface-900 font-bold text-xl">Rs. {livingCost.total.toLocaleString()}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. NEPAL LOCAL INSIGHTS Section */}
-      <section className="py-16 bg-black border-b border-gray-800">
+      {/* 5. NEPAL LOCAL INSIGHTS */}
+      <section className="py-20 bg-surface-50 border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
+          <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <Info className="w-6 h-6 text-indigo-400" />
-              <h2 className="text-3xl md:text-4xl font-bold text-white">
-                Local Insights
-              </h2>
+              <Info className="w-6 h-6 text-primary-500" />
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900">Local Insights</h2>
             </div>
-            <p className="text-gray-400 text-base">
-              Know before you rent: City-specific tips for Nepal
-            </p>
+            <p className="text-surface-500 text-base">Know before you rent: City-specific tips for Nepal</p>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {['Kathmandu', 'Lalitpur', 'Pokhara', 'Bhaktapur', 'Chitwan'].map((city) => {
               const insight = getCityInsights(city)
               return (
-                <div key={city} className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800">
+                <div key={city} className="card-glass-solid p-6 hover:-translate-y-0.5">
                   <div className="flex items-center gap-2 mb-3">
-                    <MapPin className="w-5 h-5 text-indigo-400" />
-                    <h3 className="text-xl font-bold text-white">{city}</h3>
+                    <MapPin className="w-5 h-5 text-primary-500" />
+                    <h3 className="font-display text-xl font-bold text-surface-900">{city}</h3>
                   </div>
-                  <p className="text-gray-300 text-sm mb-3 leading-relaxed">
-                    {insight.tip}
-                  </p>
-                  <div className="bg-indigo-600/10 border border-indigo-600/20 rounded-lg p-3">
-                    <p className="text-indigo-300 text-xs leading-relaxed">
-                      {insight.highlight}
-                    </p>
+                  <p className="text-surface-600 text-sm mb-3 leading-relaxed">{insight.tip}</p>
+                  <div className="bg-primary-50 border border-primary-100 rounded-xl p-3">
+                    <p className="text-primary-700 text-xs leading-relaxed">{insight.highlight}</p>
                   </div>
                 </div>
               )
@@ -745,84 +734,60 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 6. TRUST STATS Section */}
-      <section className="py-16 bg-black">
+      {/* 6. TRUST STATS */}
+      <section className="py-20 bg-white border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-600 rounded-lg mb-4">
-                <CheckCircle className="w-6 h-6 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+            {[
+              { icon: <CheckCircle className="w-6 h-6 text-white" />, value: '500+', label: 'Verified Properties', bg: 'bg-emerald-500' },
+              { icon: <HomeIcon className="w-6 h-6 text-white" />, value: '10,000+', label: 'Happy Renters', bg: 'bg-primary-500' },
+              { icon: <Star className="w-6 h-6 text-white fill-white" />, value: '4.8★', label: 'Average Rating', bg: 'bg-amber-500' },
+            ].map(({ icon, value, label, bg }) => (
+              <div key={label} className="card-glass-solid p-8 text-center hover:shadow-soft-lg transition-shadow">
+                <div className={`inline-flex items-center justify-center w-14 h-14 ${bg} rounded-2xl mb-4 shadow-soft`}>
+                  {icon}
+                </div>
+                <div className="font-display text-3xl font-bold text-surface-900 mb-2">{value}</div>
+                <div className="text-surface-500 text-sm font-medium">{label}</div>
               </div>
-              <div className="text-4xl font-bold text-white mb-2">500+</div>
-              <div className="text-gray-300 text-sm font-medium">Verified Properties</div>
-            </div>
-            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600 rounded-lg mb-4">
-                <HomeIcon className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-4xl font-bold text-white mb-2">10,000+</div>
-              <div className="text-gray-300 text-sm font-medium">Happy Renters</div>
-            </div>
-            <div className="text-center bg-gray-900/80 backdrop-blur-sm p-6 rounded-xl border border-gray-800">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-yellow-600 rounded-lg mb-4">
-                <Star className="w-6 h-6 text-white fill-white" />
-              </div>
-              <div className="text-4xl font-bold text-white mb-2">4.8★</div>
-              <div className="text-gray-300 text-sm font-medium">Average Rating</div>
-            </div>
+            ))}
           </div>
-          <p className="text-center text-gray-400 text-sm max-w-2xl mx-auto">
+          <p className="text-center text-surface-500 text-sm max-w-2xl mx-auto">
             Every listing is manually reviewed by our team to ensure quality and accuracy.
           </p>
         </div>
       </section>
 
-      {/* 7. TRUST & SAFETY Section */}
-      <section className="py-16 bg-black border-t border-gray-800">
+      {/* 7. TRUST & SAFETY */}
+      <section className="py-20 bg-surface-50 border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Trust & Safety
-            </h2>
-            <p className="text-gray-400 text-base">Your peace of mind is our priority</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Trust & Safety</h2>
+            <p className="text-surface-500 text-base">Your peace of mind is our priority</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-green-600/20 rounded-lg mb-4 text-green-400">
-                <CheckCircle className="w-6 h-6" />
+            {[
+              { icon: <CheckCircle className="w-6 h-6" />, title: 'Verified Properties', desc: 'Every listing is manually reviewed and verified', color: 'bg-emerald-100 text-emerald-600' },
+              { icon: <DollarSign className="w-6 h-6" />, title: 'Transparent Pricing', desc: 'FairFlex pricing with no hidden fees', color: 'bg-primary-100 text-primary-600' },
+              { icon: <Lock className="w-6 h-6" />, title: 'Secure Booking', desc: 'Safe and secure transactions every time', color: 'bg-violet-100 text-violet-600' },
+            ].map(({ icon, title, desc, color }) => (
+              <div key={title} className="card-glass-solid p-6 text-center hover:-translate-y-0.5">
+                <div className={`inline-flex items-center justify-center w-12 h-12 ${color} rounded-xl mb-4`}>{icon}</div>
+                <h3 className="font-display text-xl font-bold text-surface-900 mb-2">{title}</h3>
+                <p className="text-surface-500 text-sm">{desc}</p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Verified Properties</h3>
-              <p className="text-gray-400 text-sm">Every listing is manually reviewed and verified</p>
-            </div>
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-indigo-600/20 rounded-lg mb-4 text-indigo-400">
-                <DollarSign className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Transparent Pricing</h3>
-              <p className="text-gray-400 text-sm">FairFlex pricing with no hidden fees</p>
-            </div>
-            <div className="bg-gray-900/80 backdrop-blur-sm rounded-xl p-6 border border-gray-800 text-center">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-purple-600/20 rounded-lg mb-4 text-purple-400">
-                <Lock className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-2">Secure Booking Process</h3>
-              <p className="text-gray-400 text-sm">Safe and secure transactions every time</p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 8. PERSONALIZED RECOMMENDATIONS Section */}
-      <section className="py-16 bg-black border-t border-gray-800">
+      {/* 8. RECOMMENDED FOR YOU */}
+      <section className="py-20 bg-white border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Recommended for you
-            </h2>
-            <p className="text-gray-400 text-base">Handpicked properties based on your search history</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Recommended for you</h2>
+            <p className="text-surface-500 text-base">Handpicked properties based on your search history</p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {personalizedRecommendations.map((property) => (
               <PropertyCardWithCompare
@@ -836,17 +801,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 9. POPULAR PROPERTIES Section */}
-      <section className="py-16 bg-black border-t border-gray-800">
+      {/* 9. POPULAR PROPERTIES */}
+      <section className="py-20 bg-surface-50 border-b border-surface-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Popular Properties
-            </h2>
-            <p className="text-gray-400 text-base">Handpicked properties just for you</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Popular Properties</h2>
+            <p className="text-surface-500 text-base">Handpicked properties just for you</p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             {popularProperties.map((property) => (
               <PropertyCardWithCompare
                 key={property.id}
@@ -856,12 +818,8 @@ const Home = () => {
               />
             ))}
           </div>
-
           <div className="text-center">
-            <Link
-              to="/houses"
-              className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
-            >
+            <Link to="/houses" className="btn-gradient">
               <span>View all properties</span>
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
@@ -869,26 +827,26 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 10. FINAL CTA Section */}
-      <section className="py-16 bg-black border-t border-gray-800">
+      {/* 10. FINAL CTA */}
+      <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-700 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Ready to find your next home?
           </h2>
-          <p className="text-gray-400 text-base mb-8 max-w-2xl mx-auto">
+          <p className="text-white/90 text-base mb-10 max-w-2xl mx-auto">
             Start your search today and connect with property owners who care about finding you the perfect place.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/houses"
-              className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3 rounded-lg hover:bg-gray-100 transition-all shadow-lg"
+              className="inline-flex items-center bg-white text-surface-900 font-bold px-8 py-3.5 rounded-2xl hover:bg-white/95 hover:shadow-soft-lg transition-all duration-300"
             >
               <span>Browse all properties</span>
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
             <Link
               to="/houses"
-              className="inline-flex items-center bg-gray-900 border-2 border-gray-700 text-white font-bold px-8 py-3 rounded-lg hover:bg-gray-800 transition-all"
+              className="inline-flex items-center bg-white/10 border-2 border-white/40 text-white font-bold px-8 py-3.5 rounded-2xl hover:bg-white/20 transition-all duration-300"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               <span>Talk to property owners</span>

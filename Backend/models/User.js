@@ -20,7 +20,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide a password'],
     minlength: [6, 'Password must be at least 6 characters'],
-    select: false // Don't return password by default
+    select: false
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   },
   phone: {
     type: String,
@@ -49,23 +54,33 @@ const userSchema = new mongoose.Schema({
     default: false
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt automatically
+  timestamps: true
 });
 
-// Hash password before saving
-userSchema.pre('save', async function() {
-  // Only hash password if it has been modified (or is new)
-  if (!this.isModified('password')) {
-    return;
-  }
-  
+// Hash password before save (bcrypt)
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Method to compare password
-userSchema.methods.matchPassword = async function(enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+// Sync role from accountType for existing app behavior
+userSchema.pre('save', function () {
+  if (this.isModified('accountType') && this.accountType === 'admin') {
+    this.role = 'admin';
+  } else if (this.isModified('accountType') && this.role !== 'admin') {
+    this.role = 'user';
+  }
+});
+
+// Compare password for login
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Backward compatibility
+userSchema.methods.matchPassword = async function (enteredPassword) {
+  return this.comparePassword(enteredPassword);
 };
 
 module.exports = mongoose.model('User', userSchema);

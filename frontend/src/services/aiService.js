@@ -148,10 +148,15 @@ export const propertyService = {
     return response.data;
   },
 
-  // Create new property (Owner only)
-  // propertyData: Property details (title, location, price, etc.)
+  // Create new property (JSON body)
   create: async (propertyData) => {
     const response = await api.post('/properties', propertyData);
+    return response.data;
+  },
+
+  // Create new property with multipart/form-data (image file → Cloudinary, URL saved in DB)
+  createWithFormData: async (formData) => {
+    const response = await api.post('/properties', formData);
     return response.data;
   },
 
@@ -233,6 +238,24 @@ export const bookingService = {
   // id: Booking ID to cancel
   cancel: async (id) => {
     const response = await api.put(`/bookings/${id}/cancel`);
+    return response.data;
+  }
+};
+
+// ============================================
+// ADMIN SERVICE - Admin-only operations
+// ============================================
+export const adminService = {
+  getAllProperties: async (params = {}) => {
+    const response = await api.get('/admin/properties', { params });
+    return response.data;
+  },
+  approveProperty: async (id) => {
+    const response = await api.put(`/admin/properties/${id}/approve`);
+    return response.data;
+  },
+  rejectProperty: async (id) => {
+    const response = await api.put(`/admin/properties/${id}/reject`);
     return response.data;
   }
 };

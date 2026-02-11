@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const { body, validationResult, query } = require('express-validator');
 const Property = require('../models/Property');
 const User = require('../models/User');
-const { protect, authorize } = require('../middleware/auth');
+const { protect, authorize, adminOnly } = require('../middleware/auth');
+const { uploadSingleImage, requireCloudinaryConfig, optionalMultipartImageUpload } = require('../middleware/uploadCloudinary');
 
 const router = express.Router();
 
@@ -190,12 +191,38 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// @route   POST /api/properties/upload
+// @desc    Upload image to Cloudinary; returns URL to store in property.image
+// @access  Private (Admin)
+router.post('/upload', protect, adminOnly, requireCloudinaryConfig, (req, res, next) => {
+  uploadSingleImage(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: 'File too large. Max 3MB.' });
+      }
+      if (err.message && err.message.includes('Only image files')) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+    }
+    if (!req.file || !req.file.path) {
+      return res.status(400).json({ success: false, message: 'No image file provided' });
+    }
+    return res.status(200).json({
+      success: true,
+      url: req.file.path,
+      message: 'Image uploaded successfully'
+    });
+  });
+});
+
 // @route   POST /api/properties
-// @desc    Create new property (Owner only)
-// @access  Private (Owner/Admin)
+// @desc    Create new property (Admin only). Accepts JSON or multipart/form-data (image file → Cloudinary URL).
+// @access  Private (Admin)
 router.post('/', [
   protect,
-  authorize('owner', 'admin'),
+  adminOnly,
+  optionalMultipartImageUpload,
   body('title')
     .trim()
     .notEmpty()
@@ -266,13 +293,19 @@ router.post('/', [
       });
     }
 
-    // Create property
-    const property = await Property.create({
+    // Coerce numbers (multipart sends strings)
+    const propertyData = {
       ...req.body,
       owner: req.user.id,
       ownerName: owner.name,
-      status: 'pending' // New properties need admin approval
-    });
+      status: 'pending',
+      price: Number(req.body.price),
+      bedrooms: Number(req.body.bedrooms),
+      bathrooms: Number(req.body.bathrooms),
+      areaSqft: Number(req.body.areaSqft)
+    };
+
+    const property = await Property.create(propertyData);
 
     // Populate owner info
     await property.populate('owner', 'name email phone');
@@ -293,10 +326,11 @@ router.post('/', [
 });
 
 // @route   PUT /api/properties/:id
-// @desc    Update property (Owner/Admin only)
-// @access  Private
+// @desc    Update property (Admin only)
+// @access  Private (Admin)
 router.put('/:id', [
   protect,
+  adminOnly,
   body('title').optional().trim().isLength({ min: 5, max: 100 }),
   body('type').optional().isIn(['house', 'flat_apartment']),
   body('location').optional().trim().isLength({ max: 100 }),
@@ -324,14 +358,6 @@ router.put('/:id', [
       return res.status(404).json({
         success: false,
         message: 'Property not found'
-      });
-    }
-
-    // Check if user is owner or admin
-    if (property.owner.toString() !== req.user.id && req.user.accountType !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this property'
       });
     }
 
@@ -367,9 +393,9 @@ router.put('/:id', [
 });
 
 // @route   DELETE /api/properties/:id
-// @desc    Delete property (Owner/Admin only)
-// @access  Private
-router.delete('/:id', protect, async (req, res) => {
+// @desc    Delete property (Admin only)
+// @access  Private (Admin)
+router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
 
@@ -377,14 +403,6 @@ router.delete('/:id', protect, async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Property not found'
-      });
-    }
-
-    // Check if user is owner or admin
-    if (property.owner.toString() !== req.user.id && req.user.accountType !== 'admin') {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to delete this property'
       });
     }
 
