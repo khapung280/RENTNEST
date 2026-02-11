@@ -107,11 +107,6 @@ app.use(errorHandler);
 // Start listening for requests on the port
 // When someone visits our API, server responds
 
-// TEMP: Auto seed in production
-if (process.env.NODE_ENV === "production") {
-  require("./seed");
-}
-
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
