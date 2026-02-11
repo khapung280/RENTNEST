@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { 
   ArrowLeft,
@@ -18,15 +18,42 @@ import {
   HelpCircle,
   CheckCircle2
 } from 'lucide-react'
-import { properties } from '../data/properties'
+import { propertyService } from '../services/aiService'
 
 // Booking Page - Professional, trustworthy, and human-centered booking experience
 const Booking = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   
-  // Find property from properties data
-  const property = properties.find(p => p.id === parseInt(id))
+  // Property from API
+  const [property, setProperty] = useState(null)
+  const [propertyLoading, setPropertyLoading] = useState(true)
+  const [propertyError, setPropertyError] = useState(null)
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!id) {
+        setPropertyLoading(false)
+        return
+      }
+      try {
+        setPropertyLoading(true)
+        setPropertyError(null)
+        const response = await propertyService.getById(id)
+        if (response.success && response.data) {
+          setProperty({ ...response.data, id: response.data._id || response.data.id })
+        } else {
+          setPropertyError('Property not found')
+        }
+      } catch (err) {
+        console.error('Error fetching property:', err)
+        setPropertyError(err.response?.data?.message || 'Property not found')
+      } finally {
+        setPropertyLoading(false)
+      }
+    }
+    fetchProperty()
+  }, [id])
   
   // State for booking duration
   const [selectedDuration, setSelectedDuration] = useState(1)
@@ -150,16 +177,27 @@ const Booking = () => {
     setIsSuccess(true)
   }
 
-  if (!property) {
+  if (propertyLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Loading property...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (propertyError || !property) {
     return (
       <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">Property Not Found</h2>
+          <p className="text-gray-600 mb-4">{propertyError || 'This property may have been removed.'}</p>
           <button
-            onClick={() => navigate('/houses')}
+            onClick={() => navigate('/')}
             className="text-indigo-600 hover:text-indigo-700 font-medium"
           >
-            Back to Houses
+            Back to Home
           </button>
         </div>
       </div>

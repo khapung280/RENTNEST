@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { properties } from '../data/properties'
+import { propertyService } from '../services/aiService'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import CompareBar from '../components/CompareBar'
 import CompareModal from '../components/CompareModal'
-import { Building2, Search, MapPin, Filter, X, ChevronDown } from 'lucide-react'
+import { Building2, Search, MapPin, Filter, X, ChevronDown, Loader2 } from 'lucide-react'
 import { calculateRentConfidence, getBestForLabel } from '../utils/propertyUtils'
 
 // Helper function to get property tags (same as PropertyDetail)
@@ -13,7 +13,7 @@ function getPropertyTags(property) {
   if (property.price <= 15000) tags.push('Best Value')
   if (property.bedrooms >= 3) tags.push('Family Home')
   if (property.price <= 18000 && property.bedrooms >= 2) tags.push('Long-Stay Friendly')
-  if (property.id <= 10 || property.verified === true) tags.push('Verified')
+  if (property.verified === true) tags.push('Verified')
   return tags.slice(0, 2) // Max 2 tags
 }
 
@@ -45,18 +45,47 @@ const FlatsApartmentsPage = () => {
   const [compareProperties, setCompareProperties] = useState([])
   const [showCompareModal, setShowCompareModal] = useState(false)
 
+  // State for properties from API
+  const [allProperties, setAllProperties] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  // Fetch properties from backend API
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+        const response = await propertyService.getAll({ type: 'flat_apartment' })
+        if (response.success && response.data) {
+          setAllProperties(response.data)
+        } else {
+          setError('Failed to load properties')
+        }
+      } catch (err) {
+        console.error('Error fetching properties:', err)
+        setError(err.response?.data?.message || 'Failed to load properties')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProperties()
+  }, [])
+
   // Get all flats/apartments with advanced features
   const allFlatsApartments = useMemo(() => {
-    return properties
+    return allProperties
       .filter((property) => property.type === 'flat_apartment')
       .map(prop => ({
         ...prop,
-        rating: prop.rating || 4.5 + (prop.id % 5) * 0.1,
+        id: prop._id || prop.id,
+        rating: prop.rating || 4.5,
         confidenceScore: calculateRentConfidence(prop),
         bestFor: getBestForLabel(prop),
         tags: getPropertyTags(prop),
       }))
-  }, [])
+  }, [allProperties])
 
   // Get unique locations
   const availableLocations = useMemo(() => {
@@ -140,7 +169,7 @@ const FlatsApartmentsPage = () => {
 
     // Filter by verified
     if (verified) {
-      filtered = filtered.filter((property) => property.id <= 10 || property.verified === true)
+      filtered = filtered.filter((property) => property.verified === true)
     }
 
     return filtered
@@ -196,7 +225,7 @@ const FlatsApartmentsPage = () => {
 
   // Get properties for comparison
   const compareProps = useMemo(() => {
-    return allFlatsApartments.filter(f => compareProperties.includes(f.id))
+    return allFlatsApartments.filter(f => compareProperties.includes(f._id || f.id))
   }, [allFlatsApartments, compareProperties])
 
   // Hero background image - Realty Nepal property image
@@ -494,13 +523,26 @@ const FlatsApartmentsPage = () => {
 
             {/* Properties Grid */}
             <div className="lg:col-span-3">
-              {sortedFlatsApartments.length > 0 ? (
+              {loading ? (
+                <div className="flex flex-col items-center justify-center py-16">
+                  <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-4" />
+                  <p className="text-gray-600">Loading properties...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-16">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-xl mb-4">
+                    <Search className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Error loading properties</h3>
+                  <p className="text-gray-600 text-sm">{error}</p>
+                </div>
+              ) : sortedFlatsApartments.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {sortedFlatsApartments.map((property) => (
                     <PropertyCardWithCompare
-                      key={property.id}
+                      key={property._id || property.id}
                       property={property}
-                      isSelected={compareProperties.includes(property.id)}
+                      isSelected={compareProperties.includes(property._id || property.id)}
                       onToggleCompare={handleToggleCompare}
                     />
                   ))}

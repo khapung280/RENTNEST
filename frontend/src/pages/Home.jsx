@@ -20,7 +20,7 @@ import {
   Calculator,
   Info
 } from 'lucide-react'
-import { properties } from '../data/properties'
+import { propertyService } from '../services/aiService'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import CompareBar from '../components/CompareBar'
 import CompareModal from '../components/CompareModal'
@@ -30,7 +30,10 @@ import { isAuthenticated } from '../utils/auth'
 const Home = () => {
   // Get user data for role-based content
   const [user, setUser] = useState(null)
-  
+  // Properties from API
+  const [propertiesList, setPropertiesList] = useState([])
+  const [propertiesLoading, setPropertiesLoading] = useState(true)
+
   useEffect(() => {
     if (isAuthenticated()) {
       const storedUser = localStorage.getItem('user')
@@ -43,6 +46,24 @@ const Home = () => {
       }
     }
   }, [])
+
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setPropertiesLoading(true)
+        const response = await propertyService.getAll()
+        if (response.success && response.data) {
+          setPropertiesList(response.data)
+        }
+      } catch (err) {
+        console.error('Error fetching properties:', err)
+      } finally {
+        setPropertiesLoading(false)
+      }
+    }
+    fetchProperties()
+  }, [])
+
   // Search state
   const [searchLocation, setSearchLocation] = useState('')
   const [propertyType, setPropertyType] = useState('all')
@@ -65,13 +86,14 @@ const Home = () => {
   const navigate = useNavigate()
 
   // Transform properties with ratings, confidence scores, and best for labels
-  const allProperties = useMemo(() => properties.map(prop => ({
+  const allProperties = useMemo(() => propertiesList.map(prop => ({
     ...prop,
-    rating: 4.5 + (prop.id % 5) * 0.1,
+    id: prop._id || prop.id,
+    rating: prop.rating || 4.5,
     type: prop.type === 'house' ? 'House' : prop.type === 'flat_apartment' ? 'Apartment' : prop.type,
     confidenceScore: calculateRentConfidence(prop),
     bestFor: getBestForLabel(prop),
-  })), [])
+  })), [propertiesList])
 
   // Load last search from localStorage
   useEffect(() => {
