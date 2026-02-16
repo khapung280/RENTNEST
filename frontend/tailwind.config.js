@@ -4,6 +4,30 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  // Safelist: keep classes that are built dynamically (e.g. from functions or template literals)
+  // so Tailwind does not purge them in production. JIT only sees static source strings.
+  safelist: [
+    // Status badges (OwnerDashboard, OwnerBookings, Admin, BookingCard, etc.)
+    'bg-green-50', 'text-green-700', 'border-green-200', 'bg-green-100', 'text-green-800',
+    'bg-red-50', 'text-red-700', 'border-red-200', 'bg-red-100', 'text-red-800',
+    'bg-amber-50', 'text-amber-700', 'border-amber-200', 'bg-amber-100', 'text-amber-800',
+    'bg-yellow-50', 'text-yellow-700', 'border-yellow-200',
+    'bg-gray-50', 'text-gray-700', 'border-gray-200', 'bg-gray-100', 'text-gray-800',
+    'bg-orange-100', 'text-orange-800', 'border-orange-200',
+    'bg-blue-100', 'text-blue-800', 'border-blue-200',
+    'bg-purple-100', 'text-purple-800', 'border-purple-200',
+    'bg-emerald-100', 'text-emerald-800', 'border-emerald-200',
+    // Confidence / Best-for colors (PropertyCardWithCompare, PropertyDetail)
+    'bg-emerald-500', 'bg-amber-500', 'bg-orange-500', 'bg-green-600', 'bg-yellow-600', 'bg-orange-600',
+    'bg-blue-500', 'bg-blue-600', 'bg-violet-500', 'bg-purple-600', 'bg-indigo-600', 'bg-teal-500', 'bg-teal-600', 'bg-gray-600', 'bg-surface-500',
+    'bg-primary-500',
+    // FairFlex feature colors (feature.color.split(' ')[1] etc.)
+    'text-red-600', 'bg-red-50', 'border-red-200', 'text-gray-600', 'bg-gray-50', 'border-gray-200', 'text-green-600', 'bg-green-50', 'border-green-200',
+    // Form/error states (Login, Register, etc.)
+    'text-red-400', 'text-gray-400',
+    // Loader and other component classes passed as props
+    'loader-wrapper',
+  ],
   theme: {
     extend: {
       fontFamily: {
