@@ -68,16 +68,16 @@ const Navbar = () => {
   const linkClass = (path) =>
     `px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${
       isActive(path)
-        ? 'text-primary-600 bg-primary-50'
-        : 'text-surface-600 hover:text-primary-600 hover:bg-surface-100'
+        ? 'text-primary-400 bg-primary-500/20'
+        : 'text-gray-300 hover:text-primary-400 hover:bg-white/5'
     }`
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-surface-100 shadow-soft">
+    <nav className="sticky top-0 z-50 bg-neutral-900 backdrop-blur-xl border-b border-neutral-800 shadow-xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-18">
           <Link to="/" className="flex items-center transition-opacity hover:opacity-90">
-            <RentNestLogo size={36} />
+            <RentNestLogo size={36} variant="dark" />
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
@@ -86,7 +86,7 @@ const Navbar = () => {
                 <button
                   key={link.path}
                   onClick={handleLogout}
-                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-surface-600 hover:text-surface-900 hover:bg-surface-100 transition-all duration-300"
+                  className="px-4 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5 transition-all duration-300"
                 >
                   {link.label}
                 </button>
@@ -105,7 +105,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2.5 rounded-xl text-surface-600 hover:bg-surface-100 transition-colors"
+              className="p-2.5 rounded-xl text-gray-300 hover:bg-white/5 transition-colors"
               aria-label="Toggle menu"
             >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -114,7 +114,7 @@ const Navbar = () => {
         </div>
 
         {isOpen && (
-          <div className="md:hidden py-4 border-t border-surface-100">
+          <div className="md:hidden py-4 border-t border-white/10">
             <div className="flex flex-col gap-1">
               {navLinks.map((link) =>
                 link.isAction ? (
@@ -124,7 +124,7 @@ const Navbar = () => {
                       setIsOpen(false)
                       handleLogout()
                     }}
-                    className="text-left px-4 py-3 rounded-xl text-base font-medium text-surface-600 hover:bg-surface-100"
+                    className="text-left px-4 py-3 rounded-xl text-base font-medium text-gray-300 hover:bg-white/5"
                   >
                     {link.label}
                   </button>

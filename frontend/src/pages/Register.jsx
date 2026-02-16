@@ -135,24 +135,24 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-50 to-gray-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         {/* Registration Card */}
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
+        <div className="card-glass-solid border border-neutral-700 rounded-xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-1.5">
+            <h1 className="text-2xl font-semibold text-white mb-1.5">
               Create your account
             </h1>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Join RentNest to find your next home or list your property
             </p>
           </div>
 
           {/* General Error Message */}
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-800 whitespace-pre-line">{errors.general}</p>
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl">
+              <p className="text-sm text-red-200 whitespace-pre-line">{errors.general}</p>
             </div>
           )}
 
@@ -388,7 +388,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-md text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              className="w-full btn-gradient py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <>
@@ -406,9 +406,9 @@ const Register = () => {
 
           {/* Link to Login */}
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-400">
               Already have an account?{' '}
-              <Link to="/login" className="text-gray-900 font-medium hover:text-gray-700 transition-colors">
+              <Link to="/login" className="text-primary-400 font-medium hover:text-primary-300 transition-colors">
                 Sign in to your account
               </Link>
             </p>

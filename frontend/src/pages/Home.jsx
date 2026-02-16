@@ -381,10 +381,10 @@ const Home = () => {
   const isRenter = user?.accountType === 'renter' || !user
 
   return (
-    <div className={`min-h-screen bg-surface-50 ${compareProperties.length > 0 ? 'pb-24' : ''}`}>
+    <div className={`min-h-screen bg-neutral-950 ${compareProperties.length > 0 ? 'pb-24' : ''}`}>
       {/* Role-based Welcome Banner */}
       {isOwner && (
-        <div className="bg-gradient-to-r from-primary-600 to-primary-500 text-white py-4 px-4 shadow-soft">
+        <div className="bg-gradient-to-r from-violet-600 to-violet-500 text-white py-4 px-4 shadow-xl">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Building2 className="w-5 h-5 flex-shrink-0" />
@@ -402,36 +402,33 @@ const Home = () => {
           </div>
         </div>
       )}
-      {/* 1. HERO Section with Smart Search */}
-      <section className="relative text-white py-24 md:py-32 overflow-hidden">
+      {/* 1. HERO Section - subtle dark gradient overlay */}
+      <section className="relative text-white py-28 md:py-36 overflow-hidden">
         <div className="absolute inset-0">
-          <img 
+          <img
             src={heroBackgroundImage}
             alt="Nepal property background"
-            className="w-full h-full object-cover"
-            style={{ objectPosition: 'center' }}
+            className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-surface-900/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-neutral-950" />
         </div>
-        
+
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center">
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 leading-tight tracking-tight">
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-5 leading-tight tracking-tight text-white">
               Find a place you&apos;ll love to call home
             </h1>
-            <p className="text-lg md:text-xl mb-10 text-white/90 max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-10">
               Search verified rental properties across Nepal&apos;s most beautiful locations
             </p>
 
-            {/* Smart Search Form */}
             <form onSubmit={handleSearch} className="max-w-4xl mx-auto">
-              <div className="bg-white/10 backdrop-blur-xl rounded-3xl shadow-soft-xl p-6 md:p-8 border border-white/20">
-                {/* Property Type Selector */}
+              <div className="bg-neutral-900/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-neutral-700">
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <button
                     type="button"
                     onClick={() => setPropertyType('all')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       propertyType === 'all'
                         ? 'bg-white text-gray-900'
                         : 'bg-white/10 text-white hover:bg-white/20'
@@ -442,7 +439,7 @@ const Home = () => {
                   <button
                     type="button"
                     onClick={() => setPropertyType('houses')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       propertyType === 'houses'
                         ? 'bg-white text-gray-900'
                         : 'bg-white/10 text-white hover:bg-white/20'
@@ -453,7 +450,7 @@ const Home = () => {
                   <button
                     type="button"
                     onClick={() => setPropertyType('flats')}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                       propertyType === 'flats'
                         ? 'bg-white text-gray-900'
                         : 'bg-white/10 text-white hover:bg-white/20'
@@ -462,30 +459,24 @@ const Home = () => {
                     Flats & Apartments
                   </button>
                 </div>
-                
-                {/* Search Inputs Row */}
+
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-                  {/* Location */}
                   <div className="md:col-span-2">
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300 w-5 h-5" />
+                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                       <input
                         type="text"
                         placeholder="Search by location"
                         value={searchLocation}
                         onChange={(e) => {
                           setSearchLocation(e.target.value)
-                          if (e.target.value.trim()) {
-                            setShowLocationError(false)
-                          }
+                          if (e.target.value.trim()) setShowLocationError(false)
                         }}
                         onBlur={() => {
                           setLocationTouched(true)
-                          if (!searchLocation.trim()) {
-                            setShowLocationError(true)
-                          }
+                          if (!searchLocation.trim()) setShowLocationError(true)
                         }}
-                        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white placeholder-white/70 text-base ${
+                        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 text-base ${
                           showLocationError && locationTouched
                             ? 'border-red-400/50'
                             : 'border-white/20'
@@ -493,46 +484,39 @@ const Home = () => {
                       />
                     </div>
                     {showLocationError && locationTouched && !searchLocation.trim() && (
-                      <p className="text-red-300 text-xs mt-2 ml-1">
-                        Enter a location
-                      </p>
+                      <p className="text-red-300 text-xs mt-2 ml-1">Enter a location</p>
                     )}
                   </div>
-                  
-                  {/* Budget Dropdown */}
                   <div className="relative">
                     <select
                       value={priceRange}
                       onChange={(e) => setPriceRange(e.target.value)}
-                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
+                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-primary-400/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
                     >
-                      <option value="all" className="bg-gray-900">Any</option>
-                      <option value="0-20000" className="bg-gray-900">&lt;20k</option>
-                      <option value="20000-30000" className="bg-gray-900">20k–30k</option>
-                      <option value="30000-" className="bg-gray-900">30k+</option>
+                      <option value="all" className="bg-neutral-800">Any</option>
+                      <option value="0-20000" className="bg-neutral-800">&lt;20k</option>
+                      <option value="20000-30000" className="bg-neutral-800">20k–30k</option>
+                      <option value="30000-" className="bg-neutral-800">30k+</option>
                     </select>
                   </div>
-                  
-                  {/* Bedrooms */}
                   <div className="relative">
                     <select
                       value={bedrooms}
                       onChange={(e) => setBedrooms(e.target.value)}
-                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-white/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
+                      className="w-full pl-4 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-primary-400/50 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
                     >
-                      <option value="all" className="bg-gray-900">All Beds</option>
-                      <option value="1" className="bg-gray-900">1+ Bedroom</option>
-                      <option value="2" className="bg-gray-900">2+ Bedrooms</option>
-                      <option value="3" className="bg-gray-900">3+ Bedrooms</option>
-                      <option value="4" className="bg-gray-900">4+ Bedrooms</option>
+                      <option value="all" className="bg-neutral-800">All Beds</option>
+                      <option value="1" className="bg-neutral-800">1+ Bedroom</option>
+                      <option value="2" className="bg-neutral-800">2+ Bedrooms</option>
+                      <option value="3" className="bg-neutral-800">3+ Bedrooms</option>
+                      <option value="4" className="bg-neutral-800">4+ Bedrooms</option>
                     </select>
                   </div>
                 </div>
-                
-                {/* Search Button */}
+
                 <button
                   type="submit"
-                  className="w-full bg-white text-surface-900 font-bold px-8 py-4 rounded-2xl hover:bg-white/95 hover:shadow-soft-lg transition-all duration-300 flex items-center justify-center gap-2"
+                  className="w-full btn-gradient px-8 py-4 rounded-xl flex items-center justify-center gap-2"
                 >
                   <Search className="w-5 h-5" />
                   <span>Search Properties</span>
@@ -543,21 +527,21 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 2. QUICK ACTIONS Section */}
-      <section className="py-20 bg-white border-b border-surface-100">
+      {/* 2. QUICK ACTIONS */}
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
             {quickActions.map((action, index) => (
               <Link
                 key={index}
                 to={action.link}
-                className="card-glass-solid p-5 text-center group hover:-translate-y-0.5"
+                className="card-glass-solid p-5 text-center group"
               >
                 <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center mb-3 text-primary-600 group-hover:bg-primary-100 transition-colors duration-300">
+                  <div className="w-12 h-12 bg-primary-500/20 rounded-xl flex items-center justify-center mb-3 text-primary-400 group-hover:bg-primary-500/30 transition-colors duration-300">
                     {action.icon}
                   </div>
-                  <span className="text-surface-700 font-medium text-sm">{action.label}</span>
+                  <span className="text-gray-200 font-medium text-sm">{action.label}</span>
                 </div>
               </Link>
             ))}
@@ -565,21 +549,20 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 3. LIVE RESULTS PREVIEW Section */}
-      <section className="py-20 bg-surface-50">
+      {/* 3. LIVE RESULTS PREVIEW */}
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
             <div>
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-2">
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-2">
                 {searchLocation.trim() ? 'Homes you might like' : 'Trending in Nepal'}
               </h2>
-              <p className="text-surface-500 text-base">
+              <p className="text-gray-400 text-base">
                 {searchLocation.trim()
                   ? `Found ${liveResults.length} properties matching your search`
                   : 'Most popular properties right now'}
               </p>
             </div>
-            
             <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
@@ -589,8 +572,8 @@ const Home = () => {
                   className="w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-2 focus:ring-primary-500/20"
                 />
                 <div className="flex items-center gap-2">
-                  <Lightbulb className={`w-4 h-4 ${decisionHelperMode ? 'text-primary-500' : 'text-surface-400'}`} />
-                  <span className={`text-sm font-medium ${decisionHelperMode ? 'text-primary-600' : 'text-surface-600'}`}>
+                  <Lightbulb className={`w-4 h-4 ${decisionHelperMode ? 'text-primary-400' : 'text-gray-500'}`} />
+                  <span className={`text-sm font-medium ${decisionHelperMode ? 'text-primary-400' : 'text-gray-400'}`}>
                     Help me decide
                   </span>
                 </div>
@@ -652,19 +635,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 4. LIVING COST ESTIMATOR Section */}
-      <section className="py-20 bg-white border-b border-surface-100">
+      {/* 4. LIVING COST ESTIMATOR */}
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="card-glass-solid p-6 md:p-8">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
               <div>
                 <div className="flex items-center gap-3 mb-2">
-                  <Calculator className="w-6 h-6 text-primary-500" />
-                  <h2 className="font-display text-2xl md:text-3xl font-bold text-surface-900">
+                  <Calculator className="w-6 h-6 text-primary-400" />
+                  <h2 className="font-display text-2xl md:text-3xl font-bold text-white">
                     Living Cost Estimator
                   </h2>
                 </div>
-                <p className="text-surface-500 text-sm">
+                <p className="text-gray-400 text-sm">
                   Estimate your monthly living expenses in major Nepali cities
                 </p>
               </div>
@@ -682,7 +665,6 @@ const Home = () => {
                 </select>
               </div>
             </div>
-            
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               {[
                 { label: 'Rent', value: livingCost.rent },
@@ -690,42 +672,42 @@ const Home = () => {
                 { label: 'Transport', value: livingCost.transport },
                 { label: 'Utilities', value: livingCost.utilities },
               ].map(({ label, value }) => (
-                <div key={label} className="bg-surface-50 rounded-xl p-4 border border-surface-200">
-                  <div className="text-surface-500 text-xs mb-1">{label}</div>
-                  <div className="text-surface-900 font-bold text-lg">Rs. {value.toLocaleString()}</div>
+                <div key={label} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                  <div className="text-gray-500 text-xs mb-1">{label}</div>
+                  <div className="text-white font-bold text-lg">Rs. {value.toLocaleString()}</div>
                 </div>
               ))}
-              <div className="bg-primary-50 rounded-xl p-4 border border-primary-200 col-span-2 md:col-span-1">
-                <div className="text-primary-600 text-xs mb-1">Total</div>
-                <div className="text-surface-900 font-bold text-xl">Rs. {livingCost.total.toLocaleString()}</div>
+              <div className="bg-primary-500/20 rounded-xl p-4 border border-primary-500/30 col-span-2 md:col-span-1">
+                <div className="text-primary-400 text-xs mb-1">Total</div>
+                <div className="text-white font-bold text-xl">Rs. {livingCost.total.toLocaleString()}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 5. NEPAL LOCAL INSIGHTS */}
-      <section className="py-20 bg-surface-50 border-b border-surface-100">
+      {/* 5. LOCAL INSIGHTS */}
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="flex items-center justify-center gap-3 mb-3">
-              <Info className="w-6 h-6 text-primary-500" />
-              <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900">Local Insights</h2>
+              <Info className="w-6 h-6 text-primary-400" />
+              <h2 className="font-display text-3xl md:text-4xl font-bold text-white">Local Insights</h2>
             </div>
-            <p className="text-surface-500 text-base">Know before you rent: City-specific tips for Nepal</p>
+            <p className="text-gray-400 text-base">Know before you rent: City-specific tips for Nepal</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {['Kathmandu', 'Lalitpur', 'Pokhara', 'Bhaktapur', 'Chitwan'].map((city) => {
               const insight = getCityInsights(city)
               return (
-                <div key={city} className="card-glass-solid p-6 hover:-translate-y-0.5">
+                <div key={city} className="card-glass-solid p-6">
                   <div className="flex items-center gap-2 mb-3">
-                    <MapPin className="w-5 h-5 text-primary-500" />
-                    <h3 className="font-display text-xl font-bold text-surface-900">{city}</h3>
+                    <MapPin className="w-5 h-5 text-primary-400" />
+                    <h3 className="font-display text-xl font-bold text-white">{city}</h3>
                   </div>
-                  <p className="text-surface-600 text-sm mb-3 leading-relaxed">{insight.tip}</p>
-                  <div className="bg-primary-50 border border-primary-100 rounded-xl p-3">
-                    <p className="text-primary-700 text-xs leading-relaxed">{insight.highlight}</p>
+                  <p className="text-gray-400 text-sm mb-3 leading-relaxed">{insight.tip}</p>
+                  <div className="bg-primary-500/20 border border-primary-500/30 rounded-xl p-3">
+                    <p className="text-primary-200 text-xs leading-relaxed">{insight.highlight}</p>
                   </div>
                 </div>
               )
@@ -735,7 +717,7 @@ const Home = () => {
       </section>
 
       {/* 6. TRUST STATS */}
-      <section className="py-20 bg-white border-b border-surface-100">
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
             {[
@@ -743,38 +725,38 @@ const Home = () => {
               { icon: <HomeIcon className="w-6 h-6 text-white" />, value: '10,000+', label: 'Happy Renters', bg: 'bg-primary-500' },
               { icon: <Star className="w-6 h-6 text-white fill-white" />, value: '4.8★', label: 'Average Rating', bg: 'bg-amber-500' },
             ].map(({ icon, value, label, bg }) => (
-              <div key={label} className="card-glass-solid p-8 text-center hover:shadow-soft-lg transition-shadow">
-                <div className={`inline-flex items-center justify-center w-14 h-14 ${bg} rounded-2xl mb-4 shadow-soft`}>
+              <div key={label} className="card-glass-solid p-8 text-center">
+                <div className={`inline-flex items-center justify-center w-14 h-14 ${bg} rounded-2xl mb-4 shadow-xl`}>
                   {icon}
                 </div>
-                <div className="font-display text-3xl font-bold text-surface-900 mb-2">{value}</div>
-                <div className="text-surface-500 text-sm font-medium">{label}</div>
+                <div className="font-display text-3xl font-bold text-white mb-2">{value}</div>
+                <div className="text-gray-400 text-sm font-medium">{label}</div>
               </div>
             ))}
           </div>
-          <p className="text-center text-surface-500 text-sm max-w-2xl mx-auto">
+          <p className="text-center text-gray-500 text-sm max-w-2xl mx-auto">
             Every listing is manually reviewed by our team to ensure quality and accuracy.
           </p>
         </div>
       </section>
 
       {/* 7. TRUST & SAFETY */}
-      <section className="py-20 bg-surface-50 border-b border-surface-100">
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Trust & Safety</h2>
-            <p className="text-surface-500 text-base">Your peace of mind is our priority</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">Trust & Safety</h2>
+            <p className="text-gray-400 text-base">Your peace of mind is our priority</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: <CheckCircle className="w-6 h-6" />, title: 'Verified Properties', desc: 'Every listing is manually reviewed and verified', color: 'bg-emerald-100 text-emerald-600' },
-              { icon: <DollarSign className="w-6 h-6" />, title: 'Transparent Pricing', desc: 'FairFlex pricing with no hidden fees', color: 'bg-primary-100 text-primary-600' },
-              { icon: <Lock className="w-6 h-6" />, title: 'Secure Booking', desc: 'Safe and secure transactions every time', color: 'bg-violet-100 text-violet-600' },
+              { icon: <CheckCircle className="w-6 h-6" />, title: 'Verified Properties', desc: 'Every listing is manually reviewed and verified', color: 'bg-emerald-500/20 text-emerald-400' },
+              { icon: <DollarSign className="w-6 h-6" />, title: 'Transparent Pricing', desc: 'FairFlex pricing with no hidden fees', color: 'bg-primary-500/20 text-primary-400' },
+              { icon: <Lock className="w-6 h-6" />, title: 'Secure Booking', desc: 'Safe and secure transactions every time', color: 'bg-violet-500/20 text-violet-400' },
             ].map(({ icon, title, desc, color }) => (
-              <div key={title} className="card-glass-solid p-6 text-center hover:-translate-y-0.5">
+              <div key={title} className="card-glass-solid p-6 text-center">
                 <div className={`inline-flex items-center justify-center w-12 h-12 ${color} rounded-xl mb-4`}>{icon}</div>
-                <h3 className="font-display text-xl font-bold text-surface-900 mb-2">{title}</h3>
-                <p className="text-surface-500 text-sm">{desc}</p>
+                <h3 className="font-display text-xl font-bold text-white mb-2">{title}</h3>
+                <p className="text-gray-400 text-sm">{desc}</p>
               </div>
             ))}
           </div>
@@ -782,11 +764,11 @@ const Home = () => {
       </section>
 
       {/* 8. RECOMMENDED FOR YOU */}
-      <section className="py-20 bg-white border-b border-surface-100">
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mb-10">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Recommended for you</h2>
-            <p className="text-surface-500 text-base">Handpicked properties based on your search history</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">Recommended for you</h2>
+            <p className="text-gray-400 text-base">Handpicked properties based on your search history</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {personalizedRecommendations.map((property) => (
@@ -802,11 +784,11 @@ const Home = () => {
       </section>
 
       {/* 9. POPULAR PROPERTIES */}
-      <section className="py-20 bg-surface-50 border-b border-surface-100">
+      <section className="py-20 bg-neutral-950 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <h2 className="font-display text-3xl md:text-4xl font-bold text-surface-900 mb-3">Popular Properties</h2>
-            <p className="text-surface-500 text-base">Handpicked properties just for you</p>
+            <h2 className="font-display text-3xl md:text-4xl font-bold text-white mb-3">Popular Properties</h2>
+            <p className="text-gray-400 text-base">Handpicked properties just for you</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
             {popularProperties.map((property) => (
@@ -828,7 +810,7 @@ const Home = () => {
       </section>
 
       {/* 10. FINAL CTA */}
-      <section className="py-24 bg-gradient-to-br from-primary-600 to-primary-700 text-white">
+      <section className="py-24 bg-gradient-to-r from-primary-600 to-blue-600 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
             Ready to find your next home?
@@ -839,14 +821,14 @@ const Home = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to="/houses"
-              className="inline-flex items-center bg-white text-surface-900 font-bold px-8 py-3.5 rounded-2xl hover:bg-white/95 hover:shadow-soft-lg transition-all duration-300"
+              className="inline-flex items-center bg-white text-gray-900 font-bold px-8 py-3.5 rounded-xl hover:bg-gray-100 hover:shadow-2xl transition-all duration-300"
             >
               <span>Browse all properties</span>
               <ArrowRight className="w-5 h-5 ml-2" />
             </Link>
             <Link
               to="/houses"
-              className="inline-flex items-center bg-white/10 border-2 border-white/40 text-white font-bold px-8 py-3.5 rounded-2xl hover:bg-white/20 transition-all duration-300"
+              className="inline-flex items-center bg-white/10 border-2 border-white/40 text-white font-bold px-8 py-3.5 rounded-xl hover:bg-white/20 transition-all duration-300"
             >
               <MessageCircle className="w-5 h-5 mr-2" />
               <span>Talk to property owners</span>

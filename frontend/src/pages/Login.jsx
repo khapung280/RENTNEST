@@ -111,31 +111,31 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen bg-surface-50 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-950 flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <Link
           to="/"
-          className="inline-flex items-center text-surface-600 hover:text-surface-900 mb-8 text-sm font-medium transition-colors"
+          className="inline-flex items-center text-gray-400 hover:text-primary-400 mb-8 text-sm font-medium transition-colors"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Home
         </Link>
 
-        <div className="card-glass-solid p-8">
+        <div className="card-glass-solid p-8 border border-white/10">
           <div className="text-center mb-8">
-            <h1 className="font-display text-2xl font-semibold text-surface-900 mb-2">
+            <h1 className="font-display text-2xl font-semibold text-white mb-2">
               Welcome back
             </h1>
-            <p className="text-sm text-surface-500">
+            <p className="text-sm text-gray-400">
               Sign in to access your account and continue
             </p>
           </div>
 
           {/* General Error Message */}
           {errors.general && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-start">
-              <AlertCircle className="h-5 w-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-red-800 whitespace-pre-line">{errors.general}</p>
+            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/30 rounded-xl flex items-start">
+              <AlertCircle className="h-5 w-5 text-red-400 mr-2 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-red-200 whitespace-pre-line">{errors.general}</p>
             </div>
           )}
 
@@ -145,7 +145,7 @@ const Login = () => {
             <div>
               <label 
                 htmlFor="email" 
-                className="block text-sm font-medium text-gray-700 mb-1.5"
+                className="block text-sm font-medium text-gray-300 mb-1.5"
               >
                 Email address
               </label>
@@ -170,7 +170,7 @@ const Login = () => {
                 />
               </div>
               {errors.email && (
-                <p id="email-error" className="mt-1.5 text-sm text-red-600 flex items-center">
+                <p id="email-error" className="mt-1.5 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.email}
                 </p>
@@ -182,13 +182,13 @@ const Login = () => {
               <div className="flex items-center justify-between mb-1.5">
                 <label 
                   htmlFor="password" 
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium text-gray-300"
                 >
                   Password
                 </label>
                 <Link
                   to="#"
-                  className="text-sm font-medium text-primary-600 hover:text-primary-500 transition-colors"
+                  className="text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors"
                 >
                   Forgot your password?
                 </Link>
@@ -215,7 +215,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-200 transition-colors focus:outline-none"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
@@ -227,7 +227,7 @@ const Login = () => {
                 </button>
               </div>
               {errors.password && (
-                <p id="password-error" className="mt-1.5 text-sm text-red-600 flex items-center">
+                <p id="password-error" className="mt-1.5 text-sm text-red-400 flex items-center">
                   <AlertCircle className="h-4 w-4 mr-1" />
                   {errors.password}
                 </p>
@@ -242,11 +242,11 @@ const Login = () => {
                 type="checkbox"
                 checked={formData.rememberMe}
                 onChange={handleChange}
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500/20 border-surface-300 rounded cursor-pointer"
+                className="h-4 w-4 text-primary-500 focus:ring-primary-500/20 border-white/30 rounded cursor-pointer bg-neutral-800"
               />
               <label 
                 htmlFor="rememberMe" 
-                className="ml-2 block text-sm text-surface-700 cursor-pointer"
+                className="ml-2 block text-sm text-gray-300 cursor-pointer"
               >
                 Keep me signed in
               </label>
@@ -274,10 +274,10 @@ const Login = () => {
           <div className="mt-8">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-surface-200" />
+                <div className="w-full border-t border-white/10" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-surface-500">Or continue with</span>
+                <span className="px-2 bg-neutral-800 text-gray-500">Or continue with</span>
               </div>
             </div>
           </div>
@@ -319,11 +319,11 @@ const Login = () => {
           </div>
 
           {/* Sign Up Link */}
-          <p className="mt-8 text-center text-sm text-surface-600">
+          <p className="mt-8 text-center text-sm text-gray-400">
             New to RentNest?{' '}
             <Link
               to="/register"
-              className="font-semibold text-primary-600 hover:text-primary-500 transition-colors"
+              className="font-semibold text-primary-400 hover:text-primary-300 transition-colors"
             >
               Create an account
             </Link>

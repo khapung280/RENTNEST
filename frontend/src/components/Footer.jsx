@@ -4,14 +4,14 @@ import RentNestLogo from './RentNestLogo'
 
 const Footer = () => {
   return (
-    <footer className="bg-surface-900 text-white mt-24">
+    <footer className="bg-neutral-900 border-t border-neutral-800 text-white mt-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
           <div>
             <div className="mb-6">
-              <RentNestLogo size={40} />
+              <RentNestLogo size={40} variant="dark" />
             </div>
-            <p className="text-surface-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-gray-400 text-sm leading-relaxed max-w-sm">
               RentNest is a flexible rental platform designed for short-term and long-term stays.
               We connect renters with verified properties, offering fair pricing and secure bookings.
             </p>
@@ -29,7 +29,7 @@ const Footer = () => {
                 <li key={to}>
                   <Link
                     to={to}
-                    className="text-surface-400 hover:text-primary-400 text-sm font-medium transition-colors duration-300"
+                    className="text-gray-400 hover:text-primary-400 text-sm font-medium transition-colors duration-300"
                   >
                     {label}
                   </Link>
@@ -41,15 +41,15 @@ const Footer = () => {
           <div>
             <h3 className="font-display font-semibold text-lg mb-6 text-white">Contact</h3>
             <ul className="space-y-4">
-              <li className="flex items-center gap-3 text-surface-400 text-sm">
+              <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Mail size={18} className="text-primary-400 flex-shrink-0" />
                 info@rentnest.com
               </li>
-              <li className="flex items-center gap-3 text-surface-400 text-sm">
+              <li className="flex items-center gap-3 text-gray-400 text-sm">
                 <Phone size={18} className="text-primary-400 flex-shrink-0" />
                 +1 (555) 123-4567
               </li>
-              <li className="flex items-start gap-3 text-surface-400 text-sm">
+              <li className="flex items-start gap-3 text-gray-400 text-sm">
                 <MapPin size={18} className="text-primary-400 flex-shrink-0 mt-0.5" />
                 123 Rental Street, City, State 12345
               </li>
@@ -57,8 +57,8 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="border-t border-surface-800 mt-12 pt-8 text-center">
-          <p className="text-surface-500 text-sm">
+        <div className="border-t border-white/10 mt-12 pt-8 text-center">
+          <p className="text-gray-500 text-sm">
             &copy; {new Date().getFullYear()} RentNest. All rights reserved.
           </p>
         </div>

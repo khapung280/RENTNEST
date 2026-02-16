@@ -331,10 +331,14 @@ const RentNestLogo = ({ className = '', size = 40, showText = true, variant = 'd
         </defs>
       </svg>
       
-      {/* Advanced Logo Text with Better Typography */}
+      {/* Logo Text - light gradient for dark theme when variant="dark" */}
       {showText && (
         <div className="flex flex-col">
-          <span className="text-2xl font-extrabold bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 bg-clip-text text-transparent tracking-tight leading-tight drop-shadow-sm">
+          <span className={`text-2xl font-extrabold bg-clip-text text-transparent tracking-tight leading-tight drop-shadow-sm ${
+            variant === 'dark'
+              ? 'bg-gradient-to-r from-blue-400 via-indigo-400 to-blue-500'
+              : 'bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700'
+          }`}>
             RentNest
           </span>
           {variant === 'withTagline' && (
