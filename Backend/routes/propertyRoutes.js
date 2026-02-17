@@ -51,7 +51,7 @@ router.get('/', [
     const filter = {};
 
     // Only show approved and active properties for public access
-    if (!req.user || req.user.accountType !== 'admin') {
+    if (!req.user || req.user.role !== 'admin') {
       filter.status = 'approved';
       filter.isActive = true;
     } else if (status) {
@@ -60,7 +60,13 @@ router.get('/', [
     }
 
     if (type) filter.type = type;
-    if (location) filter.location = { $regex: location, $options: 'i' };
+    if (location) {
+      const normalizedLocation = location.trim();
+      if (normalizedLocation) {
+        const escaped = normalizedLocation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        filter.location = new RegExp(`^${escaped}$`, 'i');
+      }
+    }
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = parseInt(minPrice);
@@ -159,7 +165,7 @@ router.get('/:id', async (req, res) => {
     }
 
     const property = await Property.findById(id)
-      .populate('owner', 'name email phone accountType');
+      .populate('owner', 'name email phone role');
 
     if (!property) {
       return res.status(404).json({
@@ -171,7 +177,7 @@ router.get('/:id', async (req, res) => {
     // Only show approved properties to non-owners/non-admins
     if (property.status !== 'approved' && 
         (!req.user || 
-         (req.user.accountType !== 'admin' && req.user.id !== property.owner._id.toString()))) {
+         (req.user.role !== 'admin' && req.user.id !== property.owner._id.toString()))) {
       return res.status(404).json({
         success: false,
         message: 'Property not found'

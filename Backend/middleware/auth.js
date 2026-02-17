@@ -1,11 +1,12 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+const ROLES = Object.freeze(['admin', 'owner', 'renter']);
+
 /**
  * Protect: require valid JWT.
- * - Extracts token from Authorization: Bearer <token>
- * - Verifies JWT and attaches user to req.user
- * - Returns 401 if missing, invalid, or expired token
+ * Extracts token from Authorization: Bearer <token>
+ * Verifies JWT and attaches user to req.user
  */
 exports.protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
@@ -20,12 +21,13 @@ exports.protect = async (req, res, next) => {
 
   try {
     const secret = process.env.JWT_SECRET;
-    if (!secret) {
+    if (!secret || secret.length < 16) {
       return res.status(500).json({
         success: false,
         message: 'Server configuration error'
       });
     }
+
     const decoded = jwt.verify(token, secret);
     const user = await User.findById(decoded.id).select('-password');
 
@@ -60,8 +62,8 @@ exports.protect = async (req, res, next) => {
 };
 
 /**
- * Admin only: allow only role === "admin".
- * Use after protect. Returns 403 if user.role !== "admin".
+ * Admin only: allow only role === 'admin'
+ * Use after protect
  */
 exports.adminOnly = (req, res, next) => {
   if (req.user && req.user.role === 'admin') {
@@ -74,18 +76,19 @@ exports.adminOnly = (req, res, next) => {
 };
 
 /**
- * Grant access to specific account types (renter, owner, admin).
- * Use after protect.
+ * Role-based authorization: allow only specified roles
+ * Use after protect
+ * @param {...string} roles - 'admin' | 'owner' | 'renter'
  */
 exports.authorize = (...roles) => {
+  const allowed = roles.filter(r => ROLES.includes(r));
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.accountType)) {
+    if (!req.user || !allowed.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        message: `User role '${req.user?.accountType || 'unknown'}' is not authorized to access this route`
+        message: `Access denied. Required role: ${allowed.join(' or ')}`
       });
     }
     next();
   };
 };
-

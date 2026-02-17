@@ -243,7 +243,7 @@ const seedData = async () => {
         name: 'Property Owner',
         email: 'owner@rentnest.com',
         password: 'owner123',
-        accountType: 'owner',
+        role: 'owner',
         phone: '9841234567',
         isVerified: true,
         isActive: true

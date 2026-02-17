@@ -22,10 +22,14 @@ exports.registerValidation = [
     .withMessage('Password is required')
     .isLength({ min: 6 })
     .withMessage('Password must be at least 6 characters'),
+  body('role')
+    .optional()
+    .isIn(['renter', 'owner', 'admin'])
+    .withMessage('Role must be renter, owner, or admin'),
   body('accountType')
     .optional()
     .isIn(['renter', 'owner', 'admin'])
-    .withMessage('Account type must be renter, owner, or admin'),
+    .withMessage('Account type must be renter, owner, or admin (deprecated, use role)'),
   body('phone')
     .optional()
     .matches(/^[0-9]{10}$/)

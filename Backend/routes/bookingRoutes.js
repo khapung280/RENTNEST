@@ -8,7 +8,7 @@ const { protect, adminOnly, authorize } = require('../middleware/auth');
 const router = express.Router();
 
 // @route   POST /api/bookings
-// @desc    Create a booking (authenticated user)
+// @desc    Create a booking (authenticated renter)
 // @access  Private
 router.post('/', [
   protect,
@@ -40,7 +40,7 @@ router.post('/', [
 
     const { property, checkInDate, checkOutDate } = req.body;
 
-    const prop = await Property.findById(property);
+    const prop = await Property.findById(property).populate('owner', '_id');
     if (!prop) {
       return res.status(404).json({
         success: false,
@@ -74,16 +74,19 @@ router.post('/', [
       });
     }
 
+    const ownerId = prop.owner?._id || prop.owner;
+
     const booking = await Booking.create({
-      user: req.user.id,
+      renter: req.user.id,
       property,
-      checkInDate: checkIn,
-      checkOutDate: checkOut,
+      owner: ownerId,
+      checkIn,
+      checkOut,
       status: 'pending'
     });
 
     await booking.populate('property', 'title location image price');
-    await booking.populate('user', 'name email');
+    await booking.populate('renter', 'name email');
 
     res.status(201).json({
       success: true,
@@ -101,15 +104,15 @@ router.post('/', [
 });
 
 // @route   GET /api/bookings/owner/my-bookings
-// @desc    Get bookings for properties owned by current user (owner dashboard)
+// @desc    Get bookings for properties owned by current user
 // @access  Private (Owner or Admin)
 router.get('/owner/my-bookings', protect, authorize('owner', 'admin'), async (req, res) => {
   try {
-    const propertyIds = await Property.find({ owner: req.user.id }).distinct('_id');
-    const data = await Booking.find({ property: { $in: propertyIds } })
-      .populate('user', 'name email')
+    const data = await Booking.find({ owner: req.user.id })
+      .populate('renter', 'name email')
       .populate('property', 'title location image price')
       .sort({ createdAt: -1 });
+
     res.json({
       success: true,
       count: data.length,
@@ -131,7 +134,7 @@ router.get('/owner/my-bookings', protect, authorize('owner', 'admin'), async (re
 router.get('/', [
   protect,
   adminOnly,
-  query('status').optional().isIn(['pending', 'confirmed', 'cancelled']),
+  query('status').optional().isIn(['pending', 'approved', 'rejected']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 })
 ], async (req, res) => {
@@ -151,7 +154,8 @@ router.get('/', [
 
     const total = await Booking.countDocuments(filter);
     const data = await Booking.find(filter)
-      .populate('user', 'name email')
+      .populate('renter', 'name email')
+      .populate('owner', 'name email')
       .populate('property', 'title location image price')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -176,7 +180,7 @@ router.get('/', [
 });
 
 // @route   PATCH /api/bookings/:id/confirm
-// @desc    Confirm a booking (admin only)
+// @desc    Approve a booking (admin only)
 // @access  Private (Admin)
 router.patch('/:id/confirm', [protect, adminOnly], async (req, res) => {
   try {
@@ -203,22 +207,22 @@ router.patch('/:id/confirm', [protect, adminOnly], async (req, res) => {
       });
     }
 
-    booking.status = 'confirmed';
+    booking.status = 'approved';
     await booking.save();
 
-    await booking.populate('user', 'name email');
+    await booking.populate('renter', 'name email');
     await booking.populate('property', 'title location image price');
 
     res.json({
       success: true,
-      message: 'Booking confirmed',
+      message: 'Booking approved',
       data: booking
     });
   } catch (error) {
     console.error('Confirm booking error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error while confirming booking',
+      message: 'Server error while approving booking',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
     });
   }

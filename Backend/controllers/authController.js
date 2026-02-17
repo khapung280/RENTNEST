@@ -1,14 +1,15 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 
-/** Build user payload (no password or internal fields) */
+/** Build user payload for API (accountType = role for frontend compatibility) */
 function toUserPayload(user) {
   return {
     id: user._id,
     name: user.name,
     email: user.email,
     phone: user.phone || '',
-    accountType: user.accountType,
+    accountType: user.role,
+    role: user.role,
     profilePicture: user.profilePicture || '',
     isVerified: user.isVerified
   };
@@ -21,7 +22,8 @@ function toUserPayload(user) {
  */
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, accountType, phone } = req.body;
+    const { name, email, password, role, accountType, phone } = req.body;
+    const roleValue = role || accountType;
 
     const normalizedEmail = (email && String(email).trim().toLowerCase()) || '';
     const userExists = await User.findOne({ email: normalizedEmail });
@@ -32,15 +34,18 @@ exports.register = async (req, res, next) => {
       });
     }
 
+    const validRoles = ['renter', 'owner', 'admin'];
+    const userRole = validRoles.includes(roleValue) ? roleValue : 'renter';
+
     const user = await User.create({
       name: name && String(name).trim(),
       email: normalizedEmail,
       password,
-      accountType: accountType && ['renter', 'owner', 'admin'].includes(accountType) ? accountType : 'renter',
+      role: userRole,
       phone: phone ? String(phone).trim() : ''
     });
 
-    const token = generateToken(user._id, user.accountType);
+    const token = generateToken(user._id, user.role);
 
     res.status(201).json({
       success: true,
@@ -108,7 +113,7 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    const token = generateToken(user._id, user.accountType);
+    const token = generateToken(user._id, user.role);
 
     res.json({
       success: true,

@@ -111,7 +111,7 @@ router.get('/', [
 router.get('/:id', protect, async (req, res) => {
   try {
     const conversation = await Conversation.findById(req.params.id)
-      .populate('participants', 'name email profilePicture accountType')
+      .populate('participants', 'name email profilePicture role')
       .populate('property', 'title location image price bedrooms bathrooms');
 
     if (!conversation) {

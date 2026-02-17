@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
+/**
+ * User model - single role field: admin | owner | renter
+ * Production-ready: no redundant fields, validated enum
+ */
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -24,18 +28,14 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user'
+    enum: { values: ['admin', 'owner', 'renter'], message: 'Role must be admin, owner, or renter' },
+    default: 'renter'
   },
   phone: {
     type: String,
     trim: true,
-    match: [/^[0-9]{10}$/, 'Please provide a valid 10-digit phone number']
-  },
-  accountType: {
-    type: String,
-    enum: ['renter', 'owner', 'admin'],
-    default: 'renter'
+    default: '',
+    match: [/^$|^[0-9]{10}$/, 'Phone must be empty or a valid 10-digit number']
   },
   profilePicture: {
     type: String,
@@ -57,31 +57,20 @@ const userSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Hash password before save (bcrypt)
+userSchema.index({ role: 1 });
+
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
 });
 
-// Sync role from accountType for existing app behavior
-userSchema.pre('save', function () {
-  if (this.isModified('accountType') && this.accountType === 'admin') {
-    this.role = 'admin';
-  } else if (this.isModified('accountType') && this.role !== 'admin') {
-    this.role = 'user';
-  }
-});
-
-// Compare password for login
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Backward compatibility
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return this.comparePassword(enteredPassword);
 };
 
 module.exports = mongoose.model('User', userSchema);
-

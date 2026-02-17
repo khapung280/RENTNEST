@@ -45,7 +45,7 @@ router.get('/users', [
       ];
     }
 
-    if (role) filter.accountType = role;
+    if (role) filter.role = role;
 
     if (status === 'active') {
       filter.isActive = true;
@@ -102,7 +102,7 @@ router.put('/users/:id/suspend', async (req, res) => {
     }
 
     // Don't allow suspending other admins
-    if (user.accountType === 'admin' && user._id.toString() !== req.user.id) {
+    if (user.role === 'admin' && user._id.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         message: 'Cannot suspend another admin'
@@ -336,9 +336,9 @@ router.get('/stats', async (req, res) => {
     const totalUsers = await User.countDocuments();
     const activeUsers = await User.countDocuments({ isActive: true, isSuspended: false });
     const suspendedUsers = await User.countDocuments({ isSuspended: true });
-    const renterUsers = await User.countDocuments({ accountType: 'renter' });
-    const ownerUsers = await User.countDocuments({ accountType: 'owner' });
-    const adminUsers = await User.countDocuments({ accountType: 'admin' });
+    const renterUsers = await User.countDocuments({ role: 'renter' });
+    const ownerUsers = await User.countDocuments({ role: 'owner' });
+    const adminUsers = await User.countDocuments({ role: 'admin' });
 
     // Get property statistics
     const totalProperties = await Property.countDocuments();

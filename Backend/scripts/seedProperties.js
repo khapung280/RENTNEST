@@ -211,7 +211,7 @@ const seedProperties = async () => {
         name: 'Property Owner',
         email: 'owner@rentnest.com',
         password: 'owner123', // Will be hashed by pre-save hook
-        accountType: 'owner',
+        role: 'owner',
         phone: '9841234567',
         isVerified: true,
         isActive: true

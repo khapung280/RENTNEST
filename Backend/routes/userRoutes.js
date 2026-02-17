@@ -26,7 +26,7 @@ router.get('/me', protect, async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        accountType: user.accountType,
+        accountType: user.role,
         profilePicture: user.profilePicture,
         isVerified: user.isVerified,
         isActive: user.isActive,
@@ -121,7 +121,7 @@ router.put('/me', [
         name: user.name,
         email: user.email,
         phone: user.phone,
-        accountType: user.accountType,
+        accountType: user.role,
         profilePicture: user.profilePicture,
         isVerified: user.isVerified,
         isActive: user.isActive,
@@ -278,7 +278,7 @@ router.get('/:id', async (req, res) => {
       data: {
         id: user._id,
         name: user.name,
-        accountType: user.accountType,
+        accountType: user.role,
         profilePicture: user.profilePicture,
         isVerified: user.isVerified
       }
