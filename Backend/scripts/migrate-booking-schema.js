@@ -4,7 +4,7 @@
  * - user -> renter
  * - add owner from property
  * - checkInDate -> checkIn, checkOutDate -> checkOut
- * - status: confirmed -> approved, cancelled -> rejected
+ * - status: approved -> confirmed, rejected -> cancelled
  *
  * Usage: node scripts/migrate-booking-schema.js
  */
@@ -32,8 +32,8 @@ const migrate = async () => {
         const prop = propMap.get(b.property.toString());
         if (prop?.owner) updates.owner = prop.owner;
       }
-      if (b.status === 'confirmed') updates.status = 'approved';
-      else if (b.status === 'cancelled') updates.status = 'rejected';
+      if (b.status === 'approved') updates.status = 'confirmed';
+      else if (b.status === 'rejected') updates.status = 'cancelled';
 
       if (Object.keys(updates).length > 0) {
         await mongoose.connection.db.collection('bookings').updateOne(

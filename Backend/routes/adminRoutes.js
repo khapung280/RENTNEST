@@ -350,12 +350,12 @@ router.get('/stats', async (req, res) => {
     // Get booking statistics
     const totalBookings = await Booking.countDocuments();
     const pendingBookings = await Booking.countDocuments({ status: 'pending' });
-    const approvedBookings = await Booking.countDocuments({ status: 'approved' });
-    const rejectedBookings = await Booking.countDocuments({ status: 'rejected' });
+    const confirmedBookings = await Booking.countDocuments({ status: 'confirmed' });
+    const cancelledBookings = await Booking.countDocuments({ status: 'cancelled' });
 
-    // Calculate revenue (sum of approved bookings)
+    // Calculate revenue (sum of confirmed bookings)
     const revenueData = await Booking.aggregate([
-      { $match: { status: 'approved' } },
+      { $match: { status: 'confirmed' } },
       { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } }
     ]);
     const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
@@ -392,8 +392,8 @@ router.get('/stats', async (req, res) => {
         bookings: {
           total: totalBookings,
           pending: pendingBookings,
-          approved: approvedBookings,
-          rejected: rejectedBookings,
+          confirmed: confirmedBookings,
+          cancelled: cancelledBookings,
           thisMonth: bookingsThisMonth
         },
         revenue: {

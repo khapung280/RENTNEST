@@ -63,15 +63,15 @@ router.get('/property/:propertyId', protect, authorize('owner', 'admin'), asyncH
 // GET /api/bookings/owner/my-bookings - Owner's all bookings (backward compat)
 router.get('/owner/my-bookings', protect, authorize('owner', 'admin'), asyncHandler(getOwnerBookings));
 
-// PATCH /api/bookings/:id/status - Owner/Admin approve or reject booking
+// PATCH /api/bookings/:id/status - Owner/Admin confirm or cancel booking
 router.patch('/:id/status', [
   protect,
   authorize('owner', 'admin'),
   body('status')
     .notEmpty()
     .withMessage('Status is required')
-    .isIn(['approved', 'rejected'])
-    .withMessage('Status must be "approved" or "rejected"')
+    .isIn(['confirmed', 'cancelled', 'approved', 'rejected'])
+    .withMessage('Status must be "confirmed" or "cancelled"')
 ], validate, asyncHandler(updateBookingStatus));
 
 // PUT /api/bookings/:id/approve - Alias (frontend compat)
@@ -86,7 +86,7 @@ router.put('/:id/reject', protect, authorize('owner', 'admin'), asyncHandler(rej
 router.get('/admin', [
   protect,
   adminOnly,
-  query('status').optional().isIn(['pending', 'approved', 'rejected']),
+  query('status').optional().isIn(['pending', 'confirmed', 'cancelled']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 })
 ], validate, asyncHandler(getAdminBookings));
@@ -95,7 +95,7 @@ router.get('/admin', [
 router.get('/', [
   protect,
   adminOnly,
-  query('status').optional().isIn(['pending', 'approved', 'rejected']),
+  query('status').optional().isIn(['pending', 'confirmed', 'cancelled']),
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 })
 ], validate, asyncHandler(getAdminBookings));

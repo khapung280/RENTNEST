@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 /**
- * Booking schema - production-ready
- * property, renter, owner refs; checkIn/checkOut; status: pending | approved | rejected
+ * Booking schema - enterprise production
+ * status: pending | confirmed | cancelled
  */
 const bookingSchema = new mongoose.Schema({
   property: {
@@ -30,7 +30,7 @@ const bookingSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: { values: ['pending', 'approved', 'rejected'], message: 'Status must be pending, approved, or rejected' },
+    enum: { values: ['pending', 'confirmed', 'cancelled'], message: 'Status must be pending, confirmed, or cancelled' },
     default: 'pending'
   }
 }, {
@@ -42,13 +42,16 @@ bookingSchema.index({ owner: 1 });
 bookingSchema.index({ property: 1 });
 bookingSchema.index({ status: 1 });
 bookingSchema.index({ checkIn: 1 });
+bookingSchema.index({ property: 1, checkIn: 1, checkOut: 1 });
 
-// API compatibility: frontend expects checkInDate, checkOutDate
+// API compatibility: frontend expects checkInDate, checkOutDate, user, approved/rejected
 bookingSchema.set('toJSON', {
   transform: (doc, ret) => {
     ret.checkInDate = ret.checkIn;
     ret.checkOutDate = ret.checkOut;
     ret.user = ret.renter;
+    if (ret.status === 'confirmed') ret.approved = true;
+    if (ret.status === 'cancelled') ret.rejected = true;
     return ret;
   }
 });
