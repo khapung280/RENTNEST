@@ -67,13 +67,14 @@ const Login = () => {
           navigate(redirectTo);
           return;
         }
-        // Otherwise redirect based on account type
-        if (response.user.accountType === 'owner') {
-          navigate('/owner-dashboard');
-        } else if (response.user.accountType === 'admin') {
+        // Role-based redirect after login
+        const { role, accountType } = response.user;
+        if (role === 'admin' || accountType === 'admin') {
           navigate('/admin-dashboard');
+        } else if (accountType === 'owner') {
+          navigate('/owner-dashboard');
         } else {
-          navigate('/'); // Renter goes to home
+          navigate('/'); // Renter or default
         }
       } else {
         setErrors({ general: response.message || 'Unable to sign you in. Please check your credentials and try again.' });

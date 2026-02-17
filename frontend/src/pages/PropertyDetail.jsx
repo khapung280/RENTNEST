@@ -858,19 +858,19 @@ const PropertyDetail = () => {
 
           {/* Right Column - CTA */}
           <div className="lg:col-span-1">
-            <div className="card-glass-solid p-6 sticky top-24">
+            <div className="bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800 p-6 md:p-8 sticky top-24">
               {/* Book Now */}
-              <div className="mb-4">
+              <div className="mb-6">
                 {bookingSuccess ? (
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm font-medium text-green-800">Booking request sent.</p>
-                    <p className="text-xs text-green-700 mt-1">We&apos;ll confirm your stay soon.</p>
+                  <div className="p-4 bg-emerald-500/20 border border-emerald-500/30 rounded-xl">
+                    <p className="text-sm font-medium text-emerald-200">Booking request sent.</p>
+                    <p className="text-xs text-emerald-300/90 mt-1">We&apos;ll confirm your stay soon.</p>
                   </div>
                 ) : !loggedIn ? (
                   <button
                     type="button"
                     onClick={() => navigate(`/login?redirect=${encodeURIComponent(`/property/${propertyDetail._id || propertyDetail.id}`)}`)}
-                    className="w-full btn-gradient-lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center"
                   >
                     Book Now
                   </button>
@@ -879,7 +879,7 @@ const PropertyDetail = () => {
                   const isOwnProperty = ownerId && currentUserId && String(ownerId) === String(currentUserId)
                   if (isOwnProperty) {
                     return (
-                      <p className="text-sm text-gray-500 py-2 text-center">You can&apos;t book your own property.</p>
+                      <p className="text-sm text-gray-400 py-2 text-center">You can&apos;t book your own property.</p>
                     )
                   }
                   const today = new Date().toISOString().slice(0, 10)
@@ -887,10 +887,10 @@ const PropertyDetail = () => {
                   const checkOutMin = checkInDate || today
                   return (
                     <>
-                      <p className="text-sm font-medium text-gray-700 mb-3">Select dates</p>
-                      <div className="space-y-3">
+                      <p className="text-white font-semibold text-lg mb-4">Select dates</p>
+                      <div className="space-y-4">
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Check-in</label>
+                          <label className="block text-gray-300 text-sm mb-1">Check-in</label>
                           <input
                             type="date"
                             value={checkInDate}
@@ -900,20 +900,20 @@ const PropertyDetail = () => {
                               if (checkOutDate && e.target.value && checkOutDate <= e.target.value) setCheckOutDate('')
                               setBookingError('')
                             }}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-gray-500 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-xs text-gray-500 mb-1">Check-out</label>
+                          <label className="block text-gray-300 text-sm mb-1">Check-out</label>
                           <input
                             type="date"
                             value={checkOutDate}
                             min={checkOutMin}
                             onChange={(e) => { setCheckOutDate(e.target.value); setBookingError('') }}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-gray-500 transition-all"
                           />
                         </div>
-                        {bookingError && <p className="text-xs text-red-600">{bookingError}</p>}
+                        {bookingError && <p className="text-xs text-red-400">{bookingError}</p>}
                         <button
                           type="button"
                           disabled={!checkInDate || !checkOutDate || bookingLoading}
@@ -940,7 +940,7 @@ const PropertyDetail = () => {
                               setBookingLoading(false)
                             }
                           }}
-                          className="w-full btn-gradient disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium py-3 px-6 rounded-xl shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                         >
                           {bookingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                           Send booking request
@@ -968,7 +968,7 @@ const PropertyDetail = () => {
                         alert('Owner information not available. Please try again later.')
                       }
                     }}
-                    className="w-full bg-white border border-gray-300 hover:border-gray-400 text-gray-900 font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2"
+                    className="w-full bg-zinc-800 text-white border border-zinc-700 font-medium py-3 rounded-xl hover:bg-zinc-700 transition-all flex items-center justify-center gap-2"
                   >
                     <Phone className="w-4 h-4" />
                     Contact owner
@@ -977,14 +977,14 @@ const PropertyDetail = () => {
               </div>
 
               {/* Secure Booking Note */}
-              <div className="pt-6 border-t border-gray-200">
+              <div className="pt-6 border-t border-zinc-800">
                 <div className="flex items-start gap-2.5 mb-4">
                   <Lock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <p className="text-xs text-gray-600 leading-relaxed">
-                    Your booking request will be sent to the property owner. They'll respond within 24 hours.
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    Your booking request will be sent to the property owner. They&apos;ll respond within 24 hours.
                   </p>
                 </div>
-                <p className="text-xs text-gray-500 text-center">
+                <p className="text-gray-400 text-xs text-center leading-relaxed">
                   All bookings are subject to availability and owner approval
                 </p>
               </div>

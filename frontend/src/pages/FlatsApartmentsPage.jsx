@@ -144,11 +144,11 @@ const FlatsApartmentsPage = () => {
   const filteredFlatsApartments = useMemo(() => {
     let filtered = [...allFlatsApartments]
 
-    // Filter by location
-    if (searchLocation) {
-      filtered = filtered.filter((property) =>
-        property.location.toLowerCase().includes(searchLocation.toLowerCase())
-      )
+    // Filter by location (exact match, case-insensitive)
+    const cleanedLocation = (searchLocation || '').trim()
+    if (cleanedLocation) {
+      const locLower = cleanedLocation.toLowerCase()
+      filtered = filtered.filter((property) => property.location.toLowerCase() === locLower)
     }
 
     // Filter by price range

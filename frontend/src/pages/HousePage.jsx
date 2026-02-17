@@ -140,15 +140,14 @@ const HousePage = () => {
     setShowFilters(false)
   }
 
-  // Filtered houses
+  // Filtered houses (exact location match, case-insensitive)
   const filteredHouses = useMemo(() => {
     let filtered = [...allHouses]
+    const cleanedLocation = (searchLocation || '').trim()
 
-    // Filter by location
-    if (searchLocation) {
-      filtered = filtered.filter((property) =>
-        property.location.toLowerCase().includes(searchLocation.toLowerCase())
-      )
+    if (cleanedLocation) {
+      const locLower = cleanedLocation.toLowerCase()
+      filtered = filtered.filter((property) => property.location.toLowerCase() === locLower)
     }
 
     // Filter by price range

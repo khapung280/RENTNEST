@@ -151,15 +151,15 @@ const Home = () => {
     navigate(`${route}?${params.toString()}`)
   }
 
-  // Live Results Preview - Filter properties as user types
+  // Live Results Preview - Filter properties as user types (exact location match)
   const liveResults = useMemo(() => {
     let filtered = [...allProperties]
-    
-    // Filter by location if typed
-    if (searchLocation.trim()) {
-      filtered = filtered.filter(p =>
-        p.location.toLowerCase().includes(searchLocation.toLowerCase().trim())
-      )
+    const cleanedLocation = searchLocation.trim()
+
+    // Filter by location if typed - exact match only, case-insensitive
+    if (cleanedLocation) {
+      const locLower = cleanedLocation.toLowerCase()
+      filtered = filtered.filter(p => p.location.toLowerCase() === locLower)
     }
     
     // Filter by property type
@@ -204,7 +204,7 @@ const Home = () => {
     // 'recommended' keeps original order
     
     return filtered.slice(0, 4)
-  }, [searchLocation, propertyType, priceRange, bedrooms, sortBy, allProperties])
+  }, [searchLocation, propertyType, priceRange, bedrooms, sortBy, decisionHelperMode, allProperties])
 
   // Trending properties (when no search input)
   const trendingProperties = useMemo(() => {
@@ -238,9 +238,10 @@ const Home = () => {
         let filtered = [...allProperties]
         
         if (parsed.location) {
-          filtered = filtered.filter(p =>
-            p.location.toLowerCase().includes(parsed.location.toLowerCase())
-          )
+          const cleanedLocation = (parsed.location || '').trim().toLowerCase()
+          if (cleanedLocation) {
+            filtered = filtered.filter(p => p.location.toLowerCase() === cleanedLocation)
+          }
         }
         
         if (parsed.type === 'houses') {

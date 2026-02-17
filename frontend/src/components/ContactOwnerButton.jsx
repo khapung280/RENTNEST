@@ -54,14 +54,14 @@ const ContactOwnerButton = ({ property, owner, currentUserId }) => {
       <button
         onClick={handleContactOwner}
         disabled={loading}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="w-full bg-zinc-800 text-white border border-zinc-700 font-medium py-3 px-6 rounded-xl hover:bg-zinc-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         <MessageCircle size={20} />
         {loading ? 'Starting conversation...' : 'Contact Owner'}
       </button>
 
       {error && (
-        <div className="mt-2 text-sm text-red-600">{error}</div>
+        <div className="mt-2 text-sm text-red-400">{error}</div>
       )}
 
       {showChat && conversationId && (
