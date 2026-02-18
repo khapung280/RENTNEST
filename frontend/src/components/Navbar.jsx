@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, User } from 'lucide-react'
 import { getCurrentUser, isAuthenticated } from '../utils/auth'
 import RentNestLogo from './RentNestLogo'
 
@@ -50,7 +50,7 @@ const Navbar = () => {
       links.push({ path: '/login', label: 'Login' })
       links.push({ path: '/register', label: 'Register' })
     } else {
-      links.push({ path: '/profile', label: 'Profile' })
+      links.push({ path: '/profile', label: 'Profile', icon: 'profile' })
       links.push({ path: '/logout', label: 'Logout', isAction: true })
     }
     return links
@@ -90,6 +90,16 @@ const Navbar = () => {
                 >
                   {link.label}
                 </button>
+              ) : link.icon === 'profile' ? (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`p-2.5 rounded-xl transition-all duration-300 ${isActive(link.path) ? 'text-primary-400 bg-primary-500/20' : 'text-gray-300 hover:text-primary-400 hover:bg-white/5'}`}
+                  title="Profile"
+                  aria-label="Profile"
+                >
+                  <User className="w-5 h-5" />
+                </Link>
               ) : (
                 <Link
                   key={link.path}
@@ -124,10 +134,20 @@ const Navbar = () => {
                       setIsOpen(false)
                       handleLogout()
                     }}
-                    className="text-left px-4 py-3 rounded-xl text-base font-medium text-gray-300 hover:bg-white/5"
+                    className="text-left px-4 py-3 rounded-xl text-base font-medium text-gray-300 hover:bg-white/5 flex items-center gap-3"
                   >
                     {link.label}
                   </button>
+                ) : link.icon === 'profile' ? (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-medium ${linkClass(link.path)}`}
+                  >
+                    <User className="w-5 h-5" />
+                    {link.label}
+                  </Link>
                 ) : (
                   <Link
                     key={link.path}

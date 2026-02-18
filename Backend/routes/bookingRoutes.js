@@ -29,11 +29,12 @@ const validate = (req, res, next) => {
 };
 
 // ==================== RENTER ROUTES ====================
+// Renters and owners can both create/view bookings (owners can book others' properties)
 
-// POST /api/bookings - Create booking (renter only)
+// POST /api/bookings - Create booking (renter or owner)
 router.post('/', [
   protect,
-  authorize('renter'),
+  authorize('renter', 'owner'),
   body('property')
     .notEmpty()
     .withMessage('Property is required')
@@ -51,9 +52,9 @@ router.post('/', [
     .withMessage('Invalid check-out date')
 ], validate, asyncHandler(createBooking));
 
-// GET /api/bookings/my - Renter's bookings (also /my-bookings for frontend compat)
-router.get('/my', protect, authorize('renter'), asyncHandler(getMyBookings));
-router.get('/my-bookings', protect, authorize('renter'), asyncHandler(getMyBookings));
+// GET /api/bookings/my - User's bookings as renter (renter or owner)
+router.get('/my', protect, authorize('renter', 'owner'), asyncHandler(getMyBookings));
+router.get('/my-bookings', protect, authorize('renter', 'owner'), asyncHandler(getMyBookings));
 
 // ==================== OWNER ROUTES ====================
 

@@ -81,12 +81,20 @@ exports.adminOnly = (req, res, next) => {
  * @param {...string} roles - 'admin' | 'owner' | 'renter'
  */
 exports.authorize = (...roles) => {
-  const allowed = roles.filter(r => ROLES.includes(r));
+  const allowed = roles.filter(r => ROLES.includes(r)).map(r => r.toLowerCase());
   return (req, res, next) => {
-    if (!req.user || !allowed.includes(req.user.role)) {
+    if (!req.user) {
       return res.status(403).json({
         success: false,
-        message: `Access denied. Required role: ${allowed.join(' or ')}`
+        message: `Access denied. Required role: ${roles.join(' or ')}`
+      });
+    }
+    let userRole = (req.user.role || 'renter').toString().toLowerCase();
+    if (userRole === 'user') userRole = 'renter';
+    if (!allowed.includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        message: `Access denied. Required role: ${roles.join(' or ')}`
       });
     }
     next();

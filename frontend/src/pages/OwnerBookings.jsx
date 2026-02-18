@@ -29,7 +29,7 @@ const OwnerBookings = () => {
       setError(null)
       const response = await bookingService.getOwnerBookings()
       if (response.success) {
-        let filteredBookings = response.data.data || []
+        let filteredBookings = Array.isArray(response.data) ? response.data : (response.data?.data || [])
         
         // Filter by status
         if (statusFilter !== 'all') {
@@ -60,7 +60,7 @@ const OwnerBookings = () => {
       )
 
       if (response.success) {
-        setConversationId(response.data.data._id)
+        setConversationId(response.data._id)
         setShowChat(true)
       }
     } catch (error) {

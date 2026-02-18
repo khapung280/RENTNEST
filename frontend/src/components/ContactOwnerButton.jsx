@@ -38,7 +38,7 @@ const ContactOwnerButton = ({ property, owner, currentUserId }) => {
       );
 
       if (response.success) {
-        setConversationId(response.data.data._id);
+        setConversationId(response.data._id);
         setShowChat(true);
       }
     } catch (error) {

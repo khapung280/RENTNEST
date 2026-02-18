@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Home, Calendar, Clock, Building2, Loader2, DollarSign } from 'lucide-react'
+import { Home, Calendar, Clock, Building2, Loader2, DollarSign, Bell, User } from 'lucide-react'
 import { propertyService, bookingService } from '../services/aiService'
 import DashboardLayout from '../components/dashboard/DashboardLayout'
 import StatCard from '../components/dashboard/StatCard'
@@ -41,18 +41,19 @@ const OwnerDashboard = () => {
       const propertiesResponse = propertiesResult.status === 'fulfilled' ? propertiesResult.value : null
       const bookingsResponse = bookingsResult.status === 'fulfilled' ? bookingsResult.value : null
 
-      if (propertiesResponse?.success && propertiesResponse?.data?.data) {
-        setProperties(propertiesResponse.data.data)
+      if (propertiesResponse?.success) {
+        const list = Array.isArray(propertiesResponse.data) ? propertiesResponse.data : (propertiesResponse.data?.data || [])
+        setProperties(list)
       } else if (propertiesResult.status === 'rejected') {
         setError(propertiesResult.reason?.response?.data?.message || 'Failed to load properties')
       }
 
       if (bookingsResponse?.success) {
-        const list = Array.isArray(bookingsResponse.data?.data)
-          ? bookingsResponse.data.data
-          : bookingsResponse.data
-          ? [bookingsResponse.data]
-          : []
+        const list = Array.isArray(bookingsResponse.data)
+          ? bookingsResponse.data
+          : Array.isArray(bookingsResponse.data?.data)
+            ? bookingsResponse.data.data
+            : []
         setBookings(list)
       }
     } catch (err) {
@@ -178,6 +179,56 @@ const OwnerDashboard = () => {
           />
         </div>
       </section>
+
+      {stats.pendingRequests > 0 && (
+        <section className="mb-8 animate-fade-in">
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-amber-900 flex items-center gap-2">
+                <Bell size={20} className="text-amber-600" />
+                New Booking Requests
+              </h3>
+              <button
+                onClick={() => navigate('/owner-dashboard/bookings')}
+                className="text-sm font-medium text-amber-700 hover:text-amber-800"
+              >
+                View all →
+              </button>
+            </div>
+            <div className="space-y-3">
+              {bookings
+                .filter((b) => b.status === 'pending')
+                .slice(0, 5)
+                .map((b) => (
+                  <div
+                    key={b._id}
+                    className="flex items-center justify-between bg-white rounded-lg p-4 border border-amber-100 hover:border-amber-200 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <User size={18} className="text-amber-700" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-gray-900 truncate">
+                          {b.renter?.name || 'Renter'}
+                        </p>
+                        <p className="text-sm text-gray-600 truncate">
+                          {b.property?.title || 'Property'} • {b.renter?.email || ''}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate('/owner-dashboard/bookings')}
+                      className="flex-shrink-0 ml-4 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium rounded-lg"
+                    >
+                      Review
+                    </button>
+                  </div>
+                ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mb-8 animate-fade-in">
         <BookingTrendChart data={chartData} />
