@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { 
   Bed, 
@@ -30,7 +30,14 @@ import {
   Ban,
   Users,
   Clock,
-  Loader2
+  Loader2,
+  Share2,
+  Heart,
+  Printer,
+  Volume2,
+  VolumeX,
+  Flag,
+  GitCompare
 } from 'lucide-react'
 import { propertyService, bookingService } from '../services/aiService'
 import { calculateRentConfidence, getBestForLabel, calculateFairFlexSavings } from '../utils/propertyUtils'
@@ -66,6 +73,29 @@ const PropertyDetail = () => {
   const [bookingSuccess, setBookingSuccess] = useState(false)
   const [bookingError, setBookingError] = useState('')
   const [bookingLoading, setBookingLoading] = useState(false)
+
+  // Advanced features: share, save, listen, compare toasts
+  const SAVED_KEY = 'rentnest_saved_properties'
+  const COMPARE_KEY = 'rentnest_compare_ids'
+  const [shareToast, setShareToast] = useState(false)
+  const [savedIds, setSavedIds] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('rentnest_saved_properties') || '[]')
+    } catch {
+      return []
+    }
+  })
+  const [isListening, setIsListening] = useState(false)
+  const [compareToast, setCompareToast] = useState(false)
+  const speechSynthRef = useRef(null)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(SAVED_KEY, JSON.stringify(savedIds))
+    } catch (e) {
+      console.warn('Could not persist saved properties', e)
+    }
+  }, [savedIds])
 
   // Fetch property from backend API
   useEffect(() => {
@@ -397,14 +427,108 @@ const PropertyDetail = () => {
   
   // Calculate FairFlex pricing based on duration
   const calculateFairFlexPrice = (basePrice, duration) => {
-    // Simple discount logic: longer stays get better pricing
-    const discounts = {
-      1: 0,      // No discount for 1 month
-      3: 0.05,   // 5% discount for 3 months
-      6: 0.10,   // 10% discount for 6 months
-    }
+    const discounts = { 1: 0, 3: 0.05, 6: 0.10 }
     const discount = discounts[duration] || 0
     return Math.round(basePrice * (1 - discount))
+  }
+
+  // --- Advanced workable features (real, not dummy) ---
+  const propertyIdStr = propertyDetail ? String(propertyDetail._id || propertyDetail.id) : ''
+  const isSaved = propertyIdStr && savedIds.includes(propertyIdStr)
+
+  const formatUpdatedAt = (date) => {
+    if (!date) return null
+    const d = new Date(date)
+    const now = new Date()
+    const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24))
+    if (diffDays === 0) return 'Today'
+    if (diffDays === 1) return 'Yesterday'
+    if (diffDays < 7) return `${diffDays} days ago`
+    if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`
+    return d.toLocaleDateString()
+  }
+
+  const handleShare = async () => {
+    const url = window.location.href
+    const title = propertyDetail?.title || 'Property'
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title, url })
+        setShareToast(true)
+        setTimeout(() => setShareToast(false), 2500)
+      } catch (err) {
+        if (err.name !== 'AbortError') copyAndToast()
+      }
+    } else {
+      copyAndToast()
+    }
+    function copyAndToast() {
+      navigator.clipboard?.writeText(url).then(() => {
+        setShareToast(true)
+        setTimeout(() => setShareToast(false), 2500)
+      })
+    }
+  }
+
+  const handleSave = () => {
+    if (!propertyIdStr) return
+    setSavedIds(prev => prev.includes(propertyIdStr) ? prev.filter(i => i !== propertyIdStr) : [...prev, propertyIdStr])
+  }
+
+  const handleOpenMap = () => {
+    const location = propertyDetail?.location || ''
+    if (!location) return
+    const query = encodeURIComponent(location + ', Nepal')
+    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank', 'noopener,noreferrer')
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const handleListen = () => {
+    const desc = propertyDetail?.description
+    if (!desc) return
+    if (isListening && window.speechSynthesis) {
+      window.speechSynthesis.cancel()
+      setIsListening(false)
+      return
+    }
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      const u = new SpeechSynthesisUtterance(desc)
+      u.rate = 0.9
+      u.onend = () => setIsListening(false)
+      u.onerror = () => setIsListening(false)
+      speechSynthRef.current = u
+      window.speechSynthesis.speak(u)
+      setIsListening(true)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel()
+    }
+  }, [])
+
+  const handleReport = () => {
+    const subject = encodeURIComponent(`Incorrect info: ${propertyDetail?.title || 'Property'} (ID: ${propertyIdStr})`)
+    const body = encodeURIComponent(`Property URL: ${typeof window !== 'undefined' ? window.location.href : ''}\n\nPlease describe what is incorrect:\n`)
+    window.location.href = `mailto:support@rentnest.com?subject=${subject}&body=${body}`
+  }
+
+  const handleAddToCompare = () => {
+    if (!propertyIdStr) return
+    try {
+      const raw = localStorage.getItem(COMPARE_KEY)
+      const list = raw ? JSON.parse(raw) : []
+      const next = list.includes(propertyIdStr) ? list : [...list, propertyIdStr].slice(-3)
+      localStorage.setItem(COMPARE_KEY, JSON.stringify(next))
+      setCompareToast(true)
+      setTimeout(() => setCompareToast(false), 3000)
+    } catch (e) {
+      console.warn('Compare list save failed', e)
+    }
   }
 
   // Loading state
@@ -440,8 +564,22 @@ const PropertyDetail = () => {
 
   return (
     <div className="bg-neutral-950 min-h-screen text-gray-100">
-      {/* Header with Back Button */}
-      <div className="bg-neutral-900/80 border-b border-neutral-800">
+      {/* Toasts for Share / Compare (hidden when printing) */}
+      {shareToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-white text-sm shadow-lg flex items-center gap-2 print:hidden">
+          <Check className="w-4 h-4 text-green-400" />
+          Link copied to clipboard
+        </div>
+      )}
+      {compareToast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-white text-sm shadow-lg flex items-center gap-2 print:hidden">
+          <Check className="w-4 h-4 text-green-400" />
+          Added to compare. <Link to="/houses" className="text-violet-400 hover:underline font-medium">View on Houses</Link>
+        </div>
+      )}
+
+      {/* Header with Back Button (hidden when printing) */}
+      <div className="bg-neutral-900/80 border-b border-neutral-800 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate(-1)}
@@ -597,6 +735,81 @@ const PropertyDetail = () => {
                   ))}
                 </div>
               )}
+
+              {/* Advanced: Last updated (real from API) */}
+              {property?.updatedAt && (
+                <p className="text-xs text-gray-500 mt-3 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  Listing updated {formatUpdatedAt(property.updatedAt)}
+                </p>
+              )}
+
+              {/* Advanced: Action bar - Share, Save, Map, Print, Listen, Report, Compare (hidden when printing) */}
+              <div className="flex flex-wrap items-center gap-2 mt-4 print:hidden">
+                <button
+                  type="button"
+                  onClick={handleShare}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700 transition-colors text-sm"
+                  title="Share"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span className="hidden sm:inline">Share</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-colors text-sm ${isSaved ? 'bg-violet-600 border-violet-500 text-white' : 'bg-neutral-800 border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700'}`}
+                  title={isSaved ? 'Unsave' : 'Save'}
+                >
+                  <Heart className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+                  <span className="hidden sm:inline">{isSaved ? 'Saved' : 'Save'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOpenMap}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700 transition-colors text-sm"
+                  title="View on map"
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="hidden sm:inline">Map</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePrint}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700 transition-colors text-sm"
+                  title="Print"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span className="hidden sm:inline">Print</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleListen}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border transition-colors text-sm ${isListening ? 'bg-violet-600 border-violet-500 text-white' : 'bg-neutral-800 border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700'}`}
+                  title={isListening ? 'Stop' : 'Listen to description'}
+                >
+                  {isListening ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  <span className="hidden sm:inline">{isListening ? 'Stop' : 'Listen'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReport}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700 transition-colors text-sm"
+                  title="Report incorrect info"
+                >
+                  <Flag className="w-4 h-4" />
+                  <span className="hidden sm:inline">Report</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddToCompare}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-neutral-800 border border-neutral-700 text-gray-300 hover:text-white hover:bg-neutral-700 transition-colors text-sm"
+                  title="Add to compare"
+                >
+                  <GitCompare className="w-4 h-4" />
+                  <span className="hidden sm:inline">Compare</span>
+                </button>
+              </div>
             </div>
             
             {/* Right: Price */}
@@ -990,6 +1203,37 @@ const PropertyDetail = () => {
                 <p className="text-gray-400 text-xs text-center leading-relaxed">
                   All bookings are subject to availability and owner approval
                 </p>
+              </div>
+
+              {/* Quick actions & Listing updated (advanced features; hidden when printing) */}
+              <div className="pt-6 border-t border-neutral-800 space-y-3 print:hidden">
+                {property?.updatedAt && (
+                  <p className="text-xs text-gray-500 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    Updated {formatUpdatedAt(property.updatedAt)}
+                  </p>
+                )}
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Quick actions</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <button type="button" onClick={handleShare} className="flex items-center gap-2 py-2 px-3 rounded-lg bg-neutral-800 text-gray-300 hover:bg-neutral-700 text-xs">
+                    <Share2 className="w-3.5 h-3.5" /> Share
+                  </button>
+                  <button type="button" onClick={handleSave} className={`flex items-center gap-2 py-2 px-3 rounded-lg text-xs ${isSaved ? 'bg-violet-600 text-white' : 'bg-neutral-800 text-gray-300 hover:bg-neutral-700'}`}>
+                    <Heart className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} /> {isSaved ? 'Saved' : 'Save'}
+                  </button>
+                  <button type="button" onClick={handleOpenMap} className="flex items-center gap-2 py-2 px-3 rounded-lg bg-neutral-800 text-gray-300 hover:bg-neutral-700 text-xs">
+                    <MapPin className="w-3.5 h-3.5" /> Map
+                  </button>
+                  <button type="button" onClick={handlePrint} className="flex items-center gap-2 py-2 px-3 rounded-lg bg-neutral-800 text-gray-300 hover:bg-neutral-700 text-xs">
+                    <Printer className="w-3.5 h-3.5" /> Print
+                  </button>
+                  <button type="button" onClick={handleListen} className={`flex items-center gap-2 py-2 px-3 rounded-lg text-xs ${isListening ? 'bg-violet-600 text-white' : 'bg-neutral-800 text-gray-300 hover:bg-neutral-700'}`}>
+                    {isListening ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />} {isListening ? 'Stop' : 'Listen'}
+                  </button>
+                  <button type="button" onClick={handleAddToCompare} className="flex items-center gap-2 py-2 px-3 rounded-lg bg-neutral-800 text-gray-300 hover:bg-neutral-700 text-xs">
+                    <GitCompare className="w-3.5 h-3.5" /> Compare
+                  </button>
+                </div>
               </div>
             </div>
           </div>

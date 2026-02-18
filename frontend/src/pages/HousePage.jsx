@@ -115,6 +115,19 @@ const HousePage = () => {
     return params;
   }, [minParam, maxParam, bedsParam, verifiedParam, sortBy, currentPage]);
 
+  // Hydrate compare list from localStorage (e.g. from Property Detail "Add to compare")
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('rentnest_compare_ids');
+      if (raw) {
+        const ids = JSON.parse(raw);
+        if (Array.isArray(ids) && ids.length > 0) {
+          setCompareProperties(ids.filter((id) => id && typeof id === 'string'));
+        }
+      }
+    } catch (_) {}
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     const fetchData = async () => {
@@ -229,13 +242,17 @@ const HousePage = () => {
   };
 
   const handleToggleCompare = (propertyId) => {
-    setCompareProperties((prev) =>
-      prev.includes(propertyId)
+    setCompareProperties((prev) => {
+      const next = prev.includes(propertyId)
         ? prev.filter((id) => id !== propertyId)
         : prev.length < 3
           ? [...prev, propertyId]
-          : prev
-    );
+          : prev;
+      try {
+        localStorage.setItem('rentnest_compare_ids', JSON.stringify(next));
+      } catch (_) {}
+      return next;
+    });
   };
 
   const compareProps = useMemo(
@@ -647,7 +664,10 @@ const HousePage = () => {
           selectedProperties={compareProps}
           onRemove={handleToggleCompare}
           onCompare={() => compareProperties.length >= 2 && setShowCompareModal(true)}
-          onClose={() => setCompareProperties([])}
+          onClose={() => {
+        setCompareProperties([]);
+        try { localStorage.setItem('rentnest_compare_ids', '[]'); } catch (_) {}
+      }}
         />
       )}
 
