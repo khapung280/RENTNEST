@@ -31,17 +31,19 @@ const PORT = process.env.PORT || 5000;
 // CORS - Allow frontend to make requests (development + production)
 const allowedOrigins = [
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
   process.env.FRONTEND_URL,
-];
+].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-
+      const isLocalhost = /^https?:\/\/localhost(:\d+)?$/.test(origin);
       if (
         allowedOrigins.includes(origin) ||
+        isLocalhost ||
         origin.endsWith(".vercel.app")
       ) {
         callback(null, true);

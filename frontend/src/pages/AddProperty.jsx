@@ -240,7 +240,7 @@ const AddProperty = () => {
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                  className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                     errors.title ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                   }`}
                   placeholder="e.g., Modern 3 BHK House in Thamel"
@@ -257,7 +257,7 @@ const AddProperty = () => {
                   name="type"
                   value={formData.type}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white"
                 >
                   <option value="house">House</option>
                   <option value="flat_apartment">Flat/Apartment</option>
@@ -276,7 +276,7 @@ const AddProperty = () => {
                     name="location"
                     value={formData.location}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.location ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="e.g., Kathmandu, Pokhara"
@@ -298,7 +298,7 @@ const AddProperty = () => {
                     value={formData.price}
                     onChange={handleChange}
                     min="0"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.price ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="25000"
@@ -320,7 +320,7 @@ const AddProperty = () => {
                     value={formData.bedrooms}
                     onChange={handleChange}
                     min="0"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.bedrooms ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="3"
@@ -342,7 +342,7 @@ const AddProperty = () => {
                     value={formData.bathrooms}
                     onChange={handleChange}
                     min="0"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.bathrooms ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="2"
@@ -364,7 +364,7 @@ const AddProperty = () => {
                     value={formData.areaSqft}
                     onChange={handleChange}
                     min="0"
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.areaSqft ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="2000"
@@ -389,7 +389,7 @@ const AddProperty = () => {
                   value={formData.description}
                   onChange={handleChange}
                   rows="6"
-                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                     errors.description ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                   }`}
                   placeholder="Describe your property in detail (minimum 20 characters)..."
@@ -418,7 +418,7 @@ const AddProperty = () => {
                     name="image"
                     value={formData.image}
                     onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 ${
+                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.image ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
                     placeholder="https://images.unsplash.com/photo-..."
@@ -440,7 +440,7 @@ const AddProperty = () => {
                     type="url"
                     value={newImageUrl}
                     onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
                     placeholder="Image URL"
                   />
                   <button
@@ -479,7 +479,7 @@ const AddProperty = () => {
                 type="text"
                 value={newAmenity}
                 onChange={(e) => setNewAmenity(e.target.value)}
-                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
                 placeholder="e.g., Parking, WiFi, Garden"
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAmenity())}
               />
@@ -602,7 +602,7 @@ const AddProperty = () => {
                   name="houseRules.quietHours"
                   value={formData.houseRules.quietHours}
                   onChange={handleChange}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
                   placeholder="e.g., 10 PM - 7 AM"
                 />
               </div>
@@ -618,13 +618,13 @@ const AddProperty = () => {
                   type="text"
                   value={newNearbyPlace.name}
                   onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, name: e.target.value })}
-                  className="md:col-span-2 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="md:col-span-2 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
                   placeholder="Place name"
                 />
                 <select
                   value={newNearbyPlace.type}
                   onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, type: e.target.value })}
-                  className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white"
                 >
                   <option value="market">Market</option>
                   <option value="school">School</option>
@@ -637,7 +637,7 @@ const AddProperty = () => {
                     type="text"
                     value={newNearbyPlace.distance}
                     onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, distance: e.target.value })}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
                     placeholder="Distance"
                   />
                   <button

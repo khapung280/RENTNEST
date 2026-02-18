@@ -223,11 +223,11 @@ router.post('/upload', protect, adminOnly, requireCloudinaryConfig, (req, res, n
 });
 
 // @route   POST /api/properties
-// @desc    Create new property (Admin only). Accepts JSON or multipart/form-data (image file → Cloudinary URL).
-// @access  Private (Admin)
+// @desc    Create new property (Owner or Admin). Accepts JSON or multipart/form-data (image file → Cloudinary URL).
+// @access  Private (Owner, Admin)
 router.post('/', [
   protect,
-  adminOnly,
+  authorize('owner', 'admin'),
   optionalMultipartImageUpload,
   body('title')
     .trim()
@@ -332,11 +332,11 @@ router.post('/', [
 });
 
 // @route   PUT /api/properties/:id
-// @desc    Update property (Admin only)
-// @access  Private (Admin)
+// @desc    Update property (Owner of property or Admin)
+// @access  Private (Owner, Admin)
 router.put('/:id', [
   protect,
-  adminOnly,
+  authorize('owner', 'admin'),
   body('title').optional().trim().isLength({ min: 5, max: 100 }),
   body('type').optional().isIn(['house', 'flat_apartment']),
   body('location').optional().trim().isLength({ max: 100 }),
@@ -348,7 +348,6 @@ router.put('/:id', [
   body('image').optional().trim().isURL()
 ], async (req, res) => {
   try {
-    // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -358,7 +357,7 @@ router.put('/:id', [
       });
     }
 
-    let property = await Property.findById(req.params.id);
+    const property = await Property.findById(req.params.id);
 
     if (!property) {
       return res.status(404).json({
@@ -367,8 +366,15 @@ router.put('/:id', [
       });
     }
 
-    // Update property
-    property = await Property.findByIdAndUpdate(
+    const ownerId = property.owner?.toString?.() || property.owner?.toString?.() || '';
+    if (req.user.role !== 'admin' && ownerId !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only update your own property.'
+      });
+    }
+
+    const updatedProperty = await Property.findByIdAndUpdate(
       req.params.id,
       req.body,
       {
@@ -380,7 +386,7 @@ router.put('/:id', [
     res.json({
       success: true,
       message: 'Property updated successfully',
-      data: property
+      data: updatedProperty
     });
   } catch (error) {
     console.error('Update property error:', error);
@@ -399,9 +405,9 @@ router.put('/:id', [
 });
 
 // @route   DELETE /api/properties/:id
-// @desc    Delete property (Admin only)
-// @access  Private (Admin)
-router.delete('/:id', protect, adminOnly, async (req, res) => {
+// @desc    Delete property (Owner of property or Admin)
+// @access  Private (Owner, Admin)
+router.delete('/:id', protect, authorize('owner', 'admin'), async (req, res) => {
   try {
     const property = await Property.findById(req.params.id);
 
@@ -409,6 +415,14 @@ router.delete('/:id', protect, adminOnly, async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Property not found'
+      });
+    }
+
+    const ownerId = property.owner?.toString?.() || property.owner?.toString?.() || '';
+    if (req.user.role !== 'admin' && ownerId !== req.user.id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. You can only delete your own property.'
       });
     }
 

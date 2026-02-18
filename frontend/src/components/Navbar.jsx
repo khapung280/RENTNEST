@@ -44,7 +44,7 @@ const Navbar = () => {
       links.push({ path: '/owner-dashboard', label: 'Owner Dashboard' })
     }
     if (user?.accountType === 'admin') {
-      links.push({ path: '/admin', label: 'Admin Dashboard' })
+      links.push({ path: '/admin-dashboard', label: 'Admin Dashboard' })
     }
     if (!isAuthenticated()) {
       links.push({ path: '/login', label: 'Login' })

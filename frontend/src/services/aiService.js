@@ -11,10 +11,10 @@
 // Import Axios to make API calls
 import axios from 'axios';
 
-// Backend API base URL (no /api suffix). Use production when unset or when env points to localhost (e.g. wrong deploy config).
-const PRODUCTION_API = "https://rentnest-backend-wpqh.onrender.com";
+// Backend API base URL. Use VITE_API_URL when set (including localhost).
+const PRODUCTION_API = "https://rentnest-backend-wpqh.onrender.com/api";
 const envUrl = import.meta.env.VITE_API_URL;
-const API = (envUrl && !String(envUrl).includes("localhost")) ? String(envUrl).replace(/\/api\/?$/, "") : PRODUCTION_API;
+const API_BASE = envUrl ? String(envUrl).replace(/\/api\/?$/, "") + "/api" : PRODUCTION_API;
 
 // Helper function to get token from browser storage
 const getAuthToken = () => {
@@ -23,7 +23,7 @@ const getAuthToken = () => {
 
 // Create Axios instance for API calls
 const api = axios.create({
-  baseURL: `${API}/api`,
+  baseURL: API_BASE,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -240,6 +240,20 @@ export const bookingService = {
   // id: Booking ID to cancel
   cancel: async (id) => {
     const response = await api.put(`/bookings/${id}/cancel`);
+    return response.data;
+  }
+};
+
+// ============================================
+// USER SERVICE - Profile and account
+// ============================================
+export const userService = {
+  getProfile: async () => {
+    const response = await api.get('/users/me');
+    return response.data;
+  },
+  updateProfile: async (data) => {
+    const response = await api.put('/users/me', data);
     return response.data;
   }
 };

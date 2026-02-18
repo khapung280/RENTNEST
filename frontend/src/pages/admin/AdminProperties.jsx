@@ -1,84 +1,88 @@
-import { useState, useMemo } from 'react'
-import { Search, Filter, X, Home, CheckCircle, XCircle, MapPin, User, Building2 } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Search, Filter, X, Home, CheckCircle, XCircle, MapPin, User, Building2, Loader2 } from 'lucide-react'
 import AdminSidebar from '../../components/AdminSidebar'
+import { adminService } from '../../services/aiService'
 
-// Admin Properties Page - Enhanced property management interface
+const statusDisplay = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '')
+
 const AdminProperties = () => {
-  // Dummy property data
-  const [allProperties] = useState([
-    { id: 1, propertyName: 'Thamel Luxury Apartment', ownerName: 'Rajesh Shrestha', location: 'Kathmandu', status: 'Approved' },
-    { id: 2, propertyName: 'Lalitpur Family House', ownerName: 'Sita Maharjan', location: 'Lalitpur', status: 'Approved' },
-    { id: 3, propertyName: 'Pokhara Lake View Villa', ownerName: 'Bikash Gurung', location: 'Pokhara', status: 'Pending' },
-    { id: 4, propertyName: 'Baneshwor Modern Flat', ownerName: 'Anita Tamang', location: 'Kathmandu', status: 'Approved' },
-    { id: 5, propertyName: 'Bhaktapur Heritage Home', ownerName: 'Krishna Basnet', location: 'Bhaktapur', status: 'Pending' },
-    { id: 6, propertyName: 'Patan Studio Apartment', ownerName: 'Mina Thapa', location: 'Lalitpur', status: 'Approved' },
-    { id: 7, propertyName: 'Chabahil Family House', ownerName: 'Prakash Sharma', location: 'Kathmandu', status: 'Approved' },
-    { id: 8, propertyName: 'Koteshwor 3BHK Flat', ownerName: 'Sunita Poudel', location: 'Kathmandu', status: 'Approved' },
-    { id: 9, propertyName: 'Boudha Traditional Home', ownerName: 'Ramesh Karki', location: 'Kathmandu', status: 'Pending' },
-    { id: 10, propertyName: 'Jawalakhel Apartment', ownerName: 'Saraswati Adhikari', location: 'Lalitpur', status: 'Approved' },
-    { id: 11, propertyName: 'Budhanilkantha Villa', ownerName: 'Rajesh Shrestha', location: 'Kathmandu', status: 'Approved' },
-    { id: 12, propertyName: 'Imadol Residential House', ownerName: 'Sita Maharjan', location: 'Lalitpur', status: 'Pending' }
-  ])
-
-  // Filter states
+  const [properties, setProperties] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [actionLoading, setActionLoading] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [locationFilter, setLocationFilter] = useState('all')
-  const [properties, setProperties] = useState(allProperties)
 
-  // Get unique locations
+  const fetchProperties = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await adminService.getAllProperties({ limit: 100 })
+      if (res.success && Array.isArray(res.data)) setProperties(res.data)
+      else setProperties([])
+    } catch (err) {
+      console.error('Fetch admin properties error:', err)
+      setError(err.response?.data?.message || 'Failed to load properties')
+      setProperties([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProperties()
+  }, [])
+
   const locations = useMemo(() => {
-    const uniqueLocations = [...new Set(allProperties.map(p => p.location))]
-    return uniqueLocations.sort()
-  }, [allProperties])
+    const unique = [...new Set(properties.map(p => (p.location || '').trim()).filter(Boolean))]
+    return unique.sort()
+  }, [properties])
 
-  // Filter properties
   const filteredProperties = useMemo(() => {
     let filtered = [...properties]
-
-    // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
+    const q = searchQuery.trim().toLowerCase()
+    if (q) {
       filtered = filtered.filter(
-        property =>
-          property.propertyName.toLowerCase().includes(query) ||
-          property.ownerName.toLowerCase().includes(query) ||
-          property.location.toLowerCase().includes(query)
+        p =>
+          (p.title || '').toLowerCase().includes(q) ||
+          (p.owner?.name || p.ownerName || '').toLowerCase().includes(q) ||
+          (p.location || '').toLowerCase().includes(q)
       )
     }
-
-    // Status filter
     if (statusFilter !== 'all') {
-      filtered = filtered.filter(property => property.status === statusFilter)
+      filtered = filtered.filter(p => (p.status || '').toLowerCase() === statusFilter.toLowerCase())
     }
-
-    // Location filter
     if (locationFilter !== 'all') {
-      filtered = filtered.filter(property => property.location === locationFilter)
+      filtered = filtered.filter(p => (p.location || '').trim() === locationFilter)
     }
-
     return filtered
   }, [properties, searchQuery, statusFilter, locationFilter])
 
-  // Handle approve/reject
-  const handleApprove = (propertyId) => {
-    setProperties(prevProperties =>
-      prevProperties.map(property =>
-        property.id === propertyId
-          ? { ...property, status: 'Approved' }
-          : property
-      )
-    )
+  const handleApprove = async (id) => {
+    try {
+      setActionLoading(id)
+      const res = await adminService.approveProperty(id)
+      if (res.success) await fetchProperties()
+      else setError(res.message || 'Approve failed')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to approve')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
-  const handleReject = (propertyId) => {
-    setProperties(prevProperties =>
-      prevProperties.map(property =>
-        property.id === propertyId
-          ? { ...property, status: 'Rejected' }
-          : property
-      )
-    )
+  const handleReject = async (id) => {
+    try {
+      setActionLoading(id)
+      const res = await adminService.rejectProperty(id)
+      if (res.success) await fetchProperties()
+      else setError(res.message || 'Reject failed')
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to reject')
+    } finally {
+      setActionLoading(null)
+    }
   }
 
   // Clear all filters
@@ -91,13 +95,13 @@ const AdminProperties = () => {
   // Check if any filters are active
   const hasActiveFilters = searchQuery.trim() || statusFilter !== 'all' || locationFilter !== 'all'
 
-  // Count stats
   const stats = useMemo(() => {
+    const s = (status) => (p) => (p.status || '').toLowerCase() === status
     return {
       total: properties.length,
-      approved: properties.filter(p => p.status === 'Approved').length,
-      pending: properties.filter(p => p.status === 'Pending').length,
-      rejected: properties.filter(p => p.status === 'Rejected').length,
+      approved: properties.filter(s('approved')).length,
+      pending: properties.filter(s('pending')).length,
+      rejected: properties.filter(s('rejected')).length,
     }
   }, [properties])
 
@@ -117,6 +121,18 @@ const AdminProperties = () => {
         </div>
 
         <div className="p-6">
+          {error && (
+            <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between">
+              <p className="text-sm text-red-800">{error}</p>
+              <button onClick={() => setError(null)} className="text-red-600 hover:text-red-800 text-sm font-medium">Dismiss</button>
+            </div>
+          )}
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
+            </div>
+          ) : (
+          <>
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-white border-2 border-gray-300 rounded-lg p-4 shadow-sm">
@@ -202,9 +218,9 @@ const AdminProperties = () => {
                       className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-900 appearance-none bg-white cursor-pointer"
                     >
                       <option value="all">All Status</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Rejected">Rejected</option>
+                      <option value="approved">Approved</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
                     </select>
                   </div>
                 </div>
@@ -282,76 +298,85 @@ const AdminProperties = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredProperties.map((property) => (
-                      <tr key={property.id} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
+                    {filteredProperties.map((property) => {
+                      const status = (property.status || '').toLowerCase()
+                      const isPending = status === 'pending'
+                      const id = property._id || property.id
+                      const ownerName = property.owner?.name || property.ownerName || '—'
+                      return (
+                      <tr key={id} className="hover:bg-gray-50 transition-colors border-b border-gray-100">
                         <td className="py-4 px-6 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                              <Home className="w-5 h-5 text-indigo-600" />
-                            </div>
-                            <span className="text-sm font-semibold text-gray-900">{property.propertyName}</span>
+                            {property.image ? (
+                              <img src={property.image} alt="" className="w-10 h-10 object-cover rounded-lg" />
+                            ) : (
+                              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                                <Home className="w-5 h-5 text-indigo-600" />
+                              </div>
+                            )}
+                            <span className="text-sm font-semibold text-gray-900">{property.title || 'Untitled'}</span>
                           </div>
                         </td>
                         <td className="py-4 px-6 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <User className="w-4 h-4 text-gray-400" />
-                            {property.ownerName}
+                            {ownerName}
                           </div>
                         </td>
                         <td className="py-4 px-6 whitespace-nowrap">
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <MapPin className="w-4 h-4 text-gray-400" />
-                            {property.location}
+                            {property.location || '—'}
                           </div>
                         </td>
                         <td className="py-4 px-6 whitespace-nowrap">
                           <span
                             className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${
-                              property.status === 'Approved'
+                              status === 'approved'
                                 ? 'bg-green-100 text-green-800 border border-green-200'
-                                : property.status === 'Pending'
+                                : status === 'pending'
                                 ? 'bg-amber-100 text-amber-800 border border-amber-200'
                                 : 'bg-red-100 text-red-800 border border-red-200'
                             }`}
                           >
-                            {property.status}
+                            {statusDisplay(property.status)}
                           </span>
                         </td>
                         <td className="py-4 px-6 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            {property.status === 'Pending' && (
+                            {isPending && (
                               <>
                                 <button
-                                  onClick={() => handleApprove(property.id)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors border border-green-200"
+                                  onClick={() => handleApprove(id)}
+                                  disabled={actionLoading === id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-semibold transition-colors border border-green-200 disabled:opacity-50"
                                 >
-                                  <CheckCircle className="w-4 h-4" />
+                                  {actionLoading === id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                   Approve
                                 </button>
                                 <button
-                                  onClick={() => handleReject(property.id)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors border border-red-200"
+                                  onClick={() => handleReject(id)}
+                                  disabled={actionLoading === id}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-semibold transition-colors border border-red-200 disabled:opacity-50"
                                 >
-                                  <XCircle className="w-4 h-4" />
+                                  {actionLoading === id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                   Reject
                                 </button>
                               </>
                             )}
-                            {property.status === 'Approved' && (
-                              <span className="text-xs text-gray-500 italic">Approved</span>
-                            )}
-                            {property.status === 'Rejected' && (
-                              <span className="text-xs text-gray-500 italic">Rejected</span>
-                            )}
+                            {status === 'approved' && <span className="text-xs text-gray-500 italic">Approved</span>}
+                            {status === 'rejected' && <span className="text-xs text-gray-500 italic">Rejected</span>}
                           </div>
                         </td>
                       </tr>
-                    ))}
+                    )})}
                   </tbody>
                 </table>
               )}
             </div>
           </div>
+          </>
+          )}
         </div>
       </main>
     </div>
