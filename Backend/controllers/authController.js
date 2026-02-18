@@ -45,7 +45,7 @@ exports.register = async (req, res, next) => {
       phone: phone ? String(phone).trim() : ''
     });
 
-    const token = generateToken(user._id, user.role);
+    const token = generateToken(user._id, user.role ?? 'renter');
 
     res.status(201).json({
       success: true,
@@ -113,7 +113,10 @@ exports.login = async (req, res, next) => {
       });
     }
 
-    const token = generateToken(user._id, user.role);
+    console.log("DB USER ROLE:", user.role);
+    console.log("DB USER ACCOUNT TYPE:", user.accountType);
+
+    const token = generateToken(user._id, user.role ?? 'renter');
 
     res.json({
       success: true,

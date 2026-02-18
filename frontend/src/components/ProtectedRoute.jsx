@@ -8,16 +8,13 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole) {
-    const role = getRoleFromToken();
-    if (role !== requiredRole) {
-      if (requiredRole === 'admin') {
-        return <Navigate to="/login" replace />;
-      }
-      if (role === 'owner') return <Navigate to="/owner-dashboard" replace />;
-      if (role === 'admin') return <Navigate to="/admin" replace />;
-      return <Navigate to="/" replace />;
-    }
+  const role = getRoleFromToken();
+  const hasAccess = requiredRole ? role === requiredRole : true;
+
+  console.log('[ProtectedRoute]', { role, requiredRole, hasAccess });
+
+  if (!hasAccess) {
+    return <Navigate to="/" replace />;
   }
 
   return children;
