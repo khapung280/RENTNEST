@@ -410,10 +410,10 @@ const PropertyDetail = () => {
   // Loading state
   if (loading) {
     return (
-      <div className="bg-surface-50 flex items-center justify-center py-32">
+      <div className="bg-neutral-950 flex items-center justify-center py-32 min-h-screen">
         <div className="text-center">
-          <Loader2 className="w-10 h-10 animate-spin text-primary-500 mx-auto mb-4" />
-          <p className="text-surface-600 font-medium">Loading property...</p>
+          <Loader2 className="w-10 h-10 animate-spin text-violet-400 mx-auto mb-4" />
+          <p className="text-gray-400 font-medium">Loading property...</p>
         </div>
       </div>
     )
@@ -422,14 +422,14 @@ const PropertyDetail = () => {
   // Error state
   if (error || !propertyDetail) {
     return (
-      <div className="bg-surface-50 flex items-center justify-center py-32">
+      <div className="bg-neutral-950 flex items-center justify-center py-32 min-h-screen">
         <div className="text-center">
-          <h2 className="font-display text-2xl font-semibold text-surface-900 mb-4">
+          <h2 className="font-display text-2xl font-semibold text-white mb-4">
             {error || 'Property Not Found'}
           </h2>
           <button
             onClick={() => navigate('/houses')}
-            className="text-primary-600 hover:text-primary-700 font-medium transition-colors"
+            className="text-violet-400 hover:text-violet-300 font-medium transition-colors"
           >
             Back to Houses
           </button>
@@ -439,13 +439,13 @@ const PropertyDetail = () => {
   }
 
   return (
-    <div className="bg-surface-50 min-h-screen">
+    <div className="bg-neutral-950 min-h-screen text-gray-100">
       {/* Header with Back Button */}
-      <div className="bg-white border-b border-surface-100 shadow-soft">
+      <div className="bg-neutral-900/80 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-surface-600 hover:text-surface-900 transition-colors font-medium"
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-medium"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium text-sm">Back</span>
@@ -454,7 +454,7 @@ const PropertyDetail = () => {
       </div>
 
       {/* Image Gallery */}
-      <section className="bg-white">
+      <section className="bg-neutral-900/50 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="max-w-5xl mx-auto">
             {/* Main Large Image */}
@@ -463,13 +463,13 @@ const PropertyDetail = () => {
                 <img
                   src={selectedImage}
                   alt={propertyDetail.title}
-                  className="w-full h-[500px] md:h-[600px] object-cover rounded-lg"
+                  className="w-full h-[500px] md:h-[600px] object-cover rounded-xl"
                   onError={(e) => {
                     e.target.src = 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&h=800&fit=crop'
                   }}
                 />
               ) : (
-                <div className="w-full h-[500px] md:h-[600px] bg-gray-200 rounded-lg flex items-center justify-center">
+                <div className="w-full h-[500px] md:h-[600px] bg-neutral-800 rounded-xl flex items-center justify-center">
                   <p className="text-gray-500">No image available</p>
                 </div>
               )}
@@ -482,10 +482,10 @@ const PropertyDetail = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(img)}
-                  className={`relative overflow-hidden rounded-lg border transition-all ${
+                  className={`relative overflow-hidden rounded-xl border-2 transition-all ${
                     selectedImage === img
-                      ? 'border-gray-900'
-                      : 'border-gray-200 hover:border-gray-400'
+                      ? 'border-violet-500 ring-2 ring-violet-500/30'
+                      : 'border-neutral-700 hover:border-neutral-600'
                   }`}
                 >
                   <img
@@ -509,13 +509,13 @@ const PropertyDetail = () => {
       </section>
 
       {/* Property Header Section */}
-      <section className="bg-white border-b border-gray-200">
+      <section className="bg-neutral-900/50 border-b border-neutral-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
             {/* Left: Title and Location */}
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-3 mb-3">
-                <h1 className="text-3xl md:text-4xl font-semibold text-gray-900">
+                <h1 className="text-3xl md:text-4xl font-semibold text-white">
                   {propertyDetail.title}
                 </h1>
                 
@@ -530,9 +530,9 @@ const PropertyDetail = () => {
                     <Info className="w-3.5 h-3.5" />
                   </button>
                   {showConfidenceTooltip && (
-                    <div className="absolute top-full left-0 mt-2 w-64 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl z-30 border border-gray-700">
+                    <div className="absolute top-full left-0 mt-2 w-64 bg-neutral-800 text-white text-xs p-3 rounded-xl shadow-xl z-30 border border-neutral-700">
                       <div className="font-semibold mb-2">Rent Confidence Score</div>
-                      <div className="space-y-1 text-gray-300">
+                        <div className="space-y-1 text-gray-300">
                         <div>• Verified listing: {propertyDetail.verified ? 'Yes (+30)' : 'No'}</div>
                         <div>• Price fairness: {propertyDetail.price / propertyDetail.areaSqft <= 12 ? 'Good value' : 'Standard'}</div>
                         <div>• FairFlex: {fairFlexSavings?.hasFairFlex ? 'Available (+20)' : 'Not available'}</div>
@@ -544,9 +544,9 @@ const PropertyDetail = () => {
                 
                 {/* Rating Badge */}
                 {propertyDetail.rating && (
-                  <div className="bg-white border border-gray-200 px-2.5 py-1.5 rounded-lg flex items-center gap-1 shadow-sm">
+                  <div className="bg-neutral-800 border border-neutral-700 px-2.5 py-1.5 rounded-xl flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-semibold text-gray-900">
+                    <span className="text-sm font-semibold text-white">
                       {propertyDetail.rating.toFixed(1)}
                     </span>
                   </div>
@@ -554,7 +554,7 @@ const PropertyDetail = () => {
                 
                 {/* Verified Badge */}
                 {propertyDetail.verified && (
-                  <div className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2.5 py-1 rounded-md">
+                  <div className="flex items-center gap-1.5 bg-green-500/20 text-green-400 px-2.5 py-1 rounded-md border border-green-500/30">
                     <Shield className="w-3.5 h-3.5" />
                     <span className="text-xs font-medium">Verified</span>
                   </div>
@@ -563,7 +563,7 @@ const PropertyDetail = () => {
               
               {/* Location and Best For */}
               <div className="flex flex-wrap items-center gap-4 mb-3">
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-gray-300">
                   <MapPin className="w-5 h-5 text-gray-500" />
                   <span className="text-lg font-medium">{propertyDetail.location}</span>
                 </div>
@@ -602,10 +602,10 @@ const PropertyDetail = () => {
             {/* Right: Price */}
             <div className="md:text-right">
               <div className="flex items-baseline gap-2 md:justify-end mb-1">
-                <span className="text-4xl md:text-5xl font-semibold text-gray-900">
+                <span className="text-4xl md:text-5xl font-semibold text-white">
                   Rs. {propertyDetail.price.toLocaleString()}
                 </span>
-                <span className="text-lg text-gray-600 font-medium">/month</span>
+                <span className="text-lg text-gray-400 font-medium">/month</span>
               </div>
               <p className="text-sm text-gray-500">
                 FairFlex pricing available for longer stays
@@ -620,12 +620,12 @@ const PropertyDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-8">
-
             {/* FairFlex Pricing Preview */}
-            <div className="border-b border-gray-200 pb-8">
+            <div className="bg-neutral-900/80 rounded-2xl border border-neutral-800 p-6 md:p-8">
+            <div className="border-b border-neutral-800 pb-8">
               <div className="mb-5">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">FairFlex Pricing</h3>
-                <p className="text-sm text-gray-600">
+                <h3 className="text-lg font-semibold text-white mb-1">FairFlex Pricing</h3>
+                <p className="text-sm text-gray-400">
                   Save more when you commit to longer stays. Choose your preferred duration below.
                 </p>
               </div>
@@ -639,21 +639,21 @@ const PropertyDetail = () => {
                     <button
                       key={months}
                       onClick={() => setSelectedDuration(months)}
-                      className={`p-4 rounded-lg border transition-all text-left ${
+                      className={`p-4 rounded-xl border-2 transition-all text-left ${
                         isSelected
-                          ? 'border-gray-900 bg-gray-50'
-                          : 'border-gray-200 bg-white hover:border-gray-400'
+                          ? 'border-violet-500 bg-neutral-800'
+                          : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
                       }`}
                     >
-                      <div className="text-xs text-gray-600 mb-1">
+                      <div className="text-xs text-gray-400 mb-1">
                         {months} {months === 1 ? 'Month' : 'Months'}
                       </div>
-                      <div className="text-xl font-semibold text-gray-900">
+                      <div className="text-xl font-semibold text-white">
                         Rs. {discountedPrice.toLocaleString()}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">/month</div>
                       {months > 1 && (
-                        <div className="text-xs text-gray-600 font-medium mt-1">
+                        <div className="text-xs text-gray-400 font-medium mt-1">
                           Save {Math.round((propertyDetail.price - discountedPrice) * months).toLocaleString()}
                         </div>
                       )}
@@ -662,26 +662,26 @@ const PropertyDetail = () => {
                 })}
               </div>
               
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-neutral-800">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-700 font-medium">
+                  <span className="text-sm text-gray-400 font-medium">
                     Selected: {selectedDuration} {selectedDuration === 1 ? 'month' : 'months'}
                   </span>
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-lg font-semibold text-white">
                     Rs. {(calculateFairFlexPrice(propertyDetail.price, selectedDuration) * selectedDuration).toLocaleString()}
                   </span>
                 </div>
                 
                 {/* Enhanced Savings Display */}
                 {selectedDuration > 1 && fairFlexSavings && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-3">
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3 mt-3">
                     <div className="flex items-center gap-2">
-                      <TrendingDown className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-semibold text-green-700">
+                      <TrendingDown className="w-4 h-4 text-green-400" />
+                      <span className="text-sm font-semibold text-green-300">
                         You save NPR {Math.round((propertyDetail.price - calculateFairFlexPrice(propertyDetail.price, selectedDuration)) * selectedDuration).toLocaleString()} on {selectedDuration}-month stay
                       </span>
                     </div>
-                    <p className="text-xs text-green-600 mt-1">
+                    <p className="text-xs text-green-400 mt-1">
                       {selectedDuration === 3 
                         ? `Save NPR ${fairFlexSavings.monthlySavings3.toLocaleString()}/month with FairFlex`
                         : `Save NPR ${fairFlexSavings.monthlySavings6.toLocaleString()}/month with FairFlex`}
@@ -694,37 +694,39 @@ const PropertyDetail = () => {
                 </p>
               </div>
             </div>
+            </div>
 
             {/* Key Property Facts */}
-            <div className="grid grid-cols-3 gap-6 py-8 border-t border-gray-200">
+            <div className="bg-neutral-900/80 rounded-2xl border border-neutral-800 p-6 md:p-8">
+            <div className="grid grid-cols-3 gap-6 py-6 border-b border-neutral-800">
               <div className="flex items-center gap-3">
-                <Bed className="w-5 h-5 text-gray-400" />
+                <Bed className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Bedrooms</p>
-                  <p className="text-lg font-semibold text-gray-900">{propertyDetail.bedrooms}</p>
+                  <p className="text-sm text-gray-400">Bedrooms</p>
+                  <p className="text-lg font-semibold text-white">{propertyDetail.bedrooms}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Bath className="w-5 h-5 text-gray-400" />
+                <Bath className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Bathrooms</p>
-                  <p className="text-lg font-semibold text-gray-900">{propertyDetail.bathrooms}</p>
+                  <p className="text-sm text-gray-400">Bathrooms</p>
+                  <p className="text-lg font-semibold text-white">{propertyDetail.bathrooms}</p>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <Square className="w-5 h-5 text-gray-400" />
+                <Square className="w-5 h-5 text-gray-500" />
                 <div>
-                  <p className="text-sm text-gray-600">Area</p>
-                  <p className="text-lg font-semibold text-gray-900">{propertyDetail.areaSqft} sqft</p>
+                  <p className="text-sm text-gray-400">Area</p>
+                  <p className="text-lg font-semibold text-white">{propertyDetail.areaSqft} sqft</p>
                 </div>
               </div>
             </div>
 
             {/* Property Description */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">About this property</h2>
-              <p className="text-gray-700 leading-relaxed mb-4">{propertyDetail.description}</p>
-              <p className="text-gray-600 text-sm leading-relaxed">
+            <div className="pt-8">
+              <h2 className="text-xl font-semibold text-white mb-4">About this property</h2>
+              <p className="text-gray-300 leading-relaxed mb-4">{propertyDetail.description}</p>
+              <p className="text-gray-400 text-sm leading-relaxed">
                 This property offers a comfortable living experience with modern amenities and a convenient location. 
                 Whether you're looking for a short-term stay or a longer commitment, this home provides everything you need 
                 for a pleasant rental experience in Nepal.
@@ -732,43 +734,43 @@ const PropertyDetail = () => {
             </div>
 
             {/* Why This House */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Why this house?</h2>
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-4">Why this house?</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {generateWhyThisHouse(propertyDetail).map((reason, index) => (
                   <div key={index} className="flex items-start gap-3">
-                    <Check className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                    <p className="text-gray-700 text-sm leading-relaxed">{reason}</p>
+                    <Check className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-gray-300 text-sm leading-relaxed">{reason}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Amenities */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-5">Amenities</h2>
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">Amenities</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {propertyDetail.amenities.map((amenity, index) => (
                   <div key={index} className="flex items-center gap-2.5">
-                    <Check className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                    <span className="text-gray-700 text-sm">{amenity}</span>
+                    <Check className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    <span className="text-gray-300 text-sm">{amenity}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* What's Nearby */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-5">What's nearby</h2>
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">What's nearby</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {generateNearbyPlaces(propertyDetail).map((place, index) => {
                   const IconComponent = place.icon
                   return (
-                    <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <IconComponent className="w-5 h-5 text-gray-600 flex-shrink-0" />
+                    <div key={index} className="flex items-center gap-3 p-3 bg-neutral-800/50 rounded-xl border border-neutral-700">
+                      <IconComponent className="w-5 h-5 text-gray-400 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{place.name}</p>
-                        <p className="text-xs text-gray-600">{place.distance}</p>
+                        <p className="text-sm font-medium text-white">{place.name}</p>
+                        <p className="text-xs text-gray-400">{place.distance}</p>
                       </div>
                     </div>
                   )
@@ -777,18 +779,18 @@ const PropertyDetail = () => {
             </div>
 
             {/* Utilities Included */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-5">Utilities included</h2>
-              <p className="text-sm text-gray-600 mb-4">
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">Utilities included</h2>
+              <p className="text-sm text-gray-400 mb-4">
                 The following utilities are included in your monthly rent:
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {generateUtilities().map((utility, index) => {
                   const IconComponent = utility.icon
                   return (
-                    <div key={index} className="flex items-center gap-2.5 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                      <IconComponent className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-900">{utility.name}</span>
+                    <div key={index} className="flex items-center gap-2.5 p-3 bg-neutral-800/50 rounded-xl border border-neutral-700">
+                      <IconComponent className="w-5 h-5 text-green-400 flex-shrink-0" />
+                      <span className="text-sm font-medium text-white">{utility.name}</span>
                     </div>
                   )
                 })}
@@ -796,22 +798,22 @@ const PropertyDetail = () => {
             </div>
 
             {/* House Rules & Policies */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-5">House rules & policies</h2>
-              <p className="text-sm text-gray-600 mb-4">
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">House rules & policies</h2>
+              <p className="text-sm text-gray-400 mb-4">
                 Please review these rules before booking:
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {generateHouseRules(propertyDetail).map((rule, index) => {
                   const IconComponent = rule.icon
                   return (
-                    <div key={index} className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div key={index} className="flex items-start gap-3 p-4 bg-neutral-800/50 rounded-xl border border-neutral-700">
                       <IconComponent className={`w-5 h-5 mt-0.5 flex-shrink-0 ${
-                        rule.allowed ? 'text-green-600' : 'text-gray-400'
+                        rule.allowed ? 'text-green-400' : 'text-gray-500'
                       }`} />
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900 mb-1">{rule.title}</h3>
-                        <p className="text-sm text-gray-600">{rule.description}</p>
+                        <h3 className="text-sm font-semibold text-white mb-1">{rule.title}</h3>
+                        <p className="text-sm text-gray-400">{rule.description}</p>
                       </div>
                     </div>
                   )
@@ -820,45 +822,46 @@ const PropertyDetail = () => {
             </div>
 
             {/* Trust and Safety */}
-            <div className="border-t border-gray-200 pt-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-5">Trust & Safety</h2>
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">Trust & Safety</h2>
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <Shield className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Shield className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Verified Property</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-sm font-semibold text-white mb-1">Verified Property</h3>
+                    <p className="text-sm text-gray-400">
                       This property has been verified by our team for accuracy and availability.
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <UserCheck className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <UserCheck className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Verified Owner</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-sm font-semibold text-white mb-1">Verified Owner</h3>
+                    <p className="text-sm text-gray-400">
                       The property owner has been verified and is responsive to inquiries.
                     </p>
                   </div>
                 </div>
                 
                 <div className="flex items-start gap-3">
-                  <Lock className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Lock className="w-5 h-5 text-gray-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h3 className="text-sm font-semibold text-gray-900 mb-1">Secure Booking</h3>
-                    <p className="text-sm text-gray-600">
+                    <h3 className="text-sm font-semibold text-white mb-1">Secure Booking</h3>
+                    <p className="text-sm text-gray-400">
                       All bookings are processed securely. Your payment information is protected.
                     </p>
                   </div>
                 </div>
               </div>
             </div>
+            </div>
           </div>
 
           {/* Right Column - CTA */}
           <div className="lg:col-span-1">
-            <div className="bg-zinc-900 rounded-2xl shadow-xl border border-zinc-800 p-6 md:p-8 sticky top-24">
+            <div className="bg-neutral-900 rounded-2xl border border-neutral-800 p-6 md:p-8 sticky top-24">
               {/* Book Now */}
               <div className="mb-6">
                 {bookingSuccess ? (
@@ -890,7 +893,7 @@ const PropertyDetail = () => {
                       <p className="text-white font-semibold text-lg mb-4">Select dates</p>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-gray-300 text-sm mb-1">Check-in</label>
+                          <label className="block text-gray-400 text-sm mb-1">Check-in</label>
                           <input
                             type="date"
                             value={checkInDate}
@@ -900,17 +903,17 @@ const PropertyDetail = () => {
                               if (checkOutDate && e.target.value && checkOutDate <= e.target.value) setCheckOutDate('')
                               setBookingError('')
                             }}
-                            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-gray-500 transition-all"
+                            className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-violet-500 focus:outline-none placeholder:text-gray-500 transition-all"
                           />
                         </div>
                         <div>
-                          <label className="block text-gray-300 text-sm mb-1">Check-out</label>
+                          <label className="block text-gray-400 text-sm mb-1">Check-out</label>
                           <input
                             type="date"
                             value={checkOutDate}
                             min={checkOutMin}
                             onChange={(e) => { setCheckOutDate(e.target.value); setBookingError('') }}
-                            className="w-full bg-zinc-800 text-white border border-zinc-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-purple-500 focus:outline-none placeholder:text-gray-500 transition-all"
+                            className="w-full bg-neutral-800 text-white border border-neutral-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-violet-500 focus:outline-none placeholder:text-gray-500 transition-all"
                           />
                         </div>
                         {bookingError && <p className="text-xs text-red-400">{bookingError}</p>}
@@ -968,7 +971,7 @@ const PropertyDetail = () => {
                         alert('Owner information not available. Please try again later.')
                       }
                     }}
-                    className="w-full bg-zinc-800 text-white border border-zinc-700 font-medium py-3 rounded-xl hover:bg-zinc-700 transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-neutral-800 text-white border border-neutral-700 font-medium py-3 rounded-xl hover:bg-neutral-700 transition-all flex items-center justify-center gap-2"
                   >
                     <Phone className="w-4 h-4" />
                     Contact owner
@@ -977,9 +980,9 @@ const PropertyDetail = () => {
               </div>
 
               {/* Secure Booking Note */}
-              <div className="pt-6 border-t border-zinc-800">
+              <div className="pt-6 border-t border-neutral-800">
                 <div className="flex items-start gap-2.5 mb-4">
-                  <Lock className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                  <Lock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
                   <p className="text-gray-400 text-xs leading-relaxed">
                     Your booking request will be sent to the property owner. They&apos;ll respond within 24 hours.
                   </p>
@@ -995,11 +998,11 @@ const PropertyDetail = () => {
 
       {/* Similar Properties Section */}
       {similarProperties.length > 0 && (
-        <section className="bg-gray-50 border-t border-gray-200">
+        <section className="bg-neutral-900/50 border-t border-neutral-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">You might also like</h2>
-              <p className="text-gray-600">
+              <h2 className="text-2xl font-semibold text-white mb-2">You might also like</h2>
+              <p className="text-gray-400">
                 Similar properties in {propertyDetail.location} that might interest you
               </p>
             </div>

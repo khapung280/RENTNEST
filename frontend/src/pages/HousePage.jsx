@@ -6,8 +6,6 @@ import CompareBar from '../components/CompareBar';
 import CompareModal from '../components/CompareModal';
 import {
   Home,
-  Search,
-  MapPin,
   Filter,
   X,
   ChevronDown,
@@ -15,6 +13,10 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  Tag,
+  Users,
+  ShieldCheck,
+  Sparkles,
 } from 'lucide-react';
 import { calculateRentConfidence, getBestForLabel } from '../utils/propertyUtils';
 
@@ -38,6 +40,13 @@ const BED_OPTIONS = [
   { value: '2', label: '2+' },
   { value: '3', label: '3+' },
   { value: '4', label: '4+' },
+];
+
+const QUICK_BROWSE = [
+  { id: 'best-value', label: 'Best value', description: 'Under NPR 15k/mo', icon: Tag, gradient: 'from-emerald-500/20 to-teal-500/20', border: 'border-emerald-500/30', params: () => ({ min: '', max: '15000', beds: '', verified: '' }) },
+  { id: 'family', label: 'Family homes', description: '3+ bedrooms', icon: Users, gradient: 'from-violet-500/20 to-purple-500/20', border: 'border-violet-500/30', params: () => ({ min: '', max: '', beds: '3', verified: '' }) },
+  { id: 'verified', label: 'Verified only', description: 'RentNest verified', icon: ShieldCheck, gradient: 'from-amber-500/20 to-orange-500/20', border: 'border-amber-500/30', params: () => ({ min: '', max: '', beds: '', verified: 'true' }) },
+  { id: 'under-20k', label: 'Under 20k', description: 'Budget-friendly', icon: Sparkles, gradient: 'from-cyan-500/20 to-blue-500/20', border: 'border-cyan-500/30', params: () => ({ min: '', max: '20000', beds: '', verified: '' }) },
 ];
 
 function getPropertyTags(property) {
@@ -70,7 +79,6 @@ function CardSkeleton() {
 const HousePage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const locationParam = searchParams.get('location') || '';
   const minParam = searchParams.get('min') || '';
   const maxParam = searchParams.get('max') || '';
   const bedsParam = searchParams.get('beds') || '';
@@ -78,7 +86,6 @@ const HousePage = () => {
   const sortParam = searchParams.get('sort') || 'newest';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
 
-  const [locationInput, setLocationInput] = useState(locationParam);
   const [priceRange, setPriceRange] = useState(
     minParam || maxParam ? `${minParam || '0'}-${maxParam || '100000'}` : 'all'
   );
@@ -100,14 +107,13 @@ const HousePage = () => {
 
   const apiParams = useMemo(() => {
     const params = { type: 'house', limit: LIMIT, page: currentPage };
-    if (locationParam.trim()) params.location = locationParam.trim();
     if (minParam) params.minPrice = minParam;
     if (maxParam) params.maxPrice = maxParam;
     if (bedsParam) params.bedrooms = bedsParam;
     if (verifiedParam) params.verified = true;
     params.sortBy = sortBy === 'price-low' ? 'price_asc' : sortBy === 'price-high' ? 'price_desc' : sortBy;
     return params;
-  }, [locationParam, minParam, maxParam, bedsParam, verifiedParam, sortBy, currentPage]);
+  }, [minParam, maxParam, bedsParam, verifiedParam, sortBy, currentPage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,7 +159,6 @@ const HousePage = () => {
 
   const applyFilters = () => {
     const params = new URLSearchParams();
-    if (locationInput.trim()) params.set('location', locationInput.trim());
     if (priceRange !== 'all') {
       const [min, max] = priceRange.split('-');
       if (min && parseInt(min, 10) > 0) params.set('min', min);
@@ -168,7 +173,6 @@ const HousePage = () => {
   };
 
   const resetFilters = () => {
-    setLocationInput('');
     setPriceRange('all');
     setBedrooms('all');
     setVerifiedOnly(false);
@@ -179,10 +183,7 @@ const HousePage = () => {
 
   const removeFilter = (key, value) => {
     const params = new URLSearchParams(searchParams);
-    if (key === 'location') {
-      params.delete('location');
-      setLocationInput('');
-    } else if (key === 'price') {
+    if (key === 'price') {
       params.delete('min');
       params.delete('max');
       setPriceRange('all');
@@ -207,11 +208,25 @@ const HousePage = () => {
   };
 
   const activeFiltersCount = [
-    locationParam,
     minParam || maxParam,
     bedsParam,
     verifiedParam,
   ].filter(Boolean).length;
+
+  const applyQuickPreset = (preset) => {
+    const p = preset.params();
+    const params = new URLSearchParams();
+    if (p.min) params.set('min', p.min);
+    if (p.max) params.set('max', p.max);
+    if (p.beds) params.set('beds', p.beds);
+    if (p.verified) params.set('verified', p.verified);
+    params.set('page', '1');
+    setPriceRange(p.min || p.max ? (p.min || '0') + '-' + (p.max || '100000') : 'all');
+    setBedrooms(p.beds || 'all');
+    setVerifiedOnly(!!p.verified);
+    setSearchParams(params);
+    setShowFilters(false);
+  };
 
   const handleToggleCompare = (propertyId) => {
     setCompareProperties((prev) =>
@@ -232,8 +247,15 @@ const HousePage = () => {
     <div className="min-h-screen bg-neutral-950 text-gray-100">
       {/* Hero */}
       <section className="relative py-16 md:py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/80 via-neutral-950 to-neutral-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(124,58,237,0.25),transparent)]" />
+        {/* Background image – house/rental scene */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage: `url(https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=80)`,
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/85 via-neutral-950/90 to-neutral-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(124,58,237,0.3),transparent)]" />
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-500/20 border border-violet-500/30 mb-6">
@@ -243,31 +265,36 @@ const HousePage = () => {
               Houses for Rent
             </h1>
             <p className="text-gray-400 text-lg max-w-xl mx-auto">
-              Find verified rental houses across Nepal. Filter by location, price, and size.
+              Browse verified rental houses. Filter by price, size & verified status—no location search here.
             </p>
           </div>
 
-          {/* Search bar */}
-          <div className="max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row gap-3 p-3 rounded-2xl bg-neutral-900/80 border border-neutral-800">
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                <input
-                  type="text"
-                  value={locationInput}
-                  onChange={(e) => setLocationInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && applyFilters()}
-                  placeholder="Location (e.g. Kathmandu, Pokhara)"
-                  className="w-full pl-12 pr-4 py-3 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-                />
-              </div>
-              <button
-                onClick={applyFilters}
-                className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium flex items-center justify-center gap-2 transition-colors"
-              >
-                <Search className="w-5 h-5" />
-                Search
-              </button>
+          {/* Browse by – House-page-only quick presets */}
+          <div className="mt-10">
+            <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4 text-center">
+              Browse by
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
+              {QUICK_BROWSE.map((item) => {
+                const Icon = item.icon;
+                const isActive =
+                  (item.id === 'best-value' && maxParam === '15000' && !minParam && !bedsParam && !verifiedParam) ||
+                  (item.id === 'family' && bedsParam === '3' && !minParam && !maxParam && !verifiedParam) ||
+                  (item.id === 'verified' && verifiedParam && !minParam && !maxParam && !bedsParam) ||
+                  (item.id === 'under-20k' && maxParam === '20000' && !minParam && !bedsParam && !verifiedParam);
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => applyQuickPreset(item)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border bg-neutral-900/80 text-left transition-all hover:scale-[1.02] ${item.gradient} ${item.border} ${isActive ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-neutral-950' : ''}`}
+                  >
+                    <Icon className={`w-6 h-6 ${isActive ? 'text-violet-400' : 'text-gray-400'}`} />
+                    <span className="font-semibold text-white text-sm">{item.label}</span>
+                    <span className="text-xs text-gray-500">{item.description}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -276,18 +303,24 @@ const HousePage = () => {
       {/* Main content */}
       <section className="relative py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Stats strip – House page advanced insight */}
+          {!loading && properties.length > 0 && (
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-4 py-2 text-sm text-gray-400">
+              <span className="font-medium text-white">{total} {total === 1 ? 'listing' : 'listings'}</span>
+              <span>
+                Avg. rent this set: NPR {Math.round(properties.reduce((s, p) => s + (p.price || 0), 0) / properties.length).toLocaleString()}/mo
+              </span>
+              {verifiedParam && <span className="text-amber-400/90">Verified only</span>}
+            </div>
+          )}
+
           {/* Toolbar: results count, filter button, sort */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
               {!loading && (
                 <h2 className="text-xl font-semibold text-white">
                   {total > 0 ? (
-                    <>
-                      {total} {total === 1 ? 'house' : 'houses'} found
-                      {locationParam && (
-                        <span className="text-gray-400 font-normal"> in {locationParam}</span>
-                      )}
-                    </>
+                    <>{total} {total === 1 ? 'house' : 'houses'} found</>
                   ) : (
                     <>No houses match your filters</>
                   )}
@@ -332,20 +365,8 @@ const HousePage = () => {
           </div>
 
           {/* Active filter chips */}
-          {(locationParam || minParam || maxParam || bedsParam || verifiedParam) && (
+          {(minParam || maxParam || bedsParam || verifiedParam) && (
             <div className="flex flex-wrap gap-2 mb-6">
-              {locationParam && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-sm">
-                  {locationParam}
-                  <button
-                    type="button"
-                    onClick={() => removeFilter('location')}
-                    className="hover:bg-violet-500/30 rounded p-0.5"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </span>
-              )}
               {(minParam || maxParam) && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 border border-neutral-700 text-gray-300 text-sm">
                   {minParam && maxParam
@@ -417,18 +438,6 @@ const HousePage = () => {
                 <div className="space-y-5">
                   <div>
                     <label className="block text-sm font-medium text-gray-400 mb-2">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      value={locationInput}
-                      onChange={(e) => setLocationInput(e.target.value)}
-                      placeholder="City or area"
-                      className="w-full px-4 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Price range
                     </label>
                     <select
@@ -496,18 +505,6 @@ const HousePage = () => {
                     </button>
                   </div>
                   <div className="space-y-5">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-400 mb-2">
-                        Location
-                      </label>
-                      <input
-                        type="text"
-                        value={locationInput}
-                        onChange={(e) => setLocationInput(e.target.value)}
-                        placeholder="City or area"
-                        className="w-full px-4 py-2.5 rounded-xl bg-neutral-800 border border-neutral-700 text-white placeholder-gray-500"
-                      />
-                    </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-400 mb-2">
                         Price range
@@ -630,7 +627,7 @@ const HousePage = () => {
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-2">No houses found</h3>
                   <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
-                    Try changing your filters or search in a different location.
+                    Try changing your filters or clear filters to see more listings.
                   </p>
                   <button
                     onClick={resetFilters}

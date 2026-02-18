@@ -228,41 +228,38 @@ const FlatsApartmentsPage = () => {
     return allFlatsApartments.filter(f => compareProperties.includes(f._id || f.id))
   }, [allFlatsApartments, compareProperties])
 
-  // Hero background image - Realty Nepal property image
-  const heroBackgroundImage = 'https://www.realtynepal.com/uploads/2024/01/409610771_395211956292705_8349237220876335740_n-750x750.jpg'
+  // Hero background image - flats/apartments (visible with dark overlay)
+  const heroBackgroundImage = 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1920&q=80'
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Hero Section - Premium and Clean */}
+    <div className="min-h-screen bg-neutral-950 text-gray-100">
+      {/* Hero Section - same background colour as House page, image visible */}
       <section className="relative py-20 md:py-24 overflow-hidden">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <img 
-            src={heroBackgroundImage}
-            alt="Beautiful flats and apartments"
-            className="w-full h-full object-cover"
-          />
-          {/* Clean overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/55 to-white"></div>
-        </div>
+        {/* Background Image - visible */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBackgroundImage})` }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/75 via-neutral-950/85 to-neutral-950" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(124,58,237,0.25),transparent)]" />
         
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-white rounded-lg mb-6">
-              <Building2 className="w-6 h-6 text-indigo-600" />
+            <div className="inline-flex items-center justify-center w-14 h-14 bg-violet-500/20 border border-violet-500/30 rounded-2xl mb-6">
+              <Building2 className="w-7 h-7 text-violet-400" />
             </div>
-            <h1 className="text-4xl md:text-5xl font-semibold text-gray-900 mb-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
               Flats & Apartments for Rent
             </h1>
             {searchLocation ? (
-              <div className="flex items-center justify-center gap-2 text-base text-gray-700">
-                <Search className="w-4 h-4 text-indigo-600" />
+              <div className="flex items-center justify-center gap-2 text-base text-gray-300">
+                <Search className="w-4 h-4 text-violet-400" />
                 <p>
-                  Showing properties in <span className="font-medium text-gray-900">{searchLocation}</span>
+                  Showing properties in <span className="font-medium text-white">{searchLocation}</span>
                 </p>
               </div>
             ) : (
-              <p className="text-base md:text-lg text-gray-700 max-w-xl mx-auto leading-relaxed">
+              <p className="text-base md:text-lg text-gray-400 max-w-xl mx-auto leading-relaxed">
                 Explore available rental flats and apartments across Nepal
               </p>
             )}
@@ -271,24 +268,24 @@ const FlatsApartmentsPage = () => {
       </section>
 
       {/* Smooth Transition */}
-      <div className="relative h-12 bg-gradient-to-b from-transparent to-white"></div>
+      <div className="relative h-8 bg-gradient-to-b from-transparent to-neutral-950" />
 
-      {/* Listings Section - Premium and Spacious */}
-      <section className="pt-12 pb-20 md:pt-16 md:pb-24 bg-white">
+      {/* Listings Section - same dark theme as House page */}
+      <section className="pt-12 pb-20 md:pt-16 md:pb-24 bg-neutral-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Results Header with Filters and Sort */}
           <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             {/* Results Count */}
             <div>
               {sortedFlatsApartments.length > 0 ? (
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-semibold text-white">
                   {sortedFlatsApartments.length} {sortedFlatsApartments.length === 1 ? 'property' : 'properties'} found
-                  {searchLocation && ` in ${searchLocation}`}
+                  {searchLocation && <span className="text-gray-400 font-normal"> in {searchLocation}</span>}
                 </h2>
               ) : (
-                <h2 className="text-2xl font-semibold text-gray-900">
+                <h2 className="text-2xl font-semibold text-white">
                   No properties found
-                  {searchLocation && ` in ${searchLocation}`}
+                  {searchLocation && <span className="text-gray-400 font-normal"> in {searchLocation}</span>}
                 </h2>
               )}
             </div>
@@ -298,12 +295,12 @@ const FlatsApartmentsPage = () => {
               {/* Mobile Filter Button */}
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className="md:hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="md:hidden flex items-center gap-2 px-4 py-2.5 border border-neutral-700 rounded-xl bg-neutral-900 text-gray-300 hover:bg-neutral-800"
               >
                 <Filter className="w-4 h-4" />
                 <span>Filters</span>
                 {activeFiltersCount > 0 && (
-                  <span className="bg-indigo-600 text-white text-xs px-2 py-0.5 rounded-full">
+                  <span className="bg-violet-600 text-white text-xs px-2 py-0.5 rounded-full">
                     {activeFiltersCount}
                   </span>
                 )}
@@ -323,14 +320,14 @@ const FlatsApartmentsPage = () => {
                     }
                     setSearchParams(params)
                   }}
-                  className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-900 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="appearance-none bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-2.5 pr-8 text-sm font-medium text-gray-200 hover:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-violet-500"
                 >
                   <option value="recommended">Recommended</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
                   <option value="confidence">Rent Confidence</option>
                 </select>
-                <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               </div>
             </div>
           </div>
@@ -338,13 +335,13 @@ const FlatsApartmentsPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Filter Sidebar - Desktop */}
             <aside className="hidden lg:block lg:col-span-1">
-              <div className="bg-white border border-gray-200 rounded-lg p-6 sticky top-24">
+              <div className="bg-neutral-900/80 border border-neutral-800 rounded-2xl p-6 sticky top-24">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                  <h3 className="text-lg font-semibold text-white">Filters</h3>
                   {activeFiltersCount > 0 && (
                     <button
                       onClick={resetFilters}
-                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                      className="text-sm text-violet-400 hover:text-violet-300 font-medium"
                     >
                       Reset
                     </button>
@@ -354,13 +351,13 @@ const FlatsApartmentsPage = () => {
                 <div className="space-y-6">
                   {/* Location Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Location
                     </label>
                     <select
                       value={locationFilter}
                       onChange={(e) => setLocationFilter(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200 focus:ring-2 focus:ring-violet-500"
                     >
                       <option value="">All Locations</option>
                       {availableLocations.map(loc => (
@@ -371,13 +368,13 @@ const FlatsApartmentsPage = () => {
 
                   {/* Price Range Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Price Range
                     </label>
                     <select
                       value={priceFilter}
                       onChange={(e) => setPriceFilter(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200 focus:ring-2 focus:ring-violet-500"
                     >
                       <option value="all">Any</option>
                       <option value="10000">Under 10k</option>
@@ -389,13 +386,13 @@ const FlatsApartmentsPage = () => {
 
                   {/* Bedrooms Filter */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-900 mb-2">
+                    <label className="block text-sm font-medium text-gray-400 mb-2">
                       Bedrooms
                     </label>
                     <select
                       value={bedroomsFilter}
                       onChange={(e) => setBedroomsFilter(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                      className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200 focus:ring-2 focus:ring-violet-500"
                     >
                       <option value="all">Any</option>
                       <option value="1">1+</option>
@@ -412,16 +409,16 @@ const FlatsApartmentsPage = () => {
                         type="checkbox"
                         checked={verifiedFilter}
                         onChange={(e) => setVerifiedFilter(e.target.checked)}
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                        className="w-4 h-4 text-violet-600 border-neutral-600 rounded bg-neutral-800 focus:ring-violet-500"
                       />
-                      <span className="text-sm font-medium text-gray-900">Verified only</span>
+                      <span className="text-sm font-medium text-gray-300">Verified only</span>
                     </label>
                   </div>
 
                   {/* Apply Filters Button */}
                   <button
                     onClick={updateFilters}
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+                    className="w-full bg-violet-600 hover:bg-violet-500 text-white font-medium py-2.5 rounded-xl transition-colors"
                   >
                     Apply Filters
                   </button>
@@ -431,13 +428,13 @@ const FlatsApartmentsPage = () => {
 
             {/* Mobile Filter Panel */}
             {showFilters && (
-              <div className="lg:hidden fixed inset-0 bg-black/50 z-50 flex items-start justify-end">
-                <div className="bg-white w-full max-w-sm h-full overflow-y-auto p-6">
+              <div className="lg:hidden fixed inset-0 bg-black/60 z-50 flex items-start justify-end">
+                <div className="bg-neutral-900 border-l border-neutral-800 w-full max-w-sm h-full overflow-y-auto p-6">
                   <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-semibold text-gray-900">Filters</h3>
+                    <h3 className="text-lg font-semibold text-white">Filters</h3>
                     <button
                       onClick={() => setShowFilters(false)}
-                      className="p-2 hover:bg-gray-100 rounded-lg"
+                      className="p-2 hover:bg-neutral-800 rounded-lg"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -445,13 +442,13 @@ const FlatsApartmentsPage = () => {
                   {/* Same filter content as desktop */}
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
                         Location
                       </label>
                       <select
                         value={locationFilter}
                         onChange={(e) => setLocationFilter(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200"
                       >
                         <option value="">All Locations</option>
                         {availableLocations.map(loc => (
@@ -460,13 +457,13 @@ const FlatsApartmentsPage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
                         Price Range
                       </label>
                       <select
                         value={priceFilter}
                         onChange={(e) => setPriceFilter(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200"
                       >
                         <option value="all">Any</option>
                         <option value="10000">Under 10k</option>
@@ -476,13 +473,13 @@ const FlatsApartmentsPage = () => {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-900 mb-2">
+                      <label className="block text-sm font-medium text-gray-400 mb-2">
                         Bedrooms
                       </label>
                       <select
                         value={bedroomsFilter}
                         onChange={(e) => setBedroomsFilter(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                        className="w-full border border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-neutral-800 text-gray-200"
                       >
                         <option value="all">Any</option>
                         <option value="1">1+</option>
@@ -497,21 +494,21 @@ const FlatsApartmentsPage = () => {
                           type="checkbox"
                           checked={verifiedFilter}
                           onChange={(e) => setVerifiedFilter(e.target.checked)}
-                          className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                          className="w-4 h-4 text-violet-600 border-neutral-600 rounded bg-neutral-800 focus:ring-violet-500"
                         />
-                        <span className="text-sm font-medium text-gray-900">Verified only</span>
+                        <span className="text-sm font-medium text-gray-300">Verified only</span>
                       </label>
                     </div>
                     <div className="flex gap-3">
                       <button
                         onClick={resetFilters}
-                        className="flex-1 border border-gray-300 text-gray-700 font-medium py-2.5 rounded-lg hover:bg-gray-50"
+                        className="flex-1 border border-neutral-700 text-gray-300 font-medium py-2.5 rounded-xl hover:bg-neutral-800"
                       >
                         Reset
                       </button>
                       <button
                         onClick={updateFilters}
-                        className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg"
+                        className="flex-1 bg-violet-600 hover:bg-violet-500 text-white font-medium py-2.5 rounded-xl"
                       >
                         Apply
                       </button>
@@ -525,16 +522,16 @@ const FlatsApartmentsPage = () => {
             <div className="lg:col-span-3">
               {loading ? (
                 <div className="flex flex-col items-center justify-center py-16">
-                  <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
-                  <p className="text-gray-600">Loading properties...</p>
+                  <Loader2 className="w-10 h-10 text-violet-400 animate-spin mb-4" />
+                  <p className="text-gray-400">Loading properties...</p>
                 </div>
               ) : error ? (
                 <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-xl mb-4">
-                    <Search className="w-8 h-8 text-red-600" />
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-xl mb-4 border border-red-500/30">
+                    <Search className="w-8 h-8 text-red-400" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">Error loading properties</h3>
-                  <p className="text-gray-600 text-sm">{error}</p>
+                  <h3 className="text-xl font-semibold text-white mb-2">Error loading properties</h3>
+                  <p className="text-gray-400 text-sm">{error}</p>
                 </div>
               ) : sortedFlatsApartments.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -549,16 +546,16 @@ const FlatsApartmentsPage = () => {
                 </div>
               ) : (
                 <div className="text-center py-16">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-xl mb-4">
-                    <Search className="w-8 h-8 text-indigo-600" />
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-neutral-800 rounded-xl mb-4 border border-neutral-700">
+                    <Search className="w-8 h-8 text-gray-500" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No properties found</h3>
-                  <p className="text-gray-600 mb-6 text-sm">
+                  <h3 className="text-xl font-semibold text-white mb-2">No properties found</h3>
+                  <p className="text-gray-400 mb-6 text-sm">
                     Try adjusting your filters or search criteria
                   </p>
                   <button
                     onClick={resetFilters}
-                    className="inline-block bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-2.5 rounded-lg transition-colors text-sm"
+                    className="inline-block bg-violet-600 hover:bg-violet-500 text-white font-medium px-6 py-2.5 rounded-xl transition-colors text-sm"
                   >
                     Reset filters
                   </button>
