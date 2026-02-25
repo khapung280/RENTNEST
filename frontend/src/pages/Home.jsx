@@ -96,6 +96,12 @@ const Home = () => {
     bestFor: getBestForLabel(prop),
   })), [propertiesList])
 
+  // Unique locations for dropdown (from loaded properties)
+  const availableLocations = useMemo(() => {
+    const locations = [...new Set(allProperties.map(p => (p.location || '').trim()).filter(Boolean))].sort()
+    return locations
+  }, [allProperties])
+
   // Load last search from localStorage
   useEffect(() => {
     const lastSearch = localStorage.getItem('rentnest_last_search')
@@ -121,20 +127,16 @@ const Home = () => {
   const handleSearch = (e) => {
     e.preventDefault()
     const location = searchLocation.trim()
-    
-    setLocationTouched(true)
-    
-    if (!location) {
-      setShowLocationError(true)
-      return
-    }
 
+    setLocationTouched(true)
+
+    // Allow search without location (All Locations)
     setShowLocationError(false)
     saveSearch(location, propertyType)
-    
+
     // Build query params
     const params = new URLSearchParams()
-    params.set('location', location)
+    if (location) params.set('location', location)
     if (priceRange !== 'all') {
       const [min, max] = priceRange.split('-')
       if (min) params.set('min', min)
@@ -464,29 +466,22 @@ const Home = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                   <div className="md:col-span-2">
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                      <input
-                        type="text"
-                        placeholder="Search by location"
+                      <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none z-10" />
+                      <select
                         value={searchLocation}
                         onChange={(e) => {
                           setSearchLocation(e.target.value)
-                          if (e.target.value.trim()) setShowLocationError(false)
+                          setShowLocationError(false)
                         }}
-                        onBlur={() => {
-                          setLocationTouched(true)
-                          if (!searchLocation.trim()) setShowLocationError(true)
-                        }}
-                        className={`w-full pl-12 pr-4 py-4 border-2 rounded-xl focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 bg-white/10 backdrop-blur-sm text-white placeholder-white/60 text-base ${
-                          showLocationError && locationTouched
-                            ? 'border-red-400/50'
-                            : 'border-white/20'
-                        }`}
-                      />
+                        onBlur={() => setLocationTouched(true)}
+                        className="w-full pl-12 pr-10 py-4 border-2 border-white/20 rounded-xl focus:ring-2 focus:ring-primary-400/50 focus:border-primary-400 bg-white/10 backdrop-blur-sm text-white text-base appearance-none cursor-pointer"
+                      >
+                        <option value="" className="bg-neutral-800 text-gray-300">All Locations</option>
+                        {availableLocations.map((loc) => (
+                          <option key={loc} value={loc} className="bg-neutral-800">{loc}</option>
+                        ))}
+                      </select>
                     </div>
-                    {showLocationError && locationTouched && !searchLocation.trim() && (
-                      <p className="text-red-300 text-xs mt-2 ml-1">Enter a location</p>
-                    )}
                   </div>
                   <div className="relative">
                     <select

@@ -268,7 +268,7 @@ const HousePage = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `url(https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=1920&q=80)`,
+            backgroundImage: `url(https://gharjaggabazar.com/uploads/seller/image/x13_20260218082817.jpg.pagespeed.ic.7ECxkk0mFy.jpg)`,
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-br from-violet-950/85 via-neutral-950/90 to-neutral-950" />
