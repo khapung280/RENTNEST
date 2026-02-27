@@ -184,6 +184,14 @@ router.get('/:id', async (req, res) => {
       });
     }
 
+    // Debug: confirm coordinates in API response
+    console.log('[Property GET] Returning property:', {
+      id: property._id,
+      title: property.title,
+      latitude: property.latitude,
+      longitude: property.longitude
+    });
+
     res.status(200).json({
       success: true,
       data: property
@@ -277,7 +285,17 @@ router.post('/', [
     .notEmpty()
     .withMessage('Main image URL is required')
     .isURL()
-    .withMessage('Image must be a valid URL')
+    .withMessage('Image must be a valid URL'),
+  body('latitude')
+    .notEmpty()
+    .withMessage('Latitude is required')
+    .isFloat({ min: -90, max: 90 })
+    .withMessage('Latitude must be between -90 and 90'),
+  body('longitude')
+    .notEmpty()
+    .withMessage('Longitude is required')
+    .isFloat({ min: -180, max: 180 })
+    .withMessage('Longitude must be between -180 and 180')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -300,6 +318,11 @@ router.post('/', [
     }
 
     // Coerce numbers (multipart sends strings)
+    const latitude = Number(req.body.latitude);
+    const longitude = Number(req.body.longitude);
+    // Debug: confirm coordinates received
+    console.log('[Property Create] Received coordinates:', { latitude, longitude, propertyTitle: req.body.title });
+
     const propertyData = {
       ...req.body,
       owner: req.user.id,
@@ -308,7 +331,9 @@ router.post('/', [
       price: Number(req.body.price),
       bedrooms: Number(req.body.bedrooms),
       bathrooms: Number(req.body.bathrooms),
-      areaSqft: Number(req.body.areaSqft)
+      areaSqft: Number(req.body.areaSqft),
+      latitude,
+      longitude
     };
 
     const property = await Property.create(propertyData);
@@ -345,7 +370,9 @@ router.put('/:id', [
   body('bathrooms').optional().isInt({ min: 0 }),
   body('areaSqft').optional().isInt({ min: 0 }),
   body('description').optional().trim().isLength({ min: 20, max: 2000 }),
-  body('image').optional().trim().isURL()
+  body('image').optional().trim().isURL(),
+  body('latitude').optional().isFloat({ min: -90, max: 90 }),
+  body('longitude').optional().isFloat({ min: -180, max: 180 })
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -374,9 +401,18 @@ router.put('/:id', [
       });
     }
 
+    const updateData = { ...req.body };
+    if (req.body.latitude != null && req.body.longitude != null) {
+      updateData.latitude = Number(req.body.latitude);
+      updateData.longitude = Number(req.body.longitude);
+    } else if (req.body.latitude === '' || req.body.longitude === '') {
+      updateData.latitude = null;
+      updateData.longitude = null;
+    }
+
     const updatedProperty = await Property.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      updateData,
       {
         new: true,
         runValidators: true

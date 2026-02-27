@@ -1,7 +1,13 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Home, Building2, MapPin, DollarSign, Bed, Bath, Square, FileText, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
 import { propertyService } from '../services/aiService'
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
+
+const mapContainerStyle = { width: '100%', height: '400px' }
+const nepalCenter = { lat: 27.7172, lng: 85.324 }
 
 const AddProperty = () => {
   const navigate = useNavigate()
@@ -9,6 +15,8 @@ const AddProperty = () => {
     title: '',
     type: 'house',
     location: '',
+    latitude: '',
+    longitude: '',
     price: '',
     bedrooms: '',
     bathrooms: '',
@@ -38,6 +46,25 @@ const AddProperty = () => {
   const [newImageUrl, setNewImageUrl] = useState('')
   const [newAmenity, setNewAmenity] = useState('')
   const [newNearbyPlace, setNewNearbyPlace] = useState({ name: '', type: 'market', distance: '' })
+
+  const { isLoaded: isMapLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+  })
+
+  const handleMapClick = useCallback((e) => {
+    if (e.latLng) {
+      const lat = e.latLng.lat()
+      const lng = e.latLng.lng()
+      setFormData(prev => ({
+        ...prev,
+        latitude: String(lat),
+        longitude: String(lng)
+      }))
+      if (errors.latitude) setErrors(prev => ({ ...prev, latitude: '' }))
+      if (errors.longitude) setErrors(prev => ({ ...prev, longitude: '' }))
+    }
+  }, [errors.latitude, errors.longitude])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -119,6 +146,14 @@ const AddProperty = () => {
 
     if (!formData.title.trim()) newErrors.title = 'Title is required'
     if (!formData.location.trim()) newErrors.location = 'Location is required'
+    const lat = parseFloat(formData.latitude)
+    const lng = parseFloat(formData.longitude)
+    if (isNaN(lat) || lat < -90 || lat > 90) {
+      newErrors.latitude = 'Enter valid latitude (-90 to 90) or pick on map'
+    }
+    if (isNaN(lng) || lng < -180 || lng > 180) {
+      newErrors.longitude = 'Enter valid longitude (-180 to 180) or pick on map'
+    }
     if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required'
     if (!formData.bedrooms || formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms is required'
     if (!formData.bathrooms || formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms is required'
@@ -143,10 +178,17 @@ const AddProperty = () => {
     setShowSuccess(false)
 
     try {
+      const latitude = parseFloat(formData.latitude);
+      const longitude = parseFloat(formData.longitude);
+      // Debug: confirm coordinates being sent
+      console.log('[AddProperty] Sending coordinates:', { latitude, longitude, title: formData.title.trim() });
+
       const propertyData = {
         title: formData.title.trim(),
         type: formData.type,
         location: formData.location.trim(),
+        latitude,
+        longitude,
         price: parseInt(formData.price),
         bedrooms: parseInt(formData.bedrooms),
         bathrooms: parseInt(formData.bathrooms),
@@ -267,7 +309,7 @@ const AddProperty = () => {
               {/* Location */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Location <span className="text-red-500">*</span>
+                  Location (address/area) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -279,10 +321,86 @@ const AddProperty = () => {
                     className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
                       errors.location ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
                     }`}
-                    placeholder="e.g., Kathmandu, Pokhara"
+                    placeholder="e.g., Jhapa Modan House, Damak"
                   />
                 </div>
                 {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+              </div>
+
+              {/* Latitude & Longitude - Required for exact map location */}
+              <div className="md:col-span-2">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                  Exact coordinates <span className="text-red-500">*</span>
+                </h3>
+                <p className="text-sm text-gray-500 mb-3">
+                  Enter latitude and longitude below, or click on the map to set the exact property location.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
+                    <input
+                      type="text"
+                      name="latitude"
+                      value={formData.latitude}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
+                        errors.latitude ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
+                      }`}
+                      placeholder="e.g., 26.6333"
+                    />
+                    {errors.latitude && <p className="mt-1 text-sm text-red-600">{errors.latitude}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
+                    <input
+                      type="text"
+                      name="longitude"
+                      value={formData.longitude}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
+                        errors.longitude ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
+                      }`}
+                      placeholder="e.g., 87.8833"
+                    />
+                    {errors.longitude && <p className="mt-1 text-sm text-red-600">{errors.longitude}</p>}
+                  </div>
+                </div>
+
+                {/* Map Picker - only when API key is set */}
+                {GOOGLE_MAPS_API_KEY && isMapLoaded && (
+                  <div className="border border-gray-300 rounded-lg overflow-hidden">
+                    <p className="text-xs text-gray-500 px-3 py-2 bg-gray-50">
+                      Click on the map to set the exact property location
+                    </p>
+                    <div className="relative">
+                      <GoogleMap
+                        mapContainerStyle={mapContainerStyle}
+                        center={
+                          formData.latitude && formData.longitude
+                            ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
+                            : nepalCenter
+                        }
+                        zoom={formData.latitude && formData.longitude ? 15 : 7}
+                        onClick={handleMapClick}
+                        options={{ mapTypeControl: true, fullscreenControl: true }}
+                      >
+                        {formData.latitude && formData.longitude && (
+                          <Marker
+                            position={{
+                              lat: parseFloat(formData.latitude),
+                              lng: parseFloat(formData.longitude)
+                            }}
+                          />
+                        )}
+                      </GoogleMap>
+                    </div>
+                  </div>
+                )}
+                {!GOOGLE_MAPS_API_KEY && (
+                  <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
+                    To enable map picker, add VITE_GOOGLE_MAPS_API_KEY to your .env file. You can still enter coordinates manually or get them from Google Maps (right-click location → copy coordinates).
+                  </p>
+                )}
               </div>
 
               {/* Price */}

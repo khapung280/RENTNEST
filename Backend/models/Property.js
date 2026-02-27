@@ -19,6 +19,14 @@ const propertySchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Location cannot be more than 100 characters']
   },
+  latitude: {
+    type: Number,
+    required: [true, 'Please provide latitude (use map picker or enter manually)']
+  },
+  longitude: {
+    type: Number,
+    required: [true, 'Please provide longitude (use map picker or enter manually)']
+  },
   price: {
     type: Number,
     required: [true, 'Please provide a monthly rent price'],

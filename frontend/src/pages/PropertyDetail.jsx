@@ -39,7 +39,10 @@ import {
   Flag,
   GitCompare
 } from 'lucide-react'
+import { useJsApiLoader, GoogleMap, Marker } from '@react-google-maps/api'
 import { propertyService, bookingService } from '../services/aiService'
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
 import { calculateRentConfidence, getBestForLabel, calculateFairFlexSavings } from '../utils/propertyUtils'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import ContactOwnerButton from '../components/ContactOwnerButton'
@@ -66,6 +69,11 @@ const PropertyDetail = () => {
   // Get current user ID for messaging
   const currentUserId = getCurrentUserId()
   const loggedIn = isAuthenticated()
+
+  const { isLoaded: isMapLoaded } = useJsApiLoader({
+    id: 'google-map-script-detail',
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY
+  })
 
   // Book Now state
   const [checkInDate, setCheckInDate] = useState('')
@@ -105,7 +113,16 @@ const PropertyDetail = () => {
         setError(null)
         const response = await propertyService.getById(id)
         if (response.success && response.data) {
-          setProperty(response.data)
+          const data = response.data
+          // Debug: confirm coordinates received from API
+          console.log('[PropertyDetail] Property loaded:', {
+            id: data._id,
+            title: data.title,
+            latitude: data.latitude,
+            longitude: data.longitude,
+            hasCoords: data.latitude != null && data.longitude != null
+          })
+          setProperty(data)
         } else {
           setError('Property not found')
         }
@@ -476,10 +493,15 @@ const PropertyDetail = () => {
   }
 
   const handleOpenMap = () => {
+    const lat = propertyDetail?.latitude
+    const lng = propertyDetail?.longitude
     const location = propertyDetail?.location || ''
-    if (!location) return
-    const query = encodeURIComponent(location + ', Nepal')
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank', 'noopener,noreferrer')
+    if (lat != null && lng != null && !isNaN(lat) && !isNaN(lng)) {
+      window.open(`https://www.google.com/maps?q=${lat},${lng}`, '_blank', 'noopener,noreferrer')
+    } else if (location) {
+      const query = encodeURIComponent(location + ', Nepal')
+      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank', 'noopener,noreferrer')
+    }
   }
 
   const handlePrint = () => {
@@ -970,6 +992,87 @@ const PropertyDetail = () => {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Property Location Map - uses saved latitude/longitude only, no geocoding */}
+            <div className="pt-8 border-t border-neutral-800">
+              <h2 className="text-xl font-semibold text-white mb-5">Location</h2>
+              {(() => {
+                const lat = propertyDetail?.latitude
+                const lng = propertyDetail?.longitude
+                const hasCoords = lat != null && lng != null && !isNaN(lat) && !isNaN(lng)
+                const position = hasCoords ? { lat: Number(lat), lng: Number(lng) } : null
+                if (hasCoords && GOOGLE_MAPS_API_KEY && isMapLoaded && position) {
+                  return (
+                    <div className="rounded-xl overflow-hidden border border-neutral-700">
+                      <div className="aspect-video w-full">
+                        <GoogleMap
+                          mapContainerStyle={{ width: '100%', height: '100%', minHeight: '300px' }}
+                          center={position}
+                          zoom={15}
+                          options={{ mapTypeControl: true, fullscreenControl: true, streetViewControl: true }}
+                        >
+                          <Marker position={position} />
+                        </GoogleMap>
+                      </div>
+                      <p className="text-xs text-gray-500 px-4 py-2 bg-neutral-800/50">
+                        Exact property location at {Number(lat).toFixed(5)}, {Number(lng).toFixed(5)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={handleOpenMap}
+                        className="w-full py-2 text-sm text-violet-400 hover:text-violet-300 font-medium"
+                      >
+                        Open in Google Maps →
+                      </button>
+                    </div>
+                  )
+                }
+                if (hasCoords && !GOOGLE_MAPS_API_KEY) {
+                  return (
+                    <div className="rounded-xl overflow-hidden border border-neutral-700 bg-neutral-800/50 p-6">
+                      <div className="flex flex-col items-center justify-center text-center">
+                        <MapPin className="w-12 h-12 text-gray-500 mb-3" />
+                        <p className="text-gray-300 mb-2">
+                          Coordinates: {Number(lat).toFixed(5)}, {Number(lng).toFixed(5)}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={handleOpenMap}
+                          className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg font-medium"
+                        >
+                          View in Google Maps
+                        </button>
+                        <p className="text-xs text-gray-500 mt-3">
+                          Add VITE_GOOGLE_MAPS_API_KEY to .env for embedded map
+                        </p>
+                      </div>
+                    </div>
+                  )
+                }
+                return (
+                  <div className="rounded-xl border border-neutral-700 bg-neutral-800/50 p-6">
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-8 h-8 text-gray-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-gray-300 font-medium">Exact location not available.</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          Coordinates were not set for this property. Contact the owner for the address.
+                        </p>
+                        {propertyDetail?.location && (
+                          <button
+                            type="button"
+                            onClick={handleOpenMap}
+                            className="mt-3 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-gray-300 rounded-lg text-sm"
+                          >
+                            Search &quot;{propertyDetail.location}&quot; in Google Maps
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
             </div>
 
             {/* What's Nearby */}
