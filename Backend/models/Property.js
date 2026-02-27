@@ -130,21 +130,7 @@ const propertySchema = new mongoose.Schema({
       type: String,
       default: ''
     }
-  },
-  nearbyPlaces: [{
-    name: {
-      type: String,
-      required: true
-    },
-    type: {
-      type: String, // 'school', 'hospital', 'market', 'bus_stop', 'restaurant'
-      required: true
-    },
-    distance: {
-      type: String, // e.g., "500m", "1km"
-      required: true
-    }
-  }]
+  }
 }, {
   timestamps: true // Adds createdAt and updatedAt automatically
 });

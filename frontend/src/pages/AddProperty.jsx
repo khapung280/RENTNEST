@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Home, Building2, MapPin, DollarSign, Bed, Bath, Square, FileText, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
+import { GoogleMap, Marker } from '@react-google-maps/api'
+import GoogleMapsProvider from '../components/GoogleMapsProvider'
 import { propertyService } from '../services/aiService'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
@@ -34,8 +35,7 @@ const AddProperty = () => {
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: ''
-    },
-    nearbyPlaces: []
+    }
   })
 
   const [selectedFiles, setSelectedFiles] = useState([]) // File[]
@@ -44,12 +44,6 @@ const AddProperty = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [newAmenity, setNewAmenity] = useState('')
-  const [newNearbyPlace, setNewNearbyPlace] = useState({ name: '', type: 'market', distance: '' })
-
-  const { isLoaded: isMapLoaded } = useJsApiLoader({
-    id: 'google-map-script',
-    googleMapsApiKey: GOOGLE_MAPS_API_KEY
-  })
 
   const handleMapClick = useCallback((e) => {
     if (e.latLng) {
@@ -140,23 +134,6 @@ const AddProperty = () => {
     }))
   }
 
-  const handleAddNearbyPlace = () => {
-    if (newNearbyPlace.name.trim() && newNearbyPlace.distance.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        nearbyPlaces: [...prev.nearbyPlaces, { ...newNearbyPlace }]
-      }))
-      setNewNearbyPlace({ name: '', type: 'market', distance: '' })
-    }
-  }
-
-  const handleRemoveNearbyPlace = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      nearbyPlaces: prev.nearbyPlaces.filter((_, i) => i !== index)
-    }))
-  }
-
   const validateForm = () => {
     const newErrors = {}
 
@@ -211,7 +188,6 @@ const AddProperty = () => {
       fd.append('amenities', JSON.stringify(formData.amenities))
       fd.append('utilities', JSON.stringify(formData.utilities))
       fd.append('houseRules', JSON.stringify(formData.houseRules))
-      fd.append('nearbyPlaces', JSON.stringify(formData.nearbyPlaces))
 
       selectedFiles.forEach((file) => {
         fd.append('images', file)
@@ -382,34 +358,36 @@ const AddProperty = () => {
                 </div>
 
                 {/* Map Picker - only when API key is set */}
-                {GOOGLE_MAPS_API_KEY && isMapLoaded && (
-                  <div className="border border-gray-300 rounded-lg overflow-hidden">
-                    <p className="text-xs text-gray-500 px-3 py-2 bg-gray-50">
-                      Click on the map to set the exact property location
-                    </p>
-                    <div className="relative">
-                      <GoogleMap
-                        mapContainerStyle={mapContainerStyle}
-                        center={
-                          formData.latitude && formData.longitude
-                            ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
-                            : nepalCenter
-                        }
-                        zoom={formData.latitude && formData.longitude ? 15 : 7}
-                        onClick={handleMapClick}
-                        options={{ mapTypeControl: true, fullscreenControl: true }}
-                      >
-                        {formData.latitude && formData.longitude && (
-                          <Marker
-                            position={{
-                              lat: parseFloat(formData.latitude),
-                              lng: parseFloat(formData.longitude)
-                            }}
-                          />
-                        )}
-                      </GoogleMap>
+                {GOOGLE_MAPS_API_KEY && (
+                  <GoogleMapsProvider>
+                    <div className="border border-gray-300 rounded-lg overflow-hidden">
+                      <p className="text-xs text-gray-500 px-3 py-2 bg-gray-50">
+                        Click on the map to set the exact property location
+                      </p>
+                      <div className="relative">
+                        <GoogleMap
+                          mapContainerStyle={mapContainerStyle}
+                          center={
+                            formData.latitude && formData.longitude
+                              ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
+                              : nepalCenter
+                          }
+                          zoom={formData.latitude && formData.longitude ? 15 : 7}
+                          onClick={handleMapClick}
+                          options={{ mapTypeControl: true, fullscreenControl: true }}
+                        >
+                          {formData.latitude && formData.longitude && (
+                            <Marker
+                              position={{
+                                lat: parseFloat(formData.latitude),
+                                lng: parseFloat(formData.longitude)
+                              }}
+                            />
+                          )}
+                        </GoogleMap>
+                      </div>
                     </div>
-                  </div>
+                  </GoogleMapsProvider>
                 )}
                 {!GOOGLE_MAPS_API_KEY && (
                   <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
@@ -729,67 +707,6 @@ const AddProperty = () => {
                   placeholder="e.g., 10 PM - 7 AM"
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Nearby Places */}
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Nearby Places (Optional)</h2>
-            <div className="space-y-3">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <input
-                  type="text"
-                  value={newNearbyPlace.name}
-                  onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, name: e.target.value })}
-                  className="md:col-span-2 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
-                  placeholder="Place name"
-                />
-                <select
-                  value={newNearbyPlace.type}
-                  onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, type: e.target.value })}
-                  className="px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 bg-white"
-                >
-                  <option value="market">Market</option>
-                  <option value="school">School</option>
-                  <option value="hospital">Hospital</option>
-                  <option value="bus_stop">Bus Stop</option>
-                  <option value="restaurant">Restaurant</option>
-                </select>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newNearbyPlace.distance}
-                    onChange={(e) => setNewNearbyPlace({ ...newNearbyPlace, distance: e.target.value })}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
-                    placeholder="Distance"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddNearbyPlace}
-                    className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                  >
-                    Add
-                  </button>
-                </div>
-              </div>
-              {formData.nearbyPlaces.length > 0 && (
-                <div className="space-y-2">
-                  {formData.nearbyPlaces.map((place, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span className="text-sm text-gray-700">
-                        {place.name} ({place.type}) - {place.distance}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveNearbyPlace(index)}
-                        className="text-red-600 hover:text-red-700 text-sm"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 

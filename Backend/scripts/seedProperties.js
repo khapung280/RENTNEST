@@ -49,12 +49,7 @@ const sampleProperties = [
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: '10 PM - 7 AM'
-    },
-    nearbyPlaces: [
-      { name: 'Thamel Market', type: 'market', distance: '200m' },
-      { name: 'Kathmandu Hospital', type: 'hospital', distance: '1km' },
-      { name: 'International School', type: 'school', distance: '500m' }
-    ]
+    }
   },
   {
     title: 'Cozy 2 BHK Flat in Lakeside, Pokhara',
@@ -85,12 +80,7 @@ const sampleProperties = [
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: '11 PM - 7 AM'
-    },
-    nearbyPlaces: [
-      { name: 'Phewa Lake', type: 'restaurant', distance: '100m' },
-      { name: 'Lakeside Market', type: 'market', distance: '300m' },
-      { name: 'Bus Stop', type: 'bus_stop', distance: '200m' }
-    ]
+    }
   },
   {
     title: 'Affordable 1 BHK Studio in Baneshwor, Kathmandu',
@@ -120,11 +110,7 @@ const sampleProperties = [
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: ''
-    },
-    nearbyPlaces: [
-      { name: 'Baneshwor Bus Park', type: 'bus_stop', distance: '500m' },
-      { name: 'College', type: 'school', distance: '1km' }
-    ]
+    }
   },
   {
     title: 'Luxury 4 BHK House in Patan, Lalitpur',
@@ -155,12 +141,7 @@ const sampleProperties = [
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: '10 PM - 7 AM'
-    },
-    nearbyPlaces: [
-      { name: 'Patan Durbar Square', type: 'restaurant', distance: '1km' },
-      { name: 'Patan Hospital', type: 'hospital', distance: '2km' },
-      { name: 'International School', type: 'school', distance: '1.5km' }
-    ]
+    }
   },
   {
     title: 'Budget-Friendly 2 BHK Flat in Chitwan',
@@ -190,11 +171,7 @@ const sampleProperties = [
       smokingAllowed: false,
       guestsAllowed: true,
       quietHours: ''
-    },
-    nearbyPlaces: [
-      { name: 'Local Market', type: 'market', distance: '500m' },
-      { name: 'Bus Stop', type: 'bus_stop', distance: '300m' }
-    ]
+    }
   }
 ];
 

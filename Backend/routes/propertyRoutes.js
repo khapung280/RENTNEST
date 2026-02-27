@@ -328,7 +328,7 @@ router.post('/', [
     const latitude = Number(req.body.latitude);
     const longitude = Number(req.body.longitude);
 
-    // Parse JSON fields from multipart (amenities, utilities, houseRules, nearbyPlaces)
+    // Parse JSON fields from multipart (amenities, utilities, houseRules)
     const amenities = typeof req.body.amenities === 'string'
       ? (() => { try { return JSON.parse(req.body.amenities); } catch { return []; } })()
       : (Array.isArray(req.body.amenities) ? req.body.amenities : []);
@@ -338,9 +338,6 @@ router.post('/', [
     const houseRules = typeof req.body.houseRules === 'string'
       ? (() => { try { return JSON.parse(req.body.houseRules); } catch { return {}; } })()
       : (req.body.houseRules || {});
-    const nearbyPlaces = typeof req.body.nearbyPlaces === 'string'
-      ? (() => { try { return JSON.parse(req.body.nearbyPlaces); } catch { return []; } })()
-      : (Array.isArray(req.body.nearbyPlaces) ? req.body.nearbyPlaces : []);
 
     const propertyData = {
       title: String(req.body.title || '').trim(),
@@ -356,7 +353,6 @@ router.post('/', [
       amenities,
       utilities,
       houseRules,
-      nearbyPlaces,
       owner: req.user.id,
       ownerName: owner.name,
       status: 'pending',
