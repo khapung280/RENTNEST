@@ -60,7 +60,7 @@ const propertySchema = new mongoose.Schema({
   },
   images: {
     type: [String],
-    default: []
+    required: [true, 'At least one property image is required']
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

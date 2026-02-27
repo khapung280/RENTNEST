@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Home, Building2, MapPin, DollarSign, Bed, Bath, Square, FileText, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api'
@@ -22,8 +22,6 @@ const AddProperty = () => {
     bathrooms: '',
     areaSqft: '',
     description: '',
-    image: '',
-    images: [],
     amenities: [],
     utilities: {
       water: false,
@@ -40,10 +38,11 @@ const AddProperty = () => {
     nearbyPlaces: []
   })
 
+  const [selectedFiles, setSelectedFiles] = useState([]) // File[]
+  const [imagePreviews, setImagePreviews] = useState([]) // object URLs for preview
   const [errors, setErrors] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [newImageUrl, setNewImageUrl] = useState('')
   const [newAmenity, setNewAmenity] = useState('')
   const [newNearbyPlace, setNewNearbyPlace] = useState({ name: '', type: 'market', distance: '' })
 
@@ -90,22 +89,39 @@ const AddProperty = () => {
     }
   }
 
-  const handleAddImage = () => {
-    if (newImageUrl.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        images: [...prev.images, newImageUrl.trim()]
-      }))
-      setNewImageUrl('')
+  const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+  const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files || [])
+    const valid = []
+    const newErrors = []
+    for (const f of files) {
+      if (f.size > MAX_FILE_SIZE) {
+        newErrors.push(`${f.name}: exceeds 5MB limit`)
+        continue
+      }
+      if (!ALLOWED_TYPES.includes(f.type)) {
+        newErrors.push(`${f.name}: only jpeg, png, webp, gif allowed`)
+        continue
+      }
+      valid.push(f)
     }
+    setSelectedFiles(prev => [...prev, ...valid])
+    setErrors(prev => ({ ...prev, image: newErrors.length ? newErrors.join('; ') : '' }))
+    e.target.value = ''
   }
 
   const handleRemoveImage = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index)
-    }))
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
+
+  // Create preview URLs and revoke on cleanup
+  useEffect(() => {
+    const urls = selectedFiles.map(f => URL.createObjectURL(f))
+    setImagePreviews(urls)
+    return () => urls.forEach(u => URL.revokeObjectURL(u))
+  }, [selectedFiles])
 
   const handleAddAmenity = () => {
     if (newAmenity.trim() && !formData.amenities.includes(newAmenity.trim())) {
@@ -161,7 +177,7 @@ const AddProperty = () => {
     if (!formData.description.trim() || formData.description.length < 20) {
       newErrors.description = 'Description must be at least 20 characters'
     }
-    if (!formData.image.trim()) newErrors.image = 'Main image URL is required'
+    if (selectedFiles.length === 0) newErrors.image = 'At least one image is required'
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -178,31 +194,30 @@ const AddProperty = () => {
     setShowSuccess(false)
 
     try {
-      const latitude = parseFloat(formData.latitude);
-      const longitude = parseFloat(formData.longitude);
-      // Debug: confirm coordinates being sent
-      console.log('[AddProperty] Sending coordinates:', { latitude, longitude, title: formData.title.trim() });
+      const latitude = parseFloat(formData.latitude)
+      const longitude = parseFloat(formData.longitude)
 
-      const propertyData = {
-        title: formData.title.trim(),
-        type: formData.type,
-        location: formData.location.trim(),
-        latitude,
-        longitude,
-        price: parseInt(formData.price),
-        bedrooms: parseInt(formData.bedrooms),
-        bathrooms: parseInt(formData.bathrooms),
-        areaSqft: parseInt(formData.areaSqft),
-        description: formData.description.trim(),
-        image: formData.image.trim(),
-        images: formData.images,
-        amenities: formData.amenities,
-        utilities: formData.utilities,
-        houseRules: formData.houseRules,
-        nearbyPlaces: formData.nearbyPlaces
-      }
+      const fd = new FormData()
+      fd.append('title', formData.title.trim())
+      fd.append('type', formData.type)
+      fd.append('location', formData.location.trim())
+      fd.append('latitude', latitude)
+      fd.append('longitude', longitude)
+      fd.append('price', formData.price)
+      fd.append('bedrooms', formData.bedrooms)
+      fd.append('bathrooms', formData.bathrooms)
+      fd.append('areaSqft', formData.areaSqft)
+      fd.append('description', formData.description.trim())
+      fd.append('amenities', JSON.stringify(formData.amenities))
+      fd.append('utilities', JSON.stringify(formData.utilities))
+      fd.append('houseRules', JSON.stringify(formData.houseRules))
+      fd.append('nearbyPlaces', JSON.stringify(formData.nearbyPlaces))
 
-      const response = await propertyService.create(propertyData)
+      selectedFiles.forEach((file) => {
+        fd.append('images', file)
+      })
+
+      const response = await propertyService.createWithFormData(fd)
 
       if (response.success) {
         setShowSuccess(true)
@@ -524,65 +539,55 @@ const AddProperty = () => {
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Images</h2>
             <div className="space-y-4">
-              {/* Main Image */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Main Image URL <span className="text-red-500">*</span>
+                  Property Images <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                  <input
-                    type="url"
-                    name="image"
-                    value={formData.image}
-                    onChange={handleChange}
-                    className={`w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
-                      errors.image ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
-                    }`}
-                    placeholder="https://images.unsplash.com/photo-..."
-                  />
-                </div>
+                <p className="text-sm text-gray-500 mb-2">
+                  Upload images (jpeg, png, webp, gif). Max 5MB per image. First image will be the main/cover image.
+                </p>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                  multiple
+                  onChange={handleFileSelect}
+                  className={`block w-full text-sm text-gray-600 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 file:cursor-pointer ${
+                    errors.image ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                />
                 {errors.image && <p className="mt-1 text-sm text-red-600">{errors.image}</p>}
-                {formData.image && (
-                  <img src={formData.image} alt="Preview" className="mt-3 w-full h-48 object-cover rounded-lg border" />
-                )}
-              </div>
-
-              {/* Additional Images */}
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Additional Images (Optional)
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={newImageUrl}
-                    onChange={(e) => setNewImageUrl(e.target.value)}
-                    className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 placeholder:text-gray-400 bg-white"
-                    placeholder="Image URL"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAddImage}
-                    className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                  >
-                    Add
-                  </button>
-                </div>
-                {formData.images.length > 0 && (
-                  <div className="mt-3 grid grid-cols-4 gap-3">
-                    {formData.images.map((img, index) => (
-                      <div key={index} className="relative">
-                        <img src={img} alt={`Additional ${index + 1}`} className="w-full h-24 object-cover rounded-lg border" />
+                {selectedFiles.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {imagePreviews.map((url, index) => (
+                      <div key={index} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                        />
+                        {index === 0 && (
+                          <span className="absolute top-2 left-2 px-2 py-0.5 bg-indigo-600 text-white text-xs font-medium rounded">
+                            Main
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleRemoveImage(index)}
-                          className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           ×
                         </button>
+                        <p className="mt-1 text-xs text-gray-500 truncate">
+                          {selectedFiles[index]?.name}
+                        </p>
                       </div>
                     ))}
+                  </div>
+                )}
+                {selectedFiles.length === 0 && (
+                  <div className="mt-4 p-6 border-2 border-dashed border-gray-200 rounded-lg text-center text-gray-500 text-sm">
+                    <ImageIcon className="w-10 h-10 mx-auto mb-2 text-gray-400" />
+                    <p>No images selected. Click &quot;Choose File&quot; above to add images.</p>
                   </div>
                 )}
               </div>

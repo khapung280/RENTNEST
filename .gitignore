@@ -40,3 +40,6 @@ Thumbs.db
 *.temp
 .cache/
 
+# Uploaded files (local storage)
+Backend/uploads/
+

@@ -156,9 +156,14 @@ export const propertyService = {
     return response.data;
   },
 
-  // Create new property with multipart/form-data (image file → Cloudinary, URL saved in DB)
+  // Create new property with multipart/form-data (image files uploaded to backend)
   createWithFormData: async (formData) => {
-    const response = await api.post('/properties', formData);
+    const token = getAuthToken();
+    const headers = { Authorization: token ? `Bearer ${token}` : '' };
+    const response = await axios.post(`${API_BASE}/properties`, formData, {
+      headers
+      // Axios auto-sets Content-Type: multipart/form-data; boundary=... when body is FormData
+    });
     return response.data;
   },
 

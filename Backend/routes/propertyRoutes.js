@@ -4,7 +4,8 @@ const { body, validationResult, query } = require('express-validator');
 const Property = require('../models/Property');
 const User = require('../models/User');
 const { protect, authorize, adminOnly } = require('../middleware/auth');
-const { uploadSingleImage, requireCloudinaryConfig, optionalMultipartImageUpload } = require('../middleware/uploadCloudinary');
+const { uploadSingleImage, requireCloudinaryConfig } = require('../middleware/uploadCloudinary');
+const { optionalPropertyImagesUpload } = require('../middleware/multerProperty');
 
 const router = express.Router();
 
@@ -231,12 +232,12 @@ router.post('/upload', protect, adminOnly, requireCloudinaryConfig, (req, res, n
 });
 
 // @route   POST /api/properties
-// @desc    Create new property (Owner or Admin). Accepts JSON or multipart/form-data (image file → Cloudinary URL).
+// @desc    Create new property (Owner or Admin). Accepts multipart/form-data with image files.
 // @access  Private (Owner, Admin)
 router.post('/', [
   protect,
   authorize('owner', 'admin'),
-  optionalMultipartImageUpload,
+  optionalPropertyImagesUpload,
   body('title')
     .trim()
     .notEmpty()
@@ -280,12 +281,8 @@ router.post('/', [
     .withMessage('Description is required')
     .isLength({ min: 20, max: 2000 })
     .withMessage('Description must be between 20 and 2000 characters'),
-  body('image')
-    .trim()
-    .notEmpty()
-    .withMessage('Main image URL is required')
-    .isURL()
-    .withMessage('Image must be a valid URL'),
+  body('image').optional().trim(),
+  body('images').optional(),
   body('latitude')
     .notEmpty()
     .withMessage('Latitude is required')
@@ -317,21 +314,52 @@ router.post('/', [
       });
     }
 
+    // Validate images: from upload or from body
+    const images = Array.isArray(req.body.images) ? req.body.images : [];
+    if (images.length === 0 && !req.body.image) {
+      return res.status(400).json({
+        success: false,
+        message: 'At least one image is required. Please upload property images.'
+      });
+    }
+    const imageUrls = images.length > 0 ? images : [req.body.image].filter(Boolean);
+
     // Coerce numbers (multipart sends strings)
     const latitude = Number(req.body.latitude);
     const longitude = Number(req.body.longitude);
-    // Debug: confirm coordinates received
-    console.log('[Property Create] Received coordinates:', { latitude, longitude, propertyTitle: req.body.title });
+
+    // Parse JSON fields from multipart (amenities, utilities, houseRules, nearbyPlaces)
+    const amenities = typeof req.body.amenities === 'string'
+      ? (() => { try { return JSON.parse(req.body.amenities); } catch { return []; } })()
+      : (Array.isArray(req.body.amenities) ? req.body.amenities : []);
+    const utilities = typeof req.body.utilities === 'string'
+      ? (() => { try { return JSON.parse(req.body.utilities); } catch { return {}; } })()
+      : (req.body.utilities || {});
+    const houseRules = typeof req.body.houseRules === 'string'
+      ? (() => { try { return JSON.parse(req.body.houseRules); } catch { return {}; } })()
+      : (req.body.houseRules || {});
+    const nearbyPlaces = typeof req.body.nearbyPlaces === 'string'
+      ? (() => { try { return JSON.parse(req.body.nearbyPlaces); } catch { return []; } })()
+      : (Array.isArray(req.body.nearbyPlaces) ? req.body.nearbyPlaces : []);
 
     const propertyData = {
-      ...req.body,
-      owner: req.user.id,
-      ownerName: owner.name,
-      status: 'pending',
+      title: String(req.body.title || '').trim(),
+      type: req.body.type,
+      location: String(req.body.location || '').trim(),
       price: Number(req.body.price),
       bedrooms: Number(req.body.bedrooms),
       bathrooms: Number(req.body.bathrooms),
       areaSqft: Number(req.body.areaSqft),
+      description: String(req.body.description || '').trim(),
+      image: imageUrls[0],
+      images: imageUrls,
+      amenities,
+      utilities,
+      houseRules,
+      nearbyPlaces,
+      owner: req.user.id,
+      ownerName: owner.name,
+      status: 'pending',
       latitude,
       longitude
     };
