@@ -1,14 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Home, Building2, MapPin, DollarSign, Bed, Bath, Square, FileText, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
-import { GoogleMap, Marker } from '@react-google-maps/api'
-import GoogleMapsProvider from '../components/GoogleMapsProvider'
 import { propertyService } from '../services/aiService'
-
-const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || ''
-
-const mapContainerStyle = { width: '100%', height: '400px' }
-const nepalCenter = { lat: 27.7172, lng: 85.324 }
 
 const AddProperty = () => {
   const navigate = useNavigate()
@@ -44,20 +37,6 @@ const AddProperty = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
   const [newAmenity, setNewAmenity] = useState('')
-
-  const handleMapClick = useCallback((e) => {
-    if (e.latLng) {
-      const lat = e.latLng.lat()
-      const lng = e.latLng.lng()
-      setFormData(prev => ({
-        ...prev,
-        latitude: String(lat),
-        longitude: String(lng)
-      }))
-      if (errors.latitude) setErrors(prev => ({ ...prev, latitude: '' }))
-      if (errors.longitude) setErrors(prev => ({ ...prev, longitude: '' }))
-    }
-  }, [errors.latitude, errors.longitude])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -142,10 +121,10 @@ const AddProperty = () => {
     const lat = parseFloat(formData.latitude)
     const lng = parseFloat(formData.longitude)
     if (isNaN(lat) || lat < -90 || lat > 90) {
-      newErrors.latitude = 'Enter valid latitude (-90 to 90) or pick on map'
+      newErrors.latitude = 'Enter valid latitude (-90 to 90)'
     }
     if (isNaN(lng) || lng < -180 || lng > 180) {
-      newErrors.longitude = 'Enter valid longitude (-180 to 180) or pick on map'
+      newErrors.longitude = 'Enter valid longitude (-180 to 180)'
     }
     if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required'
     if (!formData.bedrooms || formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms is required'
@@ -324,7 +303,7 @@ const AddProperty = () => {
                   Exact coordinates <span className="text-red-500">*</span>
                 </h3>
                 <p className="text-sm text-gray-500 mb-3">
-                  Enter latitude and longitude below, or click on the map to set the exact property location.
+                  Enter latitude and longitude. Get coordinates from Google Maps (right-click location → copy coordinates).
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
@@ -356,44 +335,6 @@ const AddProperty = () => {
                     {errors.longitude && <p className="mt-1 text-sm text-red-600">{errors.longitude}</p>}
                   </div>
                 </div>
-
-                {/* Map Picker - only when API key is set */}
-                {GOOGLE_MAPS_API_KEY && (
-                  <GoogleMapsProvider>
-                    <div className="border border-gray-300 rounded-lg overflow-hidden">
-                      <p className="text-xs text-gray-500 px-3 py-2 bg-gray-50">
-                        Click on the map to set the exact property location
-                      </p>
-                      <div className="relative">
-                        <GoogleMap
-                          mapContainerStyle={mapContainerStyle}
-                          center={
-                            formData.latitude && formData.longitude
-                              ? { lat: parseFloat(formData.latitude), lng: parseFloat(formData.longitude) }
-                              : nepalCenter
-                          }
-                          zoom={formData.latitude && formData.longitude ? 15 : 7}
-                          onClick={handleMapClick}
-                          options={{ mapTypeControl: true, fullscreenControl: true }}
-                        >
-                          {formData.latitude && formData.longitude && (
-                            <Marker
-                              position={{
-                                lat: parseFloat(formData.latitude),
-                                lng: parseFloat(formData.longitude)
-                              }}
-                            />
-                          )}
-                        </GoogleMap>
-                      </div>
-                    </div>
-                  </GoogleMapsProvider>
-                )}
-                {!GOOGLE_MAPS_API_KEY && (
-                  <p className="text-xs text-amber-600 bg-amber-50 px-3 py-2 rounded-lg">
-                    To enable map picker, add VITE_GOOGLE_MAPS_API_KEY to your .env file. You can still enter coordinates manually or get them from Google Maps (right-click location → copy coordinates).
-                  </p>
-                )}
               </div>
 
               {/* Price */}
