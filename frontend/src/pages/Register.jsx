@@ -135,13 +135,18 @@ const Register = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-950 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-950 via-slate-900 to-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Subtle radial glow behind card */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-500/10 rounded-full blur-3xl" />
+      </div>
+
+      <div className="max-w-lg w-full relative z-10">
         {/* Registration Card */}
-        <div className="card-glass-solid border border-neutral-700 rounded-xl shadow-xl p-8">
+        <div className="bg-neutral-900/80 backdrop-blur-md border border-neutral-800 shadow-2xl rounded-2xl p-10">
           {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-2xl font-semibold text-white mb-1.5">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-semibold mb-2 bg-gradient-to-r from-white via-gray-200 to-gray-300 bg-clip-text text-transparent">
               Create your account
             </h1>
             <p className="text-sm text-gray-400">
@@ -157,15 +162,15 @@ const Register = () => {
           )}
 
           {/* Registration Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name Field */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-900 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
                 Full Name <span className="text-gray-500 font-normal">(required)</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className={`w-5 h-5 ${errors.name ? 'text-red-400' : 'text-gray-400'}`} />
+                  <User className={`w-5 h-5 ${errors.name ? 'text-red-400' : 'text-gray-500'}`} />
                 </div>
                 <input
                   type="text"
@@ -173,16 +178,16 @@ const Register = () => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-neutral-800 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 ${
                     errors.name
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                      ? 'border-red-500/50 focus:ring-red-500'
+                      : 'border-neutral-700'
                   }`}
                   placeholder="John Doe"
                 />
               </div>
               {errors.name && (
-                <p className="mt-1.5 text-xs text-red-600" role="alert">
+                <p className="mt-1.5 text-xs text-red-400" role="alert">
                   {errors.name}
                 </p>
               )}
@@ -190,12 +195,12 @@ const Register = () => {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address <span className="text-gray-500 font-normal">(required)</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className={`w-5 h-5 ${errors.email ? 'text-red-400' : 'text-gray-400'}`} />
+                  <Mail className={`w-5 h-5 ${errors.email ? 'text-red-400' : 'text-gray-500'}`} />
                 </div>
                 <input
                   type="email"
@@ -203,10 +208,10 @@ const Register = () => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-3 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
+                  className={`block w-full pl-10 pr-3 py-2.5 bg-neutral-800 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 ${
                     errors.email
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                      ? 'border-red-500/50 focus:ring-red-500'
+                      : 'border-neutral-700'
                   }`}
                   placeholder="you@example.com"
                 />
@@ -217,7 +222,7 @@ const Register = () => {
                 </p>
               )}
               {errors.email && (
-                <p className="mt-1.5 text-xs text-red-600" role="alert">
+                <p className="mt-1.5 text-xs text-red-400" role="alert">
                   {errors.email}
                 </p>
               )}
@@ -225,12 +230,12 @@ const Register = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
+              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                 Password <span className="text-gray-500 font-normal">(required)</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className={`w-5 h-5 ${errors.password ? 'text-red-400' : 'text-gray-400'}`} />
+                  <Lock className={`w-5 h-5 ${errors.password ? 'text-red-400' : 'text-gray-500'}`} />
                 </div>
                 <input
                   type={showPassword ? 'text' : 'password'}
@@ -238,17 +243,17 @@ const Register = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
+                  className={`block w-full pl-10 pr-10 py-2.5 bg-neutral-800 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 ${
                     errors.password
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                      ? 'border-red-500/50 focus:ring-red-500'
+                      : 'border-neutral-700'
                   }`}
                   placeholder="At least 8 characters"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300 transition-colors focus:outline-none"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
@@ -270,7 +275,7 @@ const Register = () => {
                 </p>
               )}
               {errors.password && (
-                <p className="mt-1.5 text-xs text-red-600" role="alert">
+                <p className="mt-1.5 text-xs text-red-400" role="alert">
                   {errors.password}
                 </p>
               )}
@@ -278,12 +283,12 @@ const Register = () => {
 
             {/* Confirm Password Field */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900 mb-2">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-2">
                 Confirm Password <span className="text-gray-500 font-normal">(required)</span>
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className={`w-5 h-5 ${errors.confirmPassword ? 'text-red-400' : 'text-gray-400'}`} />
+                  <Lock className={`w-5 h-5 ${errors.confirmPassword ? 'text-red-400' : 'text-gray-500'}`} />
                 </div>
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
@@ -291,17 +296,17 @@ const Register = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={`block w-full pl-10 pr-10 py-2.5 border rounded-md text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0 text-sm transition-all ${
+                  className={`block w-full pl-10 pr-10 py-2.5 bg-neutral-800 border rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all duration-200 ${
                     errors.confirmPassword
-                      ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                      : 'border-gray-300 focus:border-indigo-500 focus:ring-indigo-500'
+                      ? 'border-red-500/50 focus:ring-red-500'
+                      : 'border-neutral-700'
                   }`}
                   placeholder="Re-enter your password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300 transition-colors focus:outline-none"
                   aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   tabIndex={-1}
                 >
@@ -323,7 +328,7 @@ const Register = () => {
                 </p>
               )}
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-xs text-red-600" role="alert">
+                <p className="mt-1.5 text-xs text-red-400" role="alert">
                   {errors.confirmPassword}
                 </p>
               )}
@@ -331,28 +336,28 @@ const Register = () => {
 
             {/* Role Selection */}
             <div>
-              <label className="block text-sm font-medium text-gray-900 mb-3">
+              <label className="block text-sm font-medium text-gray-300 mb-3">
                 I want to
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'renter' }))}
-                  className={`p-4 rounded-lg border transition-all text-left ${
+                  className={`p-4 rounded-xl border transition-all text-left ${
                     formData.role === 'renter'
-                      ? 'border-gray-900'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-violet-500 bg-violet-500/10'
+                      : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <User className={`w-5 h-5 mt-0.5 flex-shrink-0 ${formData.role === 'renter' ? 'text-gray-900' : 'text-gray-400'}`} />
+                    <User className={`w-5 h-5 mt-0.5 flex-shrink-0 ${formData.role === 'renter' ? 'text-violet-400' : 'text-gray-500'}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-sm font-semibold ${formData.role === 'renter' ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-semibold ${formData.role === 'renter' ? 'text-white' : 'text-gray-300'}`}>
                           Renter
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-400 leading-relaxed">
                         Looking for a place to rent
                       </p>
                     </div>
@@ -361,21 +366,21 @@ const Register = () => {
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({ ...prev, role: 'owner' }))}
-                  className={`p-4 rounded-lg border transition-all text-left ${
+                  className={`p-4 rounded-xl border transition-all text-left ${
                     formData.role === 'owner'
-                      ? 'border-gray-900'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-violet-500 bg-violet-500/10'
+                      : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <UserCheck className={`w-5 h-5 mt-0.5 flex-shrink-0 ${formData.role === 'owner' ? 'text-gray-900' : 'text-gray-400'}`} />
+                    <UserCheck className={`w-5 h-5 mt-0.5 flex-shrink-0 ${formData.role === 'owner' ? 'text-violet-400' : 'text-gray-500'}`} />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className={`text-sm font-semibold ${formData.role === 'owner' ? 'text-gray-900' : 'text-gray-700'}`}>
+                        <span className={`text-sm font-semibold ${formData.role === 'owner' ? 'text-white' : 'text-gray-300'}`}>
                           Property Owner
                         </span>
                       </div>
-                      <p className="text-xs text-gray-600 leading-relaxed">
+                      <p className="text-xs text-gray-400 leading-relaxed">
                         Listing a property for rent
                       </p>
                     </div>
@@ -388,7 +393,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full btn-gradient py-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 rounded-xl font-semibold text-white bg-gradient-to-r from-violet-600 to-indigo-600 shadow-lg hover:scale-[1.02] hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {isLoading ? (
                 <>
@@ -405,10 +410,10 @@ const Register = () => {
           </form>
 
           {/* Link to Login */}
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center">
             <p className="text-sm text-gray-400">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary-400 font-medium hover:text-primary-300 transition-colors">
+              <Link to="/login" className="text-violet-400 font-medium hover:text-violet-300 transition-colors">
                 Sign in to your account
               </Link>
             </p>
