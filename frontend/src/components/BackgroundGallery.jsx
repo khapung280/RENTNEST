@@ -7,26 +7,30 @@ const INTERIOR_MS = 2000
 const TRANSITION_DURATION = 0.9
 
 const SLIDES = [
-  // KATHMANDU VALLEY (1–3)
-  { id: 1, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury villa in Budhanilkantha with Shivapuri mountain views, Newari architecture fusion', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'kathmandu', locationEn: 'Budhanilkantha', locationNp: 'बुढानीलकण्ठ', region: 'Kathmandu Valley', altitude: '1,400m', propertyType: 'Villa', attractions: 'Shivapuri National Park, Budhanilkantha Temple' },
-  { id: 2, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Newari house in Patan Durbar Square area with carved wooden windows', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'kathmandu', locationEn: 'Patan', locationNp: 'ललितपुर', region: 'Kathmandu Valley', altitude: '1,320m', propertyType: 'Traditional Newari House', attractions: 'Patan Durbar Square, Golden Temple' },
-  { id: 3, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Premium apartment in Lazimpat with city views and Swayambhunath Stupa', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'kathmandu', locationEn: 'Lazimpat', locationNp: 'लाजिम्पाट', region: 'Kathmandu Valley', altitude: '1,350m', propertyType: 'Apartment', attractions: 'Swayambhunath, Thamel, embassies' },
-  // POKHARA (4–6)
-  { id: 4, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Lakeside villa with Fewa Lake view and Machhapuchhre mountain reflection', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'pokhara', locationEn: 'Lakeside', locationNp: 'फेवा तट', region: 'Pokhara', altitude: '827m', propertyType: 'Lakeside Villa', attractions: 'Fewa Lake, World Peace Pagoda, boating' },
-  { id: 5, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment in Lakeside with panoramic Annapurna range and rooftop terrace', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'pokhara', locationEn: 'Lakeside', locationNp: 'लेकसाइड', region: 'Pokhara', altitude: '827m', propertyType: 'Apartment', attractions: 'Annapurna sunrise, Davis Falls' },
-  { id: 6, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung house in Sarangkot with Himalayan sunrise views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'pokhara', locationEn: 'Sarangkot', locationNp: 'साराङकोट', region: 'Pokhara', altitude: '1,600m', propertyType: 'Gurung House', attractions: 'Paragliding, mountain sunrise' },
+  // KATHMANDU (1)
+  { id: 1, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Premium house for rent in Kathmandu with mountain views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'kathmandu', locationEn: 'Kathmandu', locationNp: 'काठमाडौँ', region: 'Kathmandu', propertyType: 'House' },
+  // LALITPUR (2)
+  { id: 2, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Flat for rent in Lalitpur, Patan area with traditional architecture', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'lalitpur', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Flat' },
+  // KATHMANDU (3)
+  { id: 3, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment for rent in Kathmandu with city views', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'kathmandu', locationEn: 'Kathmandu', locationNp: 'काठमाडौँ', region: 'Kathmandu', propertyType: 'Apartment' },
+  // POKHARA (4) – user-provided image
+  { id: 4, src: 'https://www.realtynepal.com/uploads/2026/03/viber_image_2026-03-01_14-29-13-750-360x245.jpg', alt: 'Rental property in Pokhara, Nepal', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'House' },
+  // POKHARA (5–6)
+  { id: 5, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House for rent in Pokhara with Annapurna views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'House' },
+  { id: 6, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Rental property in Pokhara Lakeside area', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'Apartment' },
   // CHITWAN (7–8)
-  { id: 7, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Jungle safari resort villa with Tharu architecture and forest views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'chitwan', locationEn: 'Sauraha', locationNp: 'सौराहा', region: 'Chitwan', altitude: '415m', propertyType: 'Safari Resort Villa', attractions: 'Chitwan National Park, wildlife safari' },
-  { id: 8, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Eco apartment near Narayani River with jungle views', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-tl', gradient: 'chitwan', locationEn: 'Narayani Riverside', locationNp: 'नारायणी नदी किनार', region: 'Chitwan', altitude: '200m', propertyType: 'Eco Apartment', attractions: 'River rafting, bird watching' },
-  // MANANG (9–10)
-  { id: 9, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mountain lodge in Upper Manang with Annapurna II views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'manang', locationEn: 'Upper Manang', locationNp: 'मनाङ', region: 'Manang', altitude: '3,540m', propertyType: 'Mountain Lodge', attractions: 'Annapurna Circuit, Tilicho Lake' },
-  { id: 10, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Manang village accommodation with yak wool interiors and prayer flags', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-br', gradient: 'manang', locationEn: 'Manang Village', locationNp: 'मनाङ गाउँ', region: 'Manang', altitude: '3,500m', propertyType: 'Mountain Lodge', attractions: 'Gangapurna Lake, ice lake trek' },
-  // MUSTANG (11–12)
-  { id: 11, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Cave-adapted villa in Kagbeni with Kali Gandaki gorge views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'mustang', locationEn: 'Kagbeni', locationNp: 'कागबेनी', region: 'Mustang', altitude: '2,804m', propertyType: 'Cave Villa', attractions: 'Kali Gandaki, Upper Mustang trek' },
-  { id: 12, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Desert lodge in Lo Manthang with traditional Mustangi architecture', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'mustang', locationEn: 'Lo Manthang', locationNp: 'लो मन्थाङ', region: 'Mustang', altitude: '3,810m', propertyType: 'Desert Lodge', attractions: 'Tibetan plateau, walled city' },
-  // GHANDRUK (13–14)
-  { id: 13, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung stone house in Ghandruk with Annapurna South views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'ghandruk', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', altitude: '1,940m', propertyType: 'Traditional Stone House', attractions: 'Annapurna South, Gurung museum' },
-  { id: 14, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Village homestay with Machhapuchhre sunrise and rhododendron forest', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'ghandruk', locationEn: 'Ghandruk Village', locationNp: 'घान्द्रुक गाउँ', region: 'Ghandruk', altitude: '1,950m', propertyType: 'Homestay', attractions: 'Rhododendron trek, Poon Hill' },
+  { id: 7, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House for rent in Chitwan near national park', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'chitwan', locationEn: 'Chitwan', locationNp: 'चितवन', region: 'Chitwan', propertyType: 'House' },
+  { id: 8, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment for rent in Chitwan with jungle views', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-tl', gradient: 'chitwan', locationEn: 'Chitwan', locationNp: 'चितवन', region: 'Chitwan', propertyType: 'Apartment' },
+  // JHAPA (9)
+  { id: 9, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House for rent in Jhapa, eastern Nepal', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'jhapa', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'House' },
+  // MANANG (10–11)
+  { id: 10, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Lodge for rent in Manang with mountain views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'manang', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'House' },
+  { id: 11, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mountain accommodation in Manang', duration: INTERIOR_MS, type: 'interior', kenBurns: 'zoom-pan-br', gradient: 'manang', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'Apartment' },
+  // MUSTANG (12–13)
+  { id: 12, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House for rent in Mustang with desert mountain views', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'mustang', locationEn: 'Mustang', locationNp: 'मुस्ताङ', region: 'Mustang', propertyType: 'House' },
+  { id: 13, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Lodge for rent in Upper Mustang', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'mustang', locationEn: 'Mustang', locationNp: 'मुस्ताङ', region: 'Mustang', propertyType: 'House' },
+  // GHANDRUK (14)
+  { id: 14, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional house for rent in Ghandruk village', duration: EXTERIOR_MS, type: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'ghandruk', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House' },
 ]
 
 function ImageSlide({ slide, isActive, onLoad, prefersReducedMotion }) {
@@ -63,8 +67,10 @@ function ImageSlide({ slide, isActive, onLoad, prefersReducedMotion }) {
 function getGradientOverlay(gradient) {
   const map = {
     kathmandu: 'from-amber-950/35 via-rose-950/15 to-transparent',
+    lalitpur: 'from-rose-950/30 via-amber-950/20 to-transparent',
     pokhara: 'from-sky-950/25 via-emerald-950/20 to-transparent',
     chitwan: 'from-emerald-950/30 via-amber-950/20 to-transparent',
+    jhapa: 'from-emerald-950/28 via-teal-950/15 to-transparent',
     manang: 'from-slate-100/20 via-sky-100/15 to-transparent',
     mustang: 'from-amber-900/40 via-orange-950/25 to-transparent',
     ghandruk: 'from-rose-950/20 via-violet-950/15 to-transparent',
@@ -269,16 +275,17 @@ export default function BackgroundGallery() {
       <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/30 pointer-events-none" />
       <div className={`absolute inset-0 gallery-grain ${isDragging ? 'gallery-grain-active' : ''} pointer-events-none`} />
       <div className="absolute inset-0 gallery-vignette pointer-events-none" />
-      <div className="absolute inset-0 gallery-glow-mandala pointer-events-none" />
+      <div className={`absolute inset-0 gallery-glow-mandala pointer-events-none ${progress >= 75 ? 'gallery-glow-mandala-fast' : ''}`} />
 
       {cursor.x > 0 && cursor.y > 0 && (
-        <div
-          className="absolute w-96 h-96 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none gallery-sheen-nepal"
-          style={{ left: cursor.x, top: cursor.y }}
-        />
+        <>
+          <div className="absolute w-96 h-96 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none gallery-sheen-nepal" style={{ left: cursor.x, top: cursor.y }} />
+          <div className="absolute w-64 h-64 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none gallery-ripple" style={{ left: cursor.x, top: cursor.y, animationDelay: '0.1s' }} />
+          <div className="absolute w-80 h-80 -translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none gallery-ripple gallery-ripple-2" style={{ left: cursor.x, top: cursor.y, animationDelay: '0.25s' }} />
+        </>
       )}
 
-      {/* Metadata: Location, altitude, property type */}
+      {/* Metadata: Location (Nepali/English), property type */}
       <AnimatePresence mode="wait">
         {currentSlide && (
           <motion.div
@@ -292,11 +299,7 @@ export default function BackgroundGallery() {
             <p className="text-white/95 font-semibold text-base sm:text-lg tracking-wide">
               {currentSlide.locationEn} <span className="text-white/70 font-normal">· {currentSlide.locationNp}</span>
             </p>
-            <p className="text-white/80 text-xs sm:text-sm mt-0.5">{currentSlide.region} · {currentSlide.altitude}</p>
-            <p className="text-amber-200/90 text-xs sm:text-sm mt-1">{currentSlide.propertyType}</p>
-            <p className="text-white/60 text-xs mt-2 truncate max-w-xs" title={currentSlide.attractions}>
-              {currentSlide.attractions}
-            </p>
+            <p className="text-amber-200/90 text-sm mt-1">{currentSlide.propertyType}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -320,8 +323,8 @@ export default function BackgroundGallery() {
         ))}
       </div>
 
-      {/* Prayer flag colored progress bar */}
-      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-44 sm:w-56 h-2 rounded-full overflow-hidden z-20 pointer-events-auto gallery-progress-track gallery-progress-prayer-flags backdrop-blur-sm">
+      {/* Prayer flag progress bar – glass morphism */}
+      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-44 sm:w-56 h-2 rounded-full overflow-hidden z-20 pointer-events-auto gallery-progress-track gallery-progress-prayer-flags gallery-glass">
         <motion.div
           className="h-full rounded-full gallery-progress-fill-nepal"
           style={{ width: `${progress}%` }}

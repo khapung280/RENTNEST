@@ -396,6 +396,9 @@
 @media (prefers-reduced-motion: reduce) {
   .gallery-glow-mandala { animation: none; }
 }
+.gallery-glow-mandala-fast {
+  animation-duration: 1.2s;
+}
 @keyframes galleryMandalaPulse {
   0%, 100% { opacity: 0.9; }
   50% { opacity: 1; }
@@ -410,6 +413,34 @@
     transparent 70%);
   filter: blur(35px);
   pointer-events: none;
+}
+
+/* Cursor-reactive ripple */
+.gallery-ripple {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 65%);
+  filter: blur(20px);
+  animation: galleryRipple 2.5s ease-out infinite;
+  pointer-events: none;
+}
+.gallery-ripple-2 {
+  width: 20rem;
+  height: 20rem;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.03) 0%, transparent 70%);
+  animation: galleryRipple 2.5s ease-out infinite 0.25s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-ripple, .gallery-ripple-2 { animation: none; opacity: 0.5; }
+}
+@keyframes galleryRipple {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+}
+
+/* Glass morphism progress bar */
+.gallery-glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 /* Prayer flag colored progress bar (blue, white, red, green, yellow) */
