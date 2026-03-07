@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { propertyService } from '../services/aiService';
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare';
 import CompareBar from '../components/CompareBar';
@@ -260,37 +261,134 @@ const HousePage = () => {
     [houses, compareProperties]
   );
 
+  const stagger = { visible: { transition: { staggerChildren: 0.08, delayChildren: 0.15 } } };
+  const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } } };
+  const particles = useMemo(() => Array.from({ length: 12 }, (_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, size: 3 + Math.random() * 5, d: 6 + Math.random() * 8, delay: Math.random() * 3 })), []);
+
+  const heroRef = useRef(null);
+  const [mouseParallax, setMouseParallax] = useState({ x: 0, y: 0 });
+  const handleMouseMove = useCallback((e) => {
+    if (!heroRef.current) return;
+    const rect = heroRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setMouseParallax({ x: x * 20, y: y * 20 });
+  }, []);
+  const handleMouseLeave = useCallback(() => setMouseParallax({ x: 0, y: 0 }), []);
+
+  const orbs = useMemo(() => [
+    { x: '10%', y: '20%', w: 280, color: 'violet', dur: 25 },
+    { x: '70%', y: '30%', w: 200, color: 'indigo', dur: 30 },
+    { x: '50%', y: '60%', w: 240, color: 'purple', dur: 28 },
+    { x: '85%', y: '70%', w: 160, color: 'violet', dur: 22 },
+    { x: '20%', y: '75%', w: 180, color: 'indigo', dur: 26 },
+  ], []);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-gray-100">
-      {/* Hero */}
-      <section className="relative py-16 md:py-20 overflow-hidden">
-        {/* Background image – house/rental scene */}
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `url(https://gharjaggabazar.com/uploads/seller/image/x13_20260218082817.jpg.pagespeed.ic.7ECxkk0mFy.jpg)`,
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/85 via-neutral-950/90 to-neutral-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(124,58,237,0.3),transparent)]" />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-500/20 border border-violet-500/30 mb-6">
-              <Home className="w-7 h-7 text-violet-400" />
-            </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-              Houses for Rent
-            </h1>
-            <p className="text-gray-400 text-lg max-w-xl mx-auto">
-              Browse verified rental houses. Filter by price, size & verified status—no location search here.
-            </p>
-          </div>
+      {/* Premium Animated Header - background only enhanced */}
+      <section
+        ref={heroRef}
+        className="relative py-16 md:py-20 overflow-hidden"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
+        {/* Base gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/95 via-neutral-950/98 to-neutral-950" />
 
-          {/* Browse by – House-page-only quick presets */}
-          <div className="mt-10">
-            <p className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4 text-center">
+        {/* Slow zoom background image - parallax wrapper + zoom */}
+        <div
+          className="absolute inset-0 overflow-hidden"
+          style={{
+            transform: `translate3d(${mouseParallax.x * 0.6}px, ${mouseParallax.y * 0.6}px, 0)`,
+            transition: 'transform 0.12s ease-out',
+            willChange: 'transform',
+          }}
+        >
+          <div
+            className="absolute inset-0 -inset-[5%] hero-bg-zoom bg-cover bg-center bg-no-repeat opacity-[0.18]"
+            style={{ backgroundImage: `url(https://gharjaggabazar.com/uploads/seller/image/x13_20260218082817.jpg.pagespeed.ic.7ECxkk0mFy.jpg)` }}
+          />
+        </div>
+
+        {/* Base gradient waves layer */}
+        <div className="absolute inset-0 hero-gradient-waves opacity-70" />
+        {/* Moving gradient blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="hero-wave-blob top-[15%] left-[15%] w-80 h-80 bg-violet-500/15" />
+          <div className="hero-wave-blob top-[55%] right-[20%] w-72 h-72 bg-indigo-500/12" />
+          <div className="hero-wave-blob bottom-[20%] left-[35%] w-96 h-72 bg-purple-500/10" />
+        </div>
+
+        {/* Floating blurred light orbs - parallax wrapper + float animation */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {orbs.map((orb, i) => (
+            <div
+              key={i}
+              className="absolute"
+              style={{
+                left: orb.x,
+                top: orb.y,
+                width: orb.w,
+                height: orb.w,
+                transform: `translate3d(${mouseParallax.x * (0.4 + i * 0.08)}px, ${mouseParallax.y * (0.4 + i * 0.08)}px, 0)`,
+                transition: 'transform 0.15s ease-out',
+                willChange: 'transform',
+              }}
+            >
+              <div
+                className={`absolute inset-0 rounded-full blur-3xl hero-orb-float hero-orb-${orb.color}`}
+                style={{ animationDuration: `${orb.dur}s`, animationDelay: `${i * 2}s` }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Subtle particles for depth + parallax */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {particles.map((p) => (
+            <div
+              key={p.id}
+              className="absolute"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                transform: `translate3d(${mouseParallax.x * 1.2}px, ${mouseParallax.y * 1.2}px, 0)`,
+                transition: 'transform 0.2s ease-out',
+                willChange: 'transform',
+              }}
+            >
+              <motion.div
+                className="rounded-full bg-violet-400/12"
+                style={{ width: p.size, height: p.size }}
+                animate={{ opacity: [0.1, 0.35, 0.1], scale: [1, 1.2, 1] }}
+                transition={{ duration: p.d, repeat: Infinity, delay: p.delay }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Gradient overlay for glass feel */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-neutral-950/50 to-neutral-950" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div className="text-center mb-10" initial="hidden" animate="visible" variants={stagger}>
+            <motion.div variants={fadeUp} className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-violet-500/20 border border-violet-500/30 mb-6">
+              <Home className="w-7 h-7 text-violet-400" />
+            </motion.div>
+            <motion.h1 variants={fadeUp} className="text-4xl md:text-5xl font-bold text-white mb-3">
+              Houses for Rent
+            </motion.h1>
+            <motion.p variants={fadeUp} className="text-gray-400 text-lg max-w-xl mx-auto">
+              Browse verified rental houses. Filter by price, size & verified status—no location search here.
+            </motion.p>
+          </motion.div>
+
+          {/* Browse by – stagger animation */}
+          <motion.div className="mt-10" initial="hidden" animate="visible" variants={stagger}>
+            <motion.p variants={fadeUp} className="text-sm font-medium text-gray-500 uppercase tracking-wider mb-4 text-center">
               Browse by
-            </p>
+            </motion.p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
               {QUICK_BROWSE.map((item) => {
                 const Icon = item.icon;
@@ -300,35 +398,49 @@ const HousePage = () => {
                   (item.id === 'verified' && verifiedParam && !minParam && !maxParam && !bedsParam) ||
                   (item.id === 'under-20k' && maxParam === '20000' && !minParam && !bedsParam && !verifiedParam);
                 return (
-                  <button
+                  <motion.button
                     key={item.id}
+                    variants={fadeUp}
                     type="button"
                     onClick={() => applyQuickPreset(item)}
-                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border bg-neutral-900/80 text-left transition-all hover:scale-[1.02] ${item.gradient} ${item.border} ${isActive ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-neutral-950' : ''}`}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-2xl border bg-neutral-900/80 text-left transition-all ${item.gradient} ${item.border} ${isActive ? 'ring-2 ring-violet-500 ring-offset-2 ring-offset-neutral-950' : ''}`}
+                    whileHover={{ scale: 1.03, boxShadow: '0 12px 28px -8px rgba(124, 58, 237, 0.25)' }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     <Icon className={`w-6 h-6 ${isActive ? 'text-violet-400' : 'text-gray-400'}`} />
                     <span className="font-semibold text-white text-sm">{item.label}</span>
                     <span className="text-xs text-gray-500">{item.description}</span>
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Main content */}
-      <section className="relative py-8 md:py-12">
+      {/* Main content - scroll reveal */}
+      <motion.section
+        className="relative py-8 md:py-12"
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.1 }}
+        transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Stats strip – House page advanced insight */}
           {!loading && properties.length > 0 && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-4 py-2 text-sm text-gray-400">
+            <motion.div
+              className="flex flex-wrap items-center gap-x-6 gap-y-1 mb-4 py-2 text-sm text-gray-400"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <span className="font-medium text-white">{total} {total === 1 ? 'listing' : 'listings'}</span>
               <span>
                 Avg. rent this set: NPR {Math.round(properties.reduce((s, p) => s + (p.price || 0), 0) / properties.length).toLocaleString()}/mo
               </span>
               {verifiedParam && <span className="text-amber-400/90">Verified only</span>}
-            </div>
+            </motion.div>
           )}
 
           {/* Toolbar: results count, filter button, sort */}
@@ -345,9 +457,11 @@ const HousePage = () => {
               )}
             </div>
             <div className="flex items-center gap-3">
-              <button
+              <motion.button
                 onClick={() => setShowFilters(!showFilters)}
                 className="lg:hidden flex items-center gap-2 px-4 py-2.5 rounded-xl border border-neutral-700 bg-neutral-900 text-gray-300 hover:bg-neutral-800"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 Filters
@@ -356,8 +470,8 @@ const HousePage = () => {
                     {activeFiltersCount}
                   </span>
                 )}
-              </button>
-              <div className="relative">
+              </motion.button>
+              <motion.div className="relative" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <select
                   value={sortBy}
                   onChange={(e) => {
@@ -377,7 +491,7 @@ const HousePage = () => {
                   ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-              </div>
+              </motion.div>
             </div>
           </div>
 
@@ -436,8 +550,18 @@ const HousePage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Sidebar filters - desktop */}
-            <aside className="hidden lg:block lg:col-span-1">
-              <div className="sticky top-24 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-6">
+            <motion.aside
+              className="hidden lg:block lg:col-span-1"
+              initial={{ opacity: 0, x: -16 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.4 }}
+            >
+              <motion.div
+                className="sticky top-24 rounded-2xl border border-neutral-800 bg-neutral-900/80 p-6"
+                whileHover={{ boxShadow: '0 20px 40px -12px rgba(0,0,0,0.3)' }}
+                transition={{ duration: 0.3 }}
+              >
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-semibold text-white flex items-center gap-2">
                     <Filter className="w-4 h-4 text-violet-400" />
@@ -501,8 +625,8 @@ const HousePage = () => {
                     Apply filters
                   </button>
                 </div>
-              </div>
-            </aside>
+              </motion.div>
+            </motion.aside>
 
             {/* Mobile filter panel */}
             {showFilters && (
@@ -603,42 +727,68 @@ const HousePage = () => {
                 </div>
               ) : houses.length > 0 ? (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.08 }}
+                    variants={stagger}
+                  >
                     {houses.map((house) => (
-                      <PropertyCardWithCompare
+                      <motion.div
                         key={house._id || house.id}
-                        property={house}
-                        isSelected={compareProperties.includes(house._id || house.id)}
-                        onToggleCompare={handleToggleCompare}
-                      />
+                        variants={fadeUp}
+                        whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                        className="transition-shadow duration-300 rounded-2xl hover:shadow-xl hover:shadow-violet-500/10"
+                      >
+                        <PropertyCardWithCompare
+                          property={house}
+                          isSelected={compareProperties.includes(house._id || house.id)}
+                          onToggleCompare={handleToggleCompare}
+                        />
+                      </motion.div>
                     ))}
-                  </div>
+                  </motion.div>
 
                   {/* Pagination */}
                   {pages > 1 && (
-                    <div className="mt-10 flex items-center justify-center gap-2">
-                      <button
+                    <motion.div
+                      className="mt-10 flex items-center justify-center gap-2"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <motion.button
                         onClick={() => setPage(currentPage - 1)}
                         disabled={currentPage <= 1}
                         className="p-2.5 rounded-xl border border-neutral-700 bg-neutral-900 text-gray-400 hover:text-white hover:bg-neutral-800 disabled:opacity-50 disabled:pointer-events-none"
+                        whileHover={{ scale: currentPage > 1 ? 1.03 : 1 }}
+                        whileTap={{ scale: currentPage > 1 ? 0.98 : 1 }}
                       >
                         <ChevronLeft className="w-5 h-5" />
-                      </button>
+                      </motion.button>
                       <span className="px-4 py-2 text-sm text-gray-400">
                         Page {currentPage} of {pages}
                       </span>
-                      <button
+                      <motion.button
                         onClick={() => setPage(currentPage + 1)}
                         disabled={currentPage >= pages}
                         className="p-2.5 rounded-xl border border-neutral-700 bg-neutral-900 text-gray-400 hover:text-white hover:bg-neutral-800 disabled:opacity-50 disabled:pointer-events-none"
+                        whileHover={{ scale: currentPage < pages ? 1.03 : 1 }}
+                        whileTap={{ scale: currentPage < pages ? 0.98 : 1 }}
                       >
                         <ChevronRight className="w-5 h-5" />
-                      </button>
-                    </div>
+                      </motion.button>
+                    </motion.div>
                   )}
                 </>
               ) : (
-                <div className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-12 md:p-16 text-center">
+                <motion.div
+                  className="rounded-2xl border border-neutral-800 bg-neutral-900/50 p-12 md:p-16 text-center"
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
                   <div className="w-20 h-20 rounded-full bg-neutral-800 flex items-center justify-center mx-auto mb-6">
                     <Home className="w-10 h-10 text-gray-600" />
                   </div>
@@ -646,18 +796,20 @@ const HousePage = () => {
                   <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
                     Try changing your filters or clear filters to see more listings.
                   </p>
-                  <button
+                  <motion.button
                     onClick={resetFilters}
                     className="px-6 py-3 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-medium text-sm"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
                     Clear all filters
-                  </button>
-                </div>
+                  </motion.button>
+                </motion.div>
               )}
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {compareProperties.length > 0 && (
         <CompareBar

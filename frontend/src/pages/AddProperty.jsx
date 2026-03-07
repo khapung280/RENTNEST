@@ -9,8 +9,6 @@ const AddProperty = () => {
     title: '',
     type: 'house',
     location: '',
-    latitude: '',
-    longitude: '',
     price: '',
     bedrooms: '',
     bathrooms: '',
@@ -118,14 +116,6 @@ const AddProperty = () => {
 
     if (!formData.title.trim()) newErrors.title = 'Title is required'
     if (!formData.location.trim()) newErrors.location = 'Location is required'
-    const lat = parseFloat(formData.latitude)
-    const lng = parseFloat(formData.longitude)
-    if (isNaN(lat) || lat < -90 || lat > 90) {
-      newErrors.latitude = 'Enter valid latitude (-90 to 90)'
-    }
-    if (isNaN(lng) || lng < -180 || lng > 180) {
-      newErrors.longitude = 'Enter valid longitude (-180 to 180)'
-    }
     if (!formData.price || formData.price <= 0) newErrors.price = 'Valid price is required'
     if (!formData.bedrooms || formData.bedrooms < 0) newErrors.bedrooms = 'Bedrooms is required'
     if (!formData.bathrooms || formData.bathrooms < 0) newErrors.bathrooms = 'Bathrooms is required'
@@ -150,15 +140,10 @@ const AddProperty = () => {
     setShowSuccess(false)
 
     try {
-      const latitude = parseFloat(formData.latitude)
-      const longitude = parseFloat(formData.longitude)
-
       const fd = new FormData()
       fd.append('title', formData.title.trim())
       fd.append('type', formData.type)
       fd.append('location', formData.location.trim())
-      fd.append('latitude', latitude)
-      fd.append('longitude', longitude)
       fd.append('price', formData.price)
       fd.append('bedrooms', formData.bedrooms)
       fd.append('bathrooms', formData.bathrooms)
@@ -295,46 +280,6 @@ const AddProperty = () => {
                   />
                 </div>
                 {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
-              </div>
-
-              {/* Latitude & Longitude - Required for exact map location */}
-              <div className="md:col-span-2">
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
-                  Exact coordinates <span className="text-red-500">*</span>
-                </h3>
-                <p className="text-sm text-gray-500 mb-3">
-                  Enter latitude and longitude. Get coordinates from Google Maps (right-click location → copy coordinates).
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Latitude</label>
-                    <input
-                      type="text"
-                      name="latitude"
-                      value={formData.latitude}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
-                        errors.latitude ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
-                      }`}
-                      placeholder="e.g., 26.6333"
-                    />
-                    {errors.latitude && <p className="mt-1 text-sm text-red-600">{errors.latitude}</p>}
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Longitude</label>
-                    <input
-                      type="text"
-                      name="longitude"
-                      value={formData.longitude}
-                      onChange={handleChange}
-                      className={`w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 text-gray-900 placeholder:text-gray-400 bg-white ${
-                        errors.longitude ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-indigo-500'
-                      }`}
-                      placeholder="e.g., 87.8833"
-                    />
-                    {errors.longitude && <p className="mt-1 text-sm text-red-600">{errors.longitude}</p>}
-                  </div>
-                </div>
               </div>
 
               {/* Price */}

@@ -33,43 +33,63 @@ const parseQuery = (query) => {
     preferences: []
   };
 
-  // Location detection (Nepal cities)
-  const locations = ['kathmandu', 'lalitpur', 'bhaktapur', 'pokhara', 'chitwan', 
-                     'thamel', 'baneshwor', 'patan', 'jawalakhel', 'kupondole', 
-                     'lazimpat', 'tokha', 'durbar marg', 'buddhanagar', 'lakeside'];
-  
-  for (const loc of locations) {
+  // Location detection (Nepal cities and areas)
+  const locationMap = {
+    kathmandu: 'Kathmandu',
+    lalitpur: 'Lalitpur',
+    bhaktapur: 'Bhaktapur',
+    pokhara: 'Pokhara',
+    chitwan: 'Chitwan',
+    birgunj: 'Birgunj',
+    biratnagar: 'Biratnagar',
+    butwal: 'Butwal',
+    dharan: 'Dharan',
+    itahari: 'Itahari',
+    thamel: 'Kathmandu',
+    baneshwor: 'Kathmandu',
+    lazimpat: 'Kathmandu',
+    tokha: 'Kathmandu',
+    'durbar marg': 'Kathmandu',
+    buddhanagar: 'Kathmandu',
+    baluwatar: 'Kathmandu',
+    gongabu: 'Kathmandu',
+    koteshwor: 'Kathmandu',
+    patan: 'Lalitpur',
+    jawalakhel: 'Lalitpur',
+    kupondole: 'Lalitpur',
+    balkhu: 'Lalitpur',
+    lakeside: 'Pokhara',
+  };
+
+  const locationKeys = Object.keys(locationMap).sort((a, b) => b.length - a.length);
+  for (const loc of locationKeys) {
     if (lowerQuery.includes(loc)) {
-      // Map common areas to main cities
-      if (['thamel', 'baneshwor', 'lazimpat', 'tokha', 'durbar marg', 'buddhanagar'].includes(loc)) {
-        parsed.location = 'Kathmandu';
-      } else if (['patan', 'jawalakhel', 'kupondole'].includes(loc)) {
-        parsed.location = 'Lalitpur';
-      } else if (loc === 'lakeside') {
-        parsed.location = 'Pokhara';
-      } else {
-        parsed.location = loc.charAt(0).toUpperCase() + loc.slice(1);
-      }
+      parsed.location = locationMap[loc];
       break;
     }
   }
 
-  // Price detection (under, below, less than, max, up to, budget)
+  // Price detection (under 20k, 20000, budget 25k, etc.)
   const pricePatterns = [
-    { pattern: /(?:under|below|less than|max|up to|maximum)\s*(?:rs\.?|npr|rupees?)?\s*(\d+)(?:k|000)?/i, type: 'max' },
+    { pattern: /(?:under|below|less than|max|up to|maximum|budget)\s*(?:rs\.?|npr|rupees?)?\s*(\d+)(?:k|000)?/i, type: 'max' },
     { pattern: /(?:above|over|more than|min|minimum|at least)\s*(?:rs\.?|npr|rupees?)?\s*(\d+)(?:k|000)?/i, type: 'min' },
-    { pattern: /(?:budget|price|cost)\s*(?:of|is|around)?\s*(?:rs\.?|npr|rupees?)?\s*(\d+)(?:k|000)?/i, type: 'max' },
-    { pattern: /(\d+)(?:k|000)?\s*(?:rs\.?|npr|rupees?)?\s*(?:per month|monthly|pm)/i, type: 'max' }
+    { pattern: /(?:price|cost)\s*(?:of|is|around)?\s*(?:rs\.?|npr|rupees?)?\s*(\d+)(?:k|000)?/i, type: 'max' },
+    { pattern: /(\d+)(?:k|000)?\s*(?:rs\.?|npr|rupees?)?\s*(?:per month|monthly|pm)/i, type: 'max' },
+    { pattern: /\b(\d{1,2})k\b/i, type: 'max' },
   ];
 
   for (const { pattern, type } of pricePatterns) {
     const match = lowerQuery.match(pattern);
     if (match) {
-      let price = parseInt(match[1]);
-      if (match[0].includes('k') || price < 100) price *= 1000;
-      if (type === 'max') parsed.maxPrice = price;
-      else parsed.minPrice = price;
-      break;
+      const raw = match[0];
+      const val = match[1];
+      let price = parseInt(val);
+      if (raw && (raw.toLowerCase().includes('k') || price < 100)) price *= 1000;
+      if (price >= 1000 && price <= 500000) {
+        if (type === 'max') parsed.maxPrice = price;
+        else parsed.minPrice = price;
+        break;
+      }
     }
   }
 
@@ -80,11 +100,11 @@ const parseQuery = (query) => {
     parsed.type = 'flat_apartment';
   }
 
-  // Bedrooms detection
-  const bedMatch = lowerQuery.match(/\b(\d+)\s*(?:bed|bedroom|beds?|bhk)\b/);
+  // Bedrooms detection (2 bed, 3 bedroom, 2bhk, 3br, studio, etc.)
+  const bedMatch = lowerQuery.match(/\b(\d+)\s*(?:bed|bedroom|beds?|bhk|br)\b/i);
   if (bedMatch) {
     parsed.bedrooms = parseInt(bedMatch[1]);
-  } else if (lowerQuery.match(/\b(?:studio|single)\b/)) {
+  } else if (lowerQuery.match(/\b(?:studio|single|1\s*bhk)\b/i)) {
     parsed.bedrooms = 1;
   }
 
@@ -118,6 +138,31 @@ const parseQuery = (query) => {
   }
 
   return parsed;
+};
+
+/**
+ * Fallback response when no rule-based handler matches.
+ * Future: Replace this with LLM-based response generation.
+ * @param {string} query - User's message
+ * @returns {object} AI response object
+ */
+const getFallbackResponse = (query) => {
+  return {
+    type: 'general_help',
+    message: `I can help you find properties! Here are some ways to search:
+
+• **By location**: "Show me properties in Kathmandu" or "Houses in Pokhara"
+• **By budget**: "Properties under 20000" or "Budget 20k"
+• **By type**: "2 bedroom house" or "Flat in Kathmandu"
+• **Combined**: "3 bedroom house in Pokhara under 25k"
+
+You can also ask about:
+• FairFlex pricing
+• How to book a property
+• Cancellation policy
+• Property verification`,
+    properties: []
+  };
 };
 
 /**
@@ -338,9 +383,22 @@ The longer you stay, the more you save! This helps property owners get stable te
 5. **Wait for Approval**: The property owner will review and approve/reject your request
 6. **Confirmation**: Once approved, you'll receive confirmation with payment details
 
-**Cancellation Policy**: You can cancel pending bookings. Approved bookings may have cancellation terms based on the property owner's policy.
-
 **Verification**: Verified properties have been checked by our team for accuracy and trustworthiness.`,
+      properties: []
+    };
+  }
+
+  // 3b. Cancellation FAQ
+  if (lowerQuery.match(/\b(?:cancel|cancellation|cancelled|refund)\b/)) {
+    return {
+      type: 'cancellation_faq',
+      message: `**Cancellation Policy**
+
+• **Pending bookings**: You can cancel anytime before the owner approves. No charges.
+• **Approved bookings**: Cancellation terms depend on the property owner's policy. Contact the owner or check the property details for specific terms.
+• **Refunds**: If applicable, refunds are processed according to the owner's policy and RentNest guidelines.
+
+For help with a specific booking, go to **My Bookings** or contact the property owner directly.`,
       properties: []
     };
   }
@@ -358,14 +416,11 @@ The longer you stay, the more you save! This helps property owners get stable te
   // 5. Parse query and check if it's a search query
   const parsedQuery = parseQuery(query);
   const isSearch = isSearchQuery(parsedQuery);
-  
-  // If not a search query, provide helpful guidance
+
+  // Fallback: no rule-based match (property search or FAQ)
+  // This is the spot to plug in an LLM fallback in the future.
   if (!isSearch) {
-    return {
-      type: 'general_help',
-      message: `I can help you find properties! Here are some ways to search:\n\n• **By location**: "Show me properties in Kathmandu" or "Houses in Pokhara"\n• **By budget**: "Properties under 20000" or "Budget 15000"\n• **By type**: "2 bedroom house" or "Flat in Kathmandu"\n• **Combined**: "3 bedroom house in Pokhara under 25000"\n\nYou can also ask about:\n• FairFlex pricing\n• How to book a property\n• Property verification`,
-      properties: []
-    };
+    return getFallbackResponse(query);
   }
   
   // 6. Perform property search
@@ -422,6 +477,7 @@ module.exports = {
   parseQuery,
   searchProperties,
   generateAIResponse,
+  getFallbackResponse,
   calculateRentConfidence,
   getBestForLabel,
   calculateFairFlexSavings,

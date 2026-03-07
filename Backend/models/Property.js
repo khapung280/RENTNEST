@@ -21,11 +21,11 @@ const propertySchema = new mongoose.Schema({
   },
   latitude: {
     type: Number,
-    required: [true, 'Please provide latitude (use map picker or enter manually)']
+    default: null
   },
   longitude: {
     type: Number,
-    required: [true, 'Please provide longitude (use map picker or enter manually)']
+    default: null
   },
   price: {
     type: Number,

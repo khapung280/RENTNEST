@@ -283,16 +283,8 @@ router.post('/', [
     .withMessage('Description must be between 20 and 2000 characters'),
   body('image').optional().trim(),
   body('images').optional(),
-  body('latitude')
-    .notEmpty()
-    .withMessage('Latitude is required')
-    .isFloat({ min: -90, max: 90 })
-    .withMessage('Latitude must be between -90 and 90'),
-  body('longitude')
-    .notEmpty()
-    .withMessage('Longitude is required')
-    .isFloat({ min: -180, max: 180 })
-    .withMessage('Longitude must be between -180 and 180')
+  body('latitude').optional().isFloat({ min: -90, max: 90 }).withMessage('Latitude must be between -90 and 90'),
+  body('longitude').optional().isFloat({ min: -180, max: 180 }).withMessage('Longitude must be between -180 and 180')
 ], async (req, res) => {
   try {
     // Check for validation errors
@@ -324,9 +316,13 @@ router.post('/', [
     }
     const imageUrls = images.length > 0 ? images : [req.body.image].filter(Boolean);
 
-    // Coerce numbers (multipart sends strings)
-    const latitude = Number(req.body.latitude);
-    const longitude = Number(req.body.longitude);
+    // Coerce numbers (multipart sends strings) - optional; omit if not provided
+    const latitude = req.body.latitude != null && req.body.latitude !== ''
+      ? Number(req.body.latitude)
+      : null;
+    const longitude = req.body.longitude != null && req.body.longitude !== ''
+      ? Number(req.body.longitude)
+      : null;
 
     // Parse JSON fields from multipart (amenities, utilities, houseRules)
     const amenities = typeof req.body.amenities === 'string'
