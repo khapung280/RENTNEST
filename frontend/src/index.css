@@ -176,6 +176,44 @@
   50% { background-position: 100% 50%; }
 }
 
+/* Aurora light waves – northern lights style */
+.hero-aurora {
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.03) 5%,
+    rgba(139, 92, 246, 0.09) 15%,
+    rgba(124, 58, 237, 0.12) 25%,
+    rgba(67, 56, 202, 0.08) 35%,
+    rgba(99, 102, 241, 0.06) 45%,
+    rgba(168, 85, 247, 0.1) 55%,
+    rgba(59, 130, 246, 0.05) 65%,
+    transparent 100%);
+  background-size: 250% 100%;
+  filter: blur(1px);
+  animation: heroAuroraDrift 38s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.hero-aurora-band {
+  position: absolute;
+  left: -10%;
+  height: 25%;
+  width: 140%;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: heroAuroraWave 45s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  will-change: transform;
+}
+.hero-aurora-band:nth-child(1) { top: 5%; background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.2), rgba(124, 58, 237, 0.15), transparent); animation-delay: 0s; }
+.hero-aurora-band:nth-child(2) { top: 35%; background: linear-gradient(90deg, transparent, rgba(67, 56, 202, 0.12), rgba(168, 85, 247, 0.18), rgba(99, 102, 241, 0.12), transparent); animation-delay: -15s; }
+.hero-aurora-band:nth-child(3) { top: 65%; background: linear-gradient(90deg, transparent, rgba(88, 28, 135, 0.1), rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.08), transparent); animation-delay: -30s; }
+@keyframes heroAuroraDrift {
+  0%, 100% { background-position: 0% 50%; opacity: 0.9; }
+  50% { background-position: 100% 50%; opacity: 1; }
+}
+@keyframes heroAuroraWave {
+  0%, 100% { transform: translateX(0) scaleY(1); }
+  50% { transform: translateX(-8%) scaleY(1.15); }
+}
+
 .hero-mesh-glow {
   position: absolute;
   border-radius: 50%;

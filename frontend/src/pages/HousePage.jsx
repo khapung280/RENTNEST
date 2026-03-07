@@ -312,6 +312,16 @@ const HousePage = () => {
           <div className="hero-mesh-glow top-[35%] right-[35%] w-[280px] h-[280px] bg-purple-700/15" style={{ animationDelay: '-8s' }} />
         </div>
 
+        {/* Aurora light waves – premium northern lights style */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 hero-aurora opacity-90" />
+          <div className="absolute inset-0">
+            <div className="hero-aurora-band" />
+            <div className="hero-aurora-band" />
+            <div className="hero-aurora-band" />
+          </div>
+        </div>
+
         {/* Slow zoom background image - parallax wrapper + zoom */}
         <div
           className="absolute inset-0 overflow-hidden"
