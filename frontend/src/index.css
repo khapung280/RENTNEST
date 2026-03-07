@@ -271,6 +271,32 @@
 .hero-orb-indigo { background: rgba(99, 102, 241, 0.1); }
 .hero-orb-purple { background: rgba(168, 85, 247, 0.1); }
 
+/* Home page – video background with cinematic pan */
+.hero-video-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.hero-video-wrap video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
+  transform: translate(-50%, -50%) scale(1.08);
+  object-fit: cover;
+  animation: heroVideoPan 45s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes heroVideoPan {
+  0%, 100% { transform: translate(-50%, -50%) scale(1.08); }
+  25% { transform: translate(-48%, -50%) scale(1.1); }
+  50% { transform: translate(-52%, -48%) scale(1.08); }
+  75% { transform: translate(-50%, -52%) scale(1.06); }
+}
+
 /* Floating glow particles */
 .hero-glow-particle {
   background: radial-gradient(circle, rgba(167, 139, 250, 0.6) 0%, rgba(139, 92, 246, 0.3) 40%, transparent 70%);

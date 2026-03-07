@@ -376,7 +376,8 @@ const Home = () => {
     },
   ]
 
-  // Hero background image
+  // Hero background – video (autoplay, loop, muted) + fallback image
+  const heroVideoSrc = 'https://assets.mixkit.co/videos/preview/mixkit-abstract-flow-4935-large.mp4'
   const heroBackgroundImage = 'https://www.realtynepal.com/uploads/2023/06/viber_image_2023-06-25_17-37-19-205-750x750.jpg'
 
   // Check user role
@@ -405,15 +406,22 @@ const Home = () => {
           </div>
         </div>
       )}
-      {/* 1. HERO Section - subtle dark gradient overlay */}
+      {/* 1. HERO Section – cinematic video background + overlay */}
       <section className="relative text-white py-28 md:py-36 overflow-hidden">
         <div className="absolute inset-0">
-          <img
-            src={heroBackgroundImage}
-            alt="Nepal property background"
-            className="w-full h-full object-cover object-center"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/70 to-neutral-950" />
+          <div className="hero-video-wrap">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster={heroBackgroundImage}
+              preload="auto"
+            >
+              <source src={heroVideoSrc} type="video/mp4" />
+            </video>
+          </div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/75 to-neutral-950" />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
