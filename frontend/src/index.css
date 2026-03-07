@@ -443,6 +443,43 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* Marble/stone progress – polished luxury Nepalese homes */
+.gallery-progress-marble > div {
+  box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.12);
+}
+.gallery-progress-marble {
+  background: linear-gradient(135deg, rgba(120, 113, 108, 0.5) 0%, rgba(168, 162, 158, 0.35) 50%, rgba(120, 113, 108, 0.5) 100%);
+  background-size: 200% 200%;
+  animation: galleryMarbleShimmer 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-progress-marble { animation: none; }
+}
+@keyframes galleryMarbleShimmer {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 100% 100%; }
+}
+
+/* Edge glow with मङ्गल lattice (traditional Nepalese window) */
+.gallery-edge-lattice::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg, rgba(0,0,0,0.12) 0%, transparent 6%),
+    linear-gradient(90deg, transparent 94%, rgba(0,0,0,0.12) 100%),
+    repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.02) 2px, rgba(255,255,255,0.02) 4px);
+  background-size: 100% 100%, 100% 100%, 100% 8px;
+  pointer-events: none;
+}
+
+/* Property details overlay – glass card */
+.gallery-glass-card {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.72);
+}
+
 /* Prayer flag colored progress bar (blue, white, red, green, yellow) */
 .gallery-progress-prayer-flags {
   border: 1px solid rgba(255, 255, 255, 0.2);

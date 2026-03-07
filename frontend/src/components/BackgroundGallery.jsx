@@ -1,48 +1,45 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const SLIDE_COUNT = 24
-const SUNRISE_SUNSET_MS = 4000
-const DAY_MS = 2500
-const NIGHT_MS = 3500
+const SLIDE_COUNT = 21
+const EXTERIOR_MS = 3000   // full building establishing shot
+const INTERIOR_MS = 4000    // living room, bedroom, kitchen
+const DETAIL_MS = 2500      // windows, doors, balconies
 const TRANSITION_DURATION = 0.9
 const FAVORITES_KEY = 'rentnest_gallery_favorites'
 const SWIPE_COUNT_KEY = 'rentnest_gallery_swipe_count'
 
-// Geographic journey: Terai → Valley → Lakeside → Mountains → Trans-Himalayan
+// 21 slides: BUILDINGS ONLY. Sequencing: Modern → Traditional → Contemporary → Fusion.
 const SLIDES = [
-  // JHAPA (1–3)
-  { id: 1, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House for rent in Jhapa', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tr', gradient: 'jhapa', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'House' },
-  { id: 2, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment in Jhapa', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-tl', gradient: 'jhapa', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'Apartment' },
-  { id: 3, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Flat in Jhapa', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-br', gradient: 'jhapa', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'Flat' },
-  // CHITWAN (4–6)
-  { id: 4, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Chitwan near national park', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-bl', gradient: 'chitwan', locationEn: 'Chitwan', locationNp: 'चितवन', region: 'Chitwan', propertyType: 'House' },
-  { id: 5, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment in Chitwan', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tl', gradient: 'chitwan', locationEn: 'Chitwan', locationNp: 'चितवन', region: 'Chitwan', propertyType: 'Apartment' },
-  { id: 6, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Chitwan', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-tr', gradient: 'chitwan', locationEn: 'Chitwan', locationNp: 'चितवन', region: 'Chitwan', propertyType: 'House' },
-  // KATHMANDU (7–9)
-  { id: 7, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Kathmandu', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tr', gradient: 'kathmandu', locationEn: 'Kathmandu', locationNp: 'काठमाडौँ', region: 'Kathmandu', propertyType: 'House' },
-  { id: 8, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment in Kathmandu', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-bl', gradient: 'kathmandu', locationEn: 'Kathmandu', locationNp: 'काठमाडौँ', region: 'Kathmandu', propertyType: 'Apartment' },
-  { id: 9, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Flat in Kathmandu', duration: NIGHT_MS, mood: 'night', kenBurns: 'zoom-pan-center', gradient: 'kathmandu', locationEn: 'Kathmandu', locationNp: 'काठमाडौँ', region: 'Kathmandu', propertyType: 'Flat' },
-  // LALITPUR (10–12)
-  { id: 10, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Flat in Lalitpur', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tl', gradient: 'lalitpur', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Flat' },
-  { id: 11, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Lalitpur', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-br', gradient: 'lalitpur', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'House' },
-  { id: 12, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment in Lalitpur', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tr', gradient: 'lalitpur', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Apartment' },
-  // POKHARA (13–15) – slide 13 uses user-provided image
-  { id: 13, src: 'https://www.realtynepal.com/uploads/2026/03/viber_image_2026-03-01_14-29-13-750-360x245.jpg', alt: 'Rental property in Pokhara', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-br', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'House' },
-  { id: 14, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Pokhara', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-center', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'House' },
-  { id: 15, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Apartment in Pokhara', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tr', gradient: 'pokhara', locationEn: 'Pokhara', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'Apartment' },
-  // GHANDRUK (16–18)
-  { id: 16, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Ghandruk', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-center', gradient: 'ghandruk', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House' },
-  { id: 17, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional house in Ghandruk', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-tl', gradient: 'ghandruk', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House' },
-  { id: 18, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Homestay in Ghandruk', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-br', gradient: 'ghandruk', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House' },
-  // MANANG (19–21)
-  { id: 19, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Lodge in Manang', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-tr', gradient: 'manang', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'House' },
-  { id: 20, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mountain lodge in Manang', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-br', gradient: 'manang', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'Apartment' },
-  { id: 21, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Accommodation in Manang', duration: NIGHT_MS, mood: 'night', kenBurns: 'zoom-pan-bl', gradient: 'manang', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'House' },
-  // MUSTANG (22–24)
-  { id: 22, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'House in Mustang', duration: SUNRISE_SUNSET_MS, mood: 'sunrise_sunset', kenBurns: 'zoom-pan-tl', gradient: 'mustang', locationEn: 'Mustang', locationNp: 'मुस्ताङ', region: 'Mustang', propertyType: 'House' },
-  { id: 23, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Lodge in Mustang', duration: DAY_MS, mood: 'day', kenBurns: 'zoom-pan-bl', gradient: 'mustang', locationEn: 'Mustang', locationNp: 'मुस्ताङ', region: 'Mustang', propertyType: 'House' },
-  { id: 24, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Desert lodge in Mustang', duration: NIGHT_MS, mood: 'night', kenBurns: 'zoom-pan-center', gradient: 'mustang', locationEn: 'Mustang', locationNp: 'मुस्ताङ', region: 'Mustang', propertyType: 'House' },
+  // KATHMANDU – Urban Living (1–3)
+  { id: 1, src: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment complex in Lazimpat with floor-to-ceiling windows and rooftop terrace', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Lazimpat', locationNp: 'लाजिम्पाट', region: 'Kathmandu', propertyType: 'Apartment', bedrooms: 3, bathrooms: 2, floorArea: '1,800 sq ft', rentRange: 'Rs 45,000 – 65,000', features: 'Rooftop terrace, floor-to-ceiling windows, parking' },
+  { id: 2, src: 'https://images.pexels.com/photos/1438832/pexels-photo-1438832.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Newari-style house in Patan with carved wooden windows and brick architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Patan', locationNp: 'ललितपुर', region: 'Kathmandu', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,200 sq ft', rentRange: 'Rs 55,000 – 80,000', features: 'Courtyard, carved windows, heritage' },
+  { id: 3, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury flat in Budhanilkantha with large balconies and mountain-view windows', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'modern', locationEn: 'Budhanilkantha', locationNp: 'बुढानीलकण्ठ', region: 'Kathmandu', propertyType: 'Flat', bedrooms: 3, bathrooms: 2, floorArea: '1,600 sq ft', rentRange: 'Rs 50,000 – 70,000', features: 'Balcony, mountain view, modern kitchen' },
+  // POKHARA – Lakeside Properties (4–6)
+  { id: 4, src: 'https://www.realtynepal.com/uploads/2026/03/viber_image_2026-03-01_14-29-13-750-360x245.jpg', alt: 'Modern apartment in Pokhara with lake-facing balconies', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'concrete', locationEn: 'Pokhara Lakeside', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,200 sq ft', rentRange: 'Rs 35,000 – 50,000', features: 'Lake view, balcony, parking' },
+  { id: 5, src: 'https://images.pexels.com/photos/164522/pexels-photo-164522.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung-style house in Sarangkot with stone foundation and wooden upper stories', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'wood', locationEn: 'Sarangkot', locationNp: 'साराङकोट', region: 'Pokhara', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,800 sq ft', rentRange: 'Rs 40,000 – 60,000', features: 'Mountain view, garden, traditional' },
+  { id: 6, src: 'https://images.pexels.com/photos/1438834/pexels-photo-1438834.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury villa in Lakeside with private garden and modern Nepali fusion architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'fusion', locationEn: 'Lakeside', locationNp: 'लेकसाइड', region: 'Pokhara', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,500 sq ft', rentRange: 'Rs 70,000 – 1,00,000', features: 'Garden, outdoor seating, parking' },
+  // CHITWAN – Terai Modern (7–8)
+  { id: 7, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern house in Bharatpur with large veranda and tropical-modern architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'fusion', locationEn: 'Bharatpur', locationNp: 'भरतपुर', region: 'Chitwan', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '2,000 sq ft', rentRange: 'Rs 25,000 – 40,000', features: 'Veranda, garden, parking' },
+  { id: 8, src: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Contemporary apartment complex near Narayani River with river-facing balconies', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-tl', gradient: 'concrete', locationEn: 'Narayani Riverside', locationNp: 'नारायणी किनार', region: 'Chitwan', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,400 sq ft', rentRange: 'Rs 28,000 – 42,000', features: 'River view, balcony, modern' },
+  // JHAPA – Eastern Nepal (9–10)
+  { id: 9, src: 'https://images.pexels.com/photos/3219585/pexels-photo-3219585.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern flat in Birtamod with contemporary design and large windows', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Birtamod', locationNp: 'बिर्तामोड', region: 'Jhapa', propertyType: 'Flat', bedrooms: 2, bathrooms: 1, floorArea: '1,100 sq ft', rentRange: 'Rs 18,000 – 28,000', features: 'Large windows, parking' },
+  { id: 10, src: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional-modern fusion house with painted exterior and family home architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'painted', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'House', bedrooms: 4, bathrooms: 2, floorArea: '2,200 sq ft', rentRange: 'Rs 22,000 – 35,000', features: 'Garden, parking' },
+  // MANANG – Himalayan Architecture (11–12)
+  { id: 11, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional stone house in Manang with modern interior and large windows framing peaks', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'stone', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'House', bedrooms: 2, bathrooms: 1, floorArea: '1,200 sq ft', rentRange: 'Rs 15,000 – 25,000', features: 'Mountain view, heated' },
+  { id: 12, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern mountain lodge-style apartment with floor-to-ceiling mountain views', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-br', gradient: 'wood', locationEn: 'Manang Village', locationNp: 'मनाङ', region: 'Manang', propertyType: 'Apartment', bedrooms: 2, bathrooms: 1, floorArea: '900 sq ft', rentRange: 'Rs 12,000 – 20,000', features: 'Mountain view, heated floors' },
+  // MUSTANG – Trans-Himalayan (13–14)
+  { id: 13, src: 'https://images.pexels.com/photos/3581369/pexels-photo-3581369.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Mustangi mud-brick house with courtyard and modern amenities', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Lo Manthang', locationNp: 'लो मन्थाङ', region: 'Mustang', propertyType: 'House', bedrooms: 2, bathrooms: 1, floorArea: '1,000 sq ft', rentRange: 'Rs 20,000 – 35,000', features: 'Courtyard, traditional' },
+  { id: 14, src: 'https://images.pexels.com/photos/3582200/pexels-photo-3582200.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Cave-adapted modern villa in Kagbeni with fusion architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'fusion', locationEn: 'Kagbeni', locationNp: 'कागबेनी', region: 'Mustang', propertyType: 'House', bedrooms: 2, bathrooms: 2, floorArea: '1,300 sq ft', rentRange: 'Rs 35,000 – 55,000', features: 'Luxury interior, traditional exterior' },
+  // GHANDRUK – Village Architecture (15–16)
+  { id: 15, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung stone house with mountain-view terraces and slate roofing', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'stone', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,600 sq ft', rentRange: 'Rs 25,000 – 40,000', features: 'Terrace, mountain view' },
+  { id: 16, src: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Renovated village home with contemporary interiors and traditional exterior', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-tr', gradient: 'fusion', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,500 sq ft', rentRange: 'Rs 30,000 – 45,000', features: 'Garden, modern kitchen' },
+  // LALITPUR – Heritage Modern (17–21)
+  { id: 17, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Renovated Newari house in Pulchowk with preserved wooden carvings', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Pulchowk', locationNp: 'पुल्चोक', region: 'Lalitpur', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,400 sq ft', rentRange: 'Rs 60,000 – 90,000', features: 'Wooden carvings, heritage' },
+  { id: 18, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment in Kupondole with city views and balcony gardens', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'concrete', locationEn: 'Kupondole', locationNp: 'कुपोन्डोल', region: 'Lalitpur', propertyType: 'Apartment', bedrooms: 3, bathrooms: 2, floorArea: '1,700 sq ft', rentRange: 'Rs 48,000 – 68,000', features: 'City view, balcony' },
+  { id: 19, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional courtyard house (bahal) converted to modern flats', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'brick', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Flat', bedrooms: 2, bathrooms: 2, floorArea: '1,300 sq ft', rentRange: 'Rs 42,000 – 58,000', features: 'Courtyard, heritage' },
+  { id: 20, src: 'https://images.pexels.com/photos/1438833/pexels-photo-1438833.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury townhouse in Sanepa with modern architecture and rooftop terrace', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Sanepa', locationNp: 'सानेपा', region: 'Lalitpur', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,600 sq ft', rentRange: 'Rs 75,000 – 1,10,000', features: 'Rooftop terrace, garden, parking' },
+  { id: 21, src: 'https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mixed-use building with ground floor retail and upper floor apartments', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'concrete', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,400 sq ft', rentRange: 'Rs 38,000 – 52,000', features: 'Urban, commercial below' },
 ]
 
 function ImageSlide({ slide, isActive, onLoad, prefersReducedMotion }) {
@@ -78,14 +75,13 @@ function ImageSlide({ slide, isActive, onLoad, prefersReducedMotion }) {
 
 function getGradientOverlay(gradient) {
   const map = {
-    kathmandu: 'from-amber-950/35 via-rose-950/15 to-transparent',
-    lalitpur: 'from-rose-950/30 via-amber-950/20 to-transparent',
-    pokhara: 'from-sky-950/25 via-emerald-950/20 to-transparent',
-    chitwan: 'from-emerald-950/30 via-amber-950/20 to-transparent',
-    jhapa: 'from-emerald-950/28 via-teal-950/15 to-transparent',
-    manang: 'from-slate-100/20 via-sky-100/15 to-transparent',
-    mustang: 'from-amber-900/40 via-orange-950/25 to-transparent',
-    ghandruk: 'from-rose-950/20 via-violet-950/15 to-transparent',
+    brick: 'from-red-950/35 via-amber-950/20 to-transparent',
+    concrete: 'from-slate-900/30 via-stone-900/15 to-transparent',
+    wood: 'from-amber-950/30 via-yellow-950/15 to-transparent',
+    painted: 'from-stone-900/25 via-neutral-900/15 to-transparent',
+    stone: 'from-neutral-800/30 via-slate-800/15 to-transparent',
+    fusion: 'from-rose-950/20 via-amber-950/20 to-transparent',
+    modern: 'from-slate-100/15 via-stone-100/10 to-transparent',
   }
   return map[gradient] || 'from-stone-950/25 via-transparent to-transparent'
 }
@@ -142,7 +138,7 @@ export default function BackgroundGallery() {
   indexRef.current = index
 
   const currentSlide = SLIDES[index]
-  const durationMs = currentSlide?.duration ?? DAY_MS
+  const durationMs = currentSlide?.duration ?? EXTERIOR_MS
   const nextIndex = (index + 1) % SLIDE_COUNT
   const prevIndex = (index - 1 + SLIDE_COUNT) % SLIDE_COUNT
   const isFavorited = currentSlide && favorites.includes(currentSlide.id)
@@ -413,7 +409,7 @@ export default function BackgroundGallery() {
       <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-black/30 pointer-events-none" />
       <div className={`absolute inset-0 gallery-grain ${isDragging ? 'gallery-grain-active' : ''} pointer-events-none`} />
       <div className="absolute inset-0 gallery-vignette pointer-events-none" />
-      <div className={`absolute inset-0 gallery-glow-mandala pointer-events-none ${progress >= 75 ? 'gallery-glow-mandala-fast' : ''}`} />
+      <div className={`absolute inset-0 gallery-glow-mandala gallery-edge-lattice pointer-events-none ${progress >= 75 ? 'gallery-glow-mandala-fast' : ''}`} />
 
       {cursor.x > 0 && cursor.y > 0 && (
         <>
@@ -444,7 +440,7 @@ export default function BackgroundGallery() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="absolute inset-x-0 bottom-0 top-1/3 z-30 bg-black/70 backdrop-blur-xl rounded-t-2xl border border-white/10 border-b-0 flex flex-col p-6 overflow-auto"
+            className="absolute inset-x-0 bottom-0 top-1/3 z-30 bg-black/75 backdrop-blur-xl rounded-t-2xl border border-white/10 border-b-0 flex flex-col p-6 overflow-auto gallery-glass-card"
           >
             <button
               onClick={() => setShowDetailsOverlay(false)}
@@ -456,8 +452,29 @@ export default function BackgroundGallery() {
             <p className="text-white font-semibold text-xl">
               {currentSlide.locationEn} · {currentSlide.locationNp}
             </p>
-            <p className="text-amber-200/90 mt-1">{currentSlide.propertyType}</p>
-            <p className="text-white/70 text-sm mt-3">Swipe down or tap × to close</p>
+            <p className="text-amber-200/95 mt-0.5">{currentSlide.propertyType} · {currentSlide.region}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4 text-sm">
+              <div className="bg-white/5 rounded-lg px-3 py-2">
+                <span className="text-white/60 block">Bedrooms</span>
+                <span className="text-white font-medium">{currentSlide.bedrooms}</span>
+              </div>
+              <div className="bg-white/5 rounded-lg px-3 py-2">
+                <span className="text-white/60 block">Bathrooms</span>
+                <span className="text-white font-medium">{currentSlide.bathrooms}</span>
+              </div>
+              <div className="bg-white/5 rounded-lg px-3 py-2 col-span-2">
+                <span className="text-white/60 block">Floor area</span>
+                <span className="text-white font-medium">{currentSlide.floorArea}</span>
+              </div>
+            </div>
+            <div className="mt-3">
+              <span className="text-white/60 text-sm">Est. rent</span>
+              <p className="text-emerald-300 font-semibold">{currentSlide.rentRange}</p>
+            </div>
+            <p className="text-white/80 text-sm mt-3">
+              <span className="text-white/60">Features: </span>{currentSlide.features}
+            </p>
+            <p className="text-white/50 text-xs mt-4">Swipe down or tap × to close</p>
             {sameRegionSlides.length > 0 && (
               <div className="mt-4">
                 <p className="text-white/80 text-sm font-medium mb-2">More in {currentSlide.region}</p>
@@ -466,7 +483,7 @@ export default function BackgroundGallery() {
                     <button
                       key={s.id}
                       onClick={() => { goTo(SLIDES.findIndex((x) => x.id === s.id)); setShowDetailsOverlay(false) }}
-                      className="shrink-0 w-20 h-14 rounded-lg overflow-hidden border border-white/20"
+                      className="shrink-0 w-20 h-14 rounded-lg overflow-hidden border border-white/20 hover:border-white/40"
                     >
                       <img src={s.src} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     </button>
@@ -527,17 +544,17 @@ export default function BackgroundGallery() {
         ))}
       </div>
 
-      {/* Prayer-wheel style progress (5 segments) */}
+      {/* Prayer-wheel / marble progress – 5 segments */}
       <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-48 sm:w-64 z-20 pointer-events-auto flex gap-0.5">
         {[0, 1, 2, 3, 4].map((i) => {
           const segmentStart = i * 20
           const segmentEnd = (i + 1) * 20
           const fill = Math.min(100, Math.max(0, (progress - segmentStart) / (segmentEnd - segmentStart) * 100))
-          const colors = ['#2563eb', '#f8fafc', '#ef4444', '#22c55e', '#eab308']
+          const colors = ['#78716c', '#a8a29e', '#d6d3d1', '#e7e5e4', '#fafaf9']
           return (
-            <div key={i} className="flex-1 h-2 rounded-full overflow-hidden gallery-glass border border-white/15">
+            <div key={i} className="flex-1 h-2 rounded-full overflow-hidden gallery-glass gallery-progress-marble border border-white/15">
               <motion.div
-                className="h-full rounded-full gallery-progress-fill-nepal"
+                className="h-full rounded-full"
                 style={{ width: `${fill}%`, backgroundColor: colors[i] }}
                 transition={{ duration: 0.12, ease: 'linear' }}
               />
