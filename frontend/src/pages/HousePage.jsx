@@ -294,7 +294,23 @@ const HousePage = () => {
         onMouseLeave={handleMouseLeave}
       >
         {/* Base gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/95 via-neutral-950/98 to-neutral-950" />
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-950/95 via-indigo-950/97 to-neutral-950" />
+
+        {/* Animated gradient mesh – living texture */}
+        <div
+          className="absolute inset-0 hero-gradient-mesh opacity-80"
+          style={{ willChange: 'background-position' }}
+        />
+        {/* Flowing color waves */}
+        <div className="absolute inset-0 hero-mesh-wave pointer-events-none" />
+        <div className="absolute inset-0 hero-mesh-wave-2 pointer-events-none opacity-90" />
+        {/* Soft glowing gradient spots – slow drift */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="hero-mesh-glow top-[10%] left-[15%] w-[400px] h-[400px] bg-indigo-600/20" style={{ animationDelay: '0s' }} />
+          <div className="hero-mesh-glow top-[50%] right-[10%] w-[350px] h-[350px] bg-violet-600/18" style={{ animationDelay: '-12s' }} />
+          <div className="hero-mesh-glow bottom-[15%] left-[30%] w-[380px] h-[380px] bg-blue-900/25" style={{ animationDelay: '-24s' }} />
+          <div className="hero-mesh-glow top-[35%] right-[35%] w-[280px] h-[280px] bg-purple-700/15" style={{ animationDelay: '-8s' }} />
+        </div>
 
         {/* Slow zoom background image - parallax wrapper + zoom */}
         <div

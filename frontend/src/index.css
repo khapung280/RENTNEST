@@ -138,7 +138,58 @@
   40% { transform: scale(1.2); opacity: 1; }
 }
 
-/* Hero background – premium animated layers */
+/* Hero background – animated gradient mesh */
+.hero-gradient-mesh {
+  background: radial-gradient(ellipse 100% 80% at 0% 20%, rgba(49, 46, 129, 0.35) 0%, transparent 50%),
+              radial-gradient(ellipse 90% 100% at 100% 60%, rgba(30, 27, 75, 0.4) 0%, transparent 50%),
+              radial-gradient(ellipse 80% 90% at 50% 80%, rgba(67, 56, 202, 0.25) 0%, transparent 45%),
+              radial-gradient(ellipse 70% 70% at 20% 60%, rgba(88, 28, 135, 0.2) 0%, transparent 40%),
+              radial-gradient(ellipse 60% 80% at 80% 20%, rgba(99, 102, 241, 0.18) 0%, transparent 45%);
+  background-size: 200% 200%, 180% 180%, 220% 220%, 160% 160%, 190% 190%;
+  background-position: 0% 0%, 100% 50%, 50% 100%, 20% 50%, 80% 0%;
+  animation: heroMeshFlow 35s ease-in-out infinite;
+}
+@keyframes heroMeshFlow {
+  0%, 100% { background-position: 0% 0%, 100% 50%, 50% 100%, 20% 50%, 80% 0%; }
+  25% { background-position: 10% 15%, 90% 60%, 60% 90%, 30% 45%, 70% 10%; }
+  50% { background-position: 20% 10%, 80% 40%, 40% 80%, 10% 60%, 90% 20%; }
+  75% { background-position: 5% 20%, 95% 55%, 55% 95%, 25% 40%, 75% 5%; }
+}
+
+.hero-mesh-wave {
+  background: linear-gradient(105deg,
+    transparent 0%, rgba(99, 102, 241, 0.06) 20%, rgba(139, 92, 246, 0.08) 40%,
+    rgba(67, 56, 202, 0.05) 60%, rgba(124, 58, 237, 0.07) 80%, transparent 100%);
+  background-size: 300% 100%;
+  animation: heroMeshWave 28s ease-in-out infinite;
+}
+.hero-mesh-wave-2 {
+  background: linear-gradient(75deg,
+    transparent 0%, rgba(67, 56, 202, 0.05) 25%, rgba(88, 28, 135, 0.06) 50%,
+    rgba(99, 102, 241, 0.04) 75%, transparent 100%);
+  background-size: 250% 100%;
+  animation: heroMeshWave 32s ease-in-out infinite reverse;
+  animation-delay: -8s;
+}
+@keyframes heroMeshWave {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.hero-mesh-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  animation: heroMeshGlow 40s ease-in-out infinite;
+  will-change: transform;
+}
+@keyframes heroMeshGlow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(20px, -15px) scale(1.1); }
+  50% { transform: translate(-15px, 25px) scale(0.95); }
+  75% { transform: translate(10px, 10px) scale(1.05); }
+}
+
 .hero-gradient-waves {
   background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(139, 92, 246, 0.18) 0%, transparent 50%),
               radial-gradient(ellipse 60% 80% at 80% 70%, rgba(99, 102, 241, 0.14) 0%, transparent 50%),
