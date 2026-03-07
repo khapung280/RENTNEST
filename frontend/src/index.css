@@ -383,6 +383,74 @@
   box-shadow: inset 0 0 120px rgba(251, 191, 36, 0.06);
 }
 
+/* Nepal gallery – mandala-inspired edge glow (पाँच रङ्ग: prayer flag colors) */
+.gallery-glow-mandala {
+  box-shadow:
+    inset 0 0 80px rgba(59, 130, 246, 0.04),
+    inset 0 0 100px rgba(255, 255, 255, 0.03),
+    inset 0 0 90px rgba(239, 68, 68, 0.035),
+    inset 0 0 85px rgba(34, 197, 94, 0.04),
+    inset 0 0 95px rgba(234, 179, 8, 0.045);
+  animation: galleryMandalaPulse 4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-glow-mandala { animation: none; }
+}
+@keyframes galleryMandalaPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
+}
+
+/* Nepal gallery – metallic sheen (gold/silver) */
+.gallery-sheen-nepal {
+  background: radial-gradient(circle,
+    rgba(251, 191, 36, 0.06) 0%,
+    rgba(234, 179, 8, 0.03) 30%,
+    rgba(192, 192, 192, 0.02) 50%,
+    transparent 70%);
+  filter: blur(35px);
+  pointer-events: none;
+}
+
+/* Prayer flag colored progress bar (blue, white, red, green, yellow) */
+.gallery-progress-prayer-flags {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gallery-progress-fill-nepal {
+  background: linear-gradient(90deg,
+    #2563eb 0%,      /* blue */
+    #60a5fa 15%,
+    #f8fafc 30%,     /* white */
+    #ef4444 50%,     /* red */
+    #22c55e 70%,     /* green */
+    #eab308 85%,     /* yellow */
+    #eab308 100%);
+  background-size: 300% 100%;
+  animation: galleryPrayerFlagShimmer 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .gallery-progress-fill-nepal { animation: none; background-position: 0 0; }
+}
+@keyframes galleryPrayerFlagShimmer {
+  0%, 100% { background-position: 0% 0; }
+  50% { background-position: 100% 0; }
+}
+
+/* Thumbnail – subtle lattice pattern (मङ्गल / Newari window) */
+.gallery-thumb-pattern {
+  position: relative;
+}
+.gallery-thumb-pattern::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 48%, rgba(255,255,255,0.03) 50%, transparent 52%);
+  background-size: 6px 6px;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
 /* Ken Burns effect – subtle zoom and pan per slide */
 .gallery-ken-burns {
   animation-name: galleryKenBurnsBase;
