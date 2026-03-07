@@ -265,6 +265,21 @@ const HousePage = () => {
   const fadeUp = { hidden: { opacity: 0, y: 24 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] } } };
   const particles = useMemo(() => Array.from({ length: 12 }, (_, i) => ({ id: i, x: Math.random() * 100, y: Math.random() * 100, size: 3 + Math.random() * 5, d: 6 + Math.random() * 8, delay: Math.random() * 3 })), []);
 
+  const glowParticles = useMemo(
+    () =>
+      Array.from({ length: 30 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size: i % 3 === 0 ? 1.5 + Math.random() * 1.5 : 3 + Math.random() * 4,
+        driftY: -25 - Math.random() * 45,
+        driftX: (Math.random() - 0.5) * 60,
+        duration: 28 + Math.random() * 24,
+        delay: Math.random() * 6,
+      })),
+    []
+  );
+
   const heroRef = useRef(null);
   const [mouseParallax, setMouseParallax] = useState({ x: 0, y: 0 });
   const handleMouseMove = useCallback((e) => {
@@ -320,6 +335,34 @@ const HousePage = () => {
             <div className="hero-aurora-band" />
             <div className="hero-aurora-band" />
           </div>
+        </div>
+
+        {/* Floating glow particles – upward drift, soft glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {glowParticles.map((p) => (
+            <motion.div
+              key={p.id}
+              className="absolute rounded-full hero-glow-particle"
+              style={{
+                left: `${p.x}%`,
+                top: `${p.y}%`,
+                width: p.size,
+                height: p.size,
+                willChange: 'transform, opacity',
+              }}
+              animate={{
+                y: [0, p.driftY, 0],
+                x: [0, p.driftX, 0],
+                opacity: [0.08, 0.35, 0.08],
+              }}
+              transition={{
+                duration: p.duration,
+                repeat: Infinity,
+                delay: p.delay,
+                ease: [0.4, 0, 0.6, 1],
+              }}
+            />
+          ))}
         </div>
 
         {/* Slow zoom background image - parallax wrapper + zoom */}
