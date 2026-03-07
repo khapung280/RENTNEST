@@ -82,11 +82,16 @@ export default function BackgroundGallery() {
   const startTimeRef = useRef(Date.now())
 
   const nextIndex = (index + 1) % SLIDE_COUNT
+  const prevIndex = (index - 1 + SLIDE_COUNT) % SLIDE_COUNT
 
   useEffect(() => {
-    const img = new Image()
-    img.src = SLIDES[nextIndex].src
-  }, [nextIndex])
+    const preload = (i) => {
+      const img = new Image()
+      img.src = SLIDES[i].src
+    }
+    preload(nextIndex)
+    preload(prevIndex)
+  }, [nextIndex, prevIndex])
 
   const advance = useCallback(() => {
     setIndex((prev) => (prev + 1) % SLIDE_COUNT)
@@ -122,7 +127,8 @@ export default function BackgroundGallery() {
   }, [])
 
   const goTo = useCallback((i) => {
-    setIndex(i)
+    const wrapped = ((i % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT
+    setIndex(wrapped)
     setProgress(0)
     startTimeRef.current = Date.now()
   }, [])
@@ -144,11 +150,11 @@ export default function BackgroundGallery() {
     if (!isDragging) return
     const dx = totalDragX.current
     const threshold = 60
-    if (dx > threshold) goTo((index - 1 + SLIDE_COUNT) % SLIDE_COUNT)
-    else if (dx < -threshold) goTo((index + 1) % SLIDE_COUNT)
+    if (dx > threshold) goTo(prevIndex)
+    else if (dx < -threshold) goTo(nextIndex)
     setIsDragging(false)
     setIsHovered(false)
-  }, [isDragging, index, goTo])
+  }, [isDragging, prevIndex, nextIndex, goTo])
 
   useEffect(() => {
     const onMove = (e) => handlePointerMove(e)
@@ -188,7 +194,7 @@ export default function BackgroundGallery() {
       </div>
 
       <div className="absolute inset-0 gallery-overlay-edges pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
       <div className="absolute inset-0 gallery-grain pointer-events-none" />
       <div className="absolute inset-0 gallery-glow-edge pointer-events-none" />
 
@@ -211,7 +217,7 @@ export default function BackgroundGallery() {
         ))}
       </div>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/20 pointer-events-none" />
     </div>
   )
 }
