@@ -6,41 +6,13 @@ const AUTO_ADVANCE_MS = 2000
 const TRANSITION_DURATION = 0.8
 
 const SLIDES = [
-  {
-    id: 1,
-    src: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1920&q=80&fit=crop',
-    alt: 'Modern luxury house exterior with warm evening lighting',
-  },
-  {
-    id: 2,
-    src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920&q=80&fit=crop',
-    alt: 'Spacious living room with floor-to-ceiling windows',
-  },
-  {
-    id: 3,
-    src: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920&q=80&fit=crop',
-    alt: 'Stylish kitchen with marble countertops',
-  },
-  {
-    id: 4,
-    src: 'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1920&q=80&fit=crop',
-    alt: 'Cozy bedroom with city view',
-  },
-  {
-    id: 5,
-    src: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1920&q=80&fit=crop',
-    alt: 'Modern apartment building exterior',
-  },
-  {
-    id: 6,
-    src: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=1920&q=80&fit=crop',
-    alt: 'Mountain view house with traditional-modern fusion',
-  },
-  {
-    id: 7,
-    src: 'https://images.unsplash.com/photo-1552321554-5faefe818699?w=1920&q=80&fit=crop',
-    alt: 'Luxury bathroom with spa-like atmosphere',
-  },
+  { id: 1, src: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern luxury house exterior with warm evening lighting' },
+  { id: 2, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Spacious living room with floor-to-ceiling windows' },
+  { id: 3, src: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Stylish kitchen with marble countertops' },
+  { id: 4, src: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Cozy bedroom with city view' },
+  { id: 5, src: 'https://images.pexels.com/photos/1438832/pexels-photo-1438832.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment building exterior' },
+  { id: 6, src: 'https://images.pexels.com/photos/1438834/pexels-photo-1438834.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mountain view house with traditional-modern fusion' },
+  { id: 7, src: 'https://images.pexels.com/photos/1457844/pexels-photo-1457844.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury bathroom with spa-like atmosphere' },
 ]
 
 function ImageSlide({ slide, isActive, onLoad }) {
@@ -61,7 +33,7 @@ function ImageSlide({ slide, isActive, onLoad }) {
         loading={isActive ? 'eager' : 'lazy'}
         onLoad={onLoad}
         draggable={false}
-        fetchPriority={isActive ? 'high' : 'low'}
+        referrerPolicy="no-referrer"
       />
     </motion.div>
   )
@@ -85,13 +57,13 @@ export default function BackgroundGallery() {
   const prevIndex = (index - 1 + SLIDE_COUNT) % SLIDE_COUNT
 
   useEffect(() => {
-    const preload = (i) => {
+    const timer = setTimeout(() => {
       const img = new Image()
-      img.src = SLIDES[i].src
-    }
-    preload(nextIndex)
-    preload(prevIndex)
-  }, [nextIndex, prevIndex])
+      img.referrerPolicy = 'no-referrer'
+      img.src = SLIDES[nextIndex].src
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [nextIndex])
 
   const advance = useCallback(() => {
     setIndex((prev) => (prev + 1) % SLIDE_COUNT)

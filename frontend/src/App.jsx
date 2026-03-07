@@ -36,11 +36,9 @@ import Messages from './pages/Messages'          // Messages page
 
 // Main App function
 function App() {
-  console.log('📱 App component rendering...')
-  
   return (
     // BrowserRouter enables page navigation without reloading
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="flex flex-col min-h-screen bg-white">
         
         {/* Navbar - shows on every page at top */}
