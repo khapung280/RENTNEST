@@ -25,6 +25,7 @@ import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import CompareBar from '../components/CompareBar'
 import CompareModal from '../components/CompareModal'
 import Loader from '../components/Loader'
+import BackgroundGallery from '../components/BackgroundGallery'
 import { calculateRentConfidence, getBestForLabel, getCityLivingCost, getCityInsights } from '../utils/propertyUtils'
 import { isAuthenticated } from '../utils/auth'
 
@@ -376,10 +377,6 @@ const Home = () => {
     },
   ]
 
-  // Hero background – video (autoplay, loop, muted) + fallback image
-  const heroVideoSrc = 'https://assets.mixkit.co/videos/preview/mixkit-abstract-flow-4935-large.mp4'
-  const heroBackgroundImage = 'https://www.realtynepal.com/uploads/2023/06/viber_image_2023-06-25_17-37-19-205-750x750.jpg'
-
   // Check user role
   const isOwner = user?.accountType === 'owner'
   const isRenter = user?.accountType === 'renter' || !user
@@ -406,22 +403,11 @@ const Home = () => {
           </div>
         </div>
       )}
-      {/* 1. HERO Section – cinematic video background + overlay */}
-      <section className="relative text-white py-28 md:py-36 overflow-hidden">
-        <div className="absolute inset-0">
-          <div className="hero-video-wrap">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster={heroBackgroundImage}
-              preload="auto"
-            >
-              <source src={heroVideoSrc} type="video/mp4" />
-            </video>
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/75 to-neutral-950" />
+      {/* 1. HERO Section – swipable background gallery + overlay */}
+      <section className="relative text-white py-28 md:py-36 overflow-hidden min-h-[600px]">
+        <div className="absolute inset-0 w-full h-full min-h-[600px]">
+          <BackgroundGallery />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/65 to-neutral-950 pointer-events-none" />
         </div>
 
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 z-10">
