@@ -29,6 +29,25 @@ import BackgroundGallery from '../components/BackgroundGallery'
 import { calculateRentConfidence, getBestForLabel, getCityLivingCost, getCityInsights } from '../utils/propertyUtils'
 import { isAuthenticated } from '../utils/auth'
 
+const heroImages = [
+  { url: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/13/0c/0e/d5/lazimpat-apartment.jpg?w=900&h=-1&s=1', city: 'Kathmandu' },
+  { url: 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/11/6d/99/12/the-inn-patan.jpg?w=1200&h=-1&s=1', city: 'Kathmandu' },
+  { url: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgwTUMjvT0diU-yXvprf8B8D_HaO62eWxZc1DEFinW0PZZ5nH6zXeamlCb1WxzevpczzUN-J6z2-RZb08jVFH4FI-eUHgtLDPvAKhInzNSWYSKHUMJfxOyALQ0Nff2IjUnAihG1qWrNEJuGe8mdnpHw6xLPHuyFeT5JGm8Ad93wlJMTd2opkEH-1p7yCg/s700/bandblakeviewapartment.jpg', city: 'Pokhara' },
+  { url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQHbvUgqCQd_PRj8X3OSevCCEZ8xy8vXf1Y5A&s', city: 'Pokhara' },
+  { url: 'https://ecs.com.np/fckimage/image/Sep02005/A-Newari-House.jpg', city: 'Lalitpur' },
+  { url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTZpz4rIN5G8vVsFW-RRQXdL7AzlzsJC7PmLg&s', city: 'Lalitpur' },
+  { url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQfQ6ESR5hAQqob2la5pjbukyhhoCa6JYW5Tw&s', city: 'Chitwan' },
+  { url: 'https://media-cdn.tripadvisor.com/media/photo-s/07/1f/8a/72/green-park-chitwan.jpg', city: 'Chitwan' },
+  { url: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNnHutGwsYZl0GXUnU5-6acpLOmaix4_0uPW0LhuvvKyLq8JLNjPqcrQgfbA_MivdQlavsTx9fVIZsAoDCT7QKnOg62h7NpMPRFsz3IwcYLlrcufi4HvY4A24hlEtvJ11TBADn7Ad2f8so-h_wFZJGkjckFjbD9KOOAXHQh0gkiElJmMn0OTCF_3Xo5imu/w640-h360/f31.jpg', city: 'Jhapa' },
+  { url: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhNnHutGwsYZl0GXUnU5-6acpLOmaix4_0uPW0LhuvvKyLq8JLNjPqcrQgfbA_MivdQlavsTx9fVIZsAoDCT7QKnOg62h7NpMPRFsz3IwcYLlrcufi4HvY4A24hlEtvJ11TBADn7Ad2f8so-h_wFZJGkjckFjbD9KOOAXHQh0gkiElJmMn0OTCF_3Xo5imu/w640-h360/f31.jpg', city: 'Jhapa' },
+  { url: 'https://thumbs.dreamstime.com/b/traditional-stone-build-village-manang-mountains-background-annapurna-area-himalaya-nepal-region-sunny-day-summer-big-79195397.jpg', city: 'Manang' },
+  { url: 'https://cf.bstatic.com/xdata/images/hotel/max1024x768/699898370.jpg?k=319e1ff354f898266ad3d112494da0b9ec7123b5dc10eea52145388999aaf2d3&o=', city: 'Manang' },
+  { url: 'https://miro.medium.com/v2/resize:fit:4096/1*eiia2r2ktPAihLeIjxe5kg.jpeg', city: 'Mustang' },
+  { url: 'https://l450v.alamy.com/450v/tw9pfg/a-young-boy-wanders-home-in-the-ancient-streets-of-kagbeni-upper-mustang-nepal-tw9pfg.jpg', city: 'Mustang' },
+  { url: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSsdfrVBVy8Ed2p8g5I6YKVnu04Ridm_ONbWA&s', city: 'Ghandruk' },
+  { url: 'https://media.gettyimages.com/id/587235749/photo/traditional-stone-houses-in-ghandruk-village-nepal.jpg?s=170667a&w=gi&k=20&c=dI1q9zsCBIZ5w-miFLWa9YReyPaIcz4tbTI2R-pZACY=', city: 'Ghandruk' },
+]
+
 const Home = () => {
   // Get user data for role-based content
   const [user, setUser] = useState(null)
