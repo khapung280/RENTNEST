@@ -1,7 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
-const SLIDE_COUNT = 21
 const EXTERIOR_MS = 3000   // full building establishing shot
 const INTERIOR_MS = 4000    // living room, bedroom, kitchen
 const DETAIL_MS = 2500      // windows, doors, balconies
@@ -9,38 +8,7 @@ const TRANSITION_DURATION = 0.9
 const FAVORITES_KEY = 'rentnest_gallery_favorites'
 const SWIPE_COUNT_KEY = 'rentnest_gallery_swipe_count'
 
-// 21 slides: BUILDINGS ONLY. Sequencing: Modern → Traditional → Contemporary → Fusion.
-const SLIDES = [
-  // KATHMANDU – Urban Living (1–3)
-  { id: 1, src: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment complex in Lazimpat with floor-to-ceiling windows and rooftop terrace', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Lazimpat', locationNp: 'लाजिम्पाट', region: 'Kathmandu', propertyType: 'Apartment', bedrooms: 3, bathrooms: 2, floorArea: '1,800 sq ft', rentRange: 'Rs 45,000 – 65,000', features: 'Rooftop terrace, floor-to-ceiling windows, parking' },
-  { id: 2, src: 'https://images.pexels.com/photos/1438832/pexels-photo-1438832.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Newari-style house in Patan with carved wooden windows and brick architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Patan', locationNp: 'ललितपुर', region: 'Kathmandu', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,200 sq ft', rentRange: 'Rs 55,000 – 80,000', features: 'Courtyard, carved windows, heritage' },
-  { id: 3, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury flat in Budhanilkantha with large balconies and mountain-view windows', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'modern', locationEn: 'Budhanilkantha', locationNp: 'बुढानीलकण्ठ', region: 'Kathmandu', propertyType: 'Flat', bedrooms: 3, bathrooms: 2, floorArea: '1,600 sq ft', rentRange: 'Rs 50,000 – 70,000', features: 'Balcony, mountain view, modern kitchen' },
-  // POKHARA – Lakeside Properties (4–6)
-  { id: 4, src: 'https://www.realtynepal.com/uploads/2026/03/viber_image_2026-03-01_14-29-13-750-360x245.jpg', alt: 'Modern apartment in Pokhara with lake-facing balconies', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'concrete', locationEn: 'Pokhara Lakeside', locationNp: 'पोखरा', region: 'Pokhara', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,200 sq ft', rentRange: 'Rs 35,000 – 50,000', features: 'Lake view, balcony, parking' },
-  { id: 5, src: 'https://images.pexels.com/photos/164522/pexels-photo-164522.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung-style house in Sarangkot with stone foundation and wooden upper stories', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'wood', locationEn: 'Sarangkot', locationNp: 'साराङकोट', region: 'Pokhara', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,800 sq ft', rentRange: 'Rs 40,000 – 60,000', features: 'Mountain view, garden, traditional' },
-  { id: 6, src: 'https://images.pexels.com/photos/1438834/pexels-photo-1438834.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury villa in Lakeside with private garden and modern Nepali fusion architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'fusion', locationEn: 'Lakeside', locationNp: 'लेकसाइड', region: 'Pokhara', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,500 sq ft', rentRange: 'Rs 70,000 – 1,00,000', features: 'Garden, outdoor seating, parking' },
-  // CHITWAN – Terai Modern (7–8)
-  { id: 7, src: 'https://images.pexels.com/photos/1179229/pexels-photo-1179229.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern house in Bharatpur with large veranda and tropical-modern architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'fusion', locationEn: 'Bharatpur', locationNp: 'भरतपुर', region: 'Chitwan', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '2,000 sq ft', rentRange: 'Rs 25,000 – 40,000', features: 'Veranda, garden, parking' },
-  { id: 8, src: 'https://images.pexels.com/photos/271624/pexels-photo-271624.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Contemporary apartment complex near Narayani River with river-facing balconies', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-tl', gradient: 'concrete', locationEn: 'Narayani Riverside', locationNp: 'नारायणी किनार', region: 'Chitwan', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,400 sq ft', rentRange: 'Rs 28,000 – 42,000', features: 'River view, balcony, modern' },
-  // JHAPA – Eastern Nepal (9–10)
-  { id: 9, src: 'https://images.pexels.com/photos/3219585/pexels-photo-3219585.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern flat in Birtamod with contemporary design and large windows', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Birtamod', locationNp: 'बिर्तामोड', region: 'Jhapa', propertyType: 'Flat', bedrooms: 2, bathrooms: 1, floorArea: '1,100 sq ft', rentRange: 'Rs 18,000 – 28,000', features: 'Large windows, parking' },
-  { id: 10, src: 'https://images.pexels.com/photos/1396122/pexels-photo-1396122.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional-modern fusion house with painted exterior and family home architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'painted', locationEn: 'Jhapa', locationNp: 'झापा', region: 'Jhapa', propertyType: 'House', bedrooms: 4, bathrooms: 2, floorArea: '2,200 sq ft', rentRange: 'Rs 22,000 – 35,000', features: 'Garden, parking' },
-  // MANANG – Himalayan Architecture (11–12)
-  { id: 11, src: 'https://images.pexels.com/photos/2661882/pexels-photo-2661882.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional stone house in Manang with modern interior and large windows framing peaks', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'stone', locationEn: 'Manang', locationNp: 'मनाङ', region: 'Manang', propertyType: 'House', bedrooms: 2, bathrooms: 1, floorArea: '1,200 sq ft', rentRange: 'Rs 15,000 – 25,000', features: 'Mountain view, heated' },
-  { id: 12, src: 'https://images.pexels.com/photos/1438831/pexels-photo-1438831.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern mountain lodge-style apartment with floor-to-ceiling mountain views', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-br', gradient: 'wood', locationEn: 'Manang Village', locationNp: 'मनाङ', region: 'Manang', propertyType: 'Apartment', bedrooms: 2, bathrooms: 1, floorArea: '900 sq ft', rentRange: 'Rs 12,000 – 20,000', features: 'Mountain view, heated floors' },
-  // MUSTANG – Trans-Himalayan (13–14)
-  { id: 13, src: 'https://images.pexels.com/photos/3581369/pexels-photo-3581369.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Mustangi mud-brick house with courtyard and modern amenities', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Lo Manthang', locationNp: 'लो मन्थाङ', region: 'Mustang', propertyType: 'House', bedrooms: 2, bathrooms: 1, floorArea: '1,000 sq ft', rentRange: 'Rs 20,000 – 35,000', features: 'Courtyard, traditional' },
-  { id: 14, src: 'https://images.pexels.com/photos/3582200/pexels-photo-3582200.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Cave-adapted modern villa in Kagbeni with fusion architecture', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-bl', gradient: 'fusion', locationEn: 'Kagbeni', locationNp: 'कागबेनी', region: 'Mustang', propertyType: 'House', bedrooms: 2, bathrooms: 2, floorArea: '1,300 sq ft', rentRange: 'Rs 35,000 – 55,000', features: 'Luxury interior, traditional exterior' },
-  // GHANDRUK – Village Architecture (15–16)
-  { id: 15, src: 'https://images.pexels.com/photos/2692594/pexels-photo-2692594.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional Gurung stone house with mountain-view terraces and slate roofing', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'stone', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,600 sq ft', rentRange: 'Rs 25,000 – 40,000', features: 'Terrace, mountain view' },
-  { id: 16, src: 'https://images.pexels.com/photos/1457842/pexels-photo-1457842.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Renovated village home with contemporary interiors and traditional exterior', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-tr', gradient: 'fusion', locationEn: 'Ghandruk', locationNp: 'घान्द्रुक', region: 'Ghandruk', propertyType: 'House', bedrooms: 3, bathrooms: 2, floorArea: '1,500 sq ft', rentRange: 'Rs 30,000 – 45,000', features: 'Garden, modern kitchen' },
-  // LALITPUR – Heritage Modern (17–21)
-  { id: 17, src: 'https://images.pexels.com/photos/509246/pexels-photo-509246.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Renovated Newari house in Pulchowk with preserved wooden carvings', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tl', gradient: 'brick', locationEn: 'Pulchowk', locationNp: 'पुल्चोक', region: 'Lalitpur', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,400 sq ft', rentRange: 'Rs 60,000 – 90,000', features: 'Wooden carvings, heritage' },
-  { id: 18, src: 'https://images.pexels.com/photos/2662116/pexels-photo-2662116.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Modern apartment in Kupondole with city views and balcony gardens', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-br', gradient: 'concrete', locationEn: 'Kupondole', locationNp: 'कुपोन्डोल', region: 'Lalitpur', propertyType: 'Apartment', bedrooms: 3, bathrooms: 2, floorArea: '1,700 sq ft', rentRange: 'Rs 48,000 – 68,000', features: 'City view, balcony' },
-  { id: 19, src: 'https://images.pexels.com/photos/1571460/pexels-photo-1571460.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Traditional courtyard house (bahal) converted to modern flats', duration: INTERIOR_MS, shotType: 'interior', kenBurns: 'zoom-pan-bl', gradient: 'brick', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Flat', bedrooms: 2, bathrooms: 2, floorArea: '1,300 sq ft', rentRange: 'Rs 42,000 – 58,000', features: 'Courtyard, heritage' },
-  { id: 20, src: 'https://images.pexels.com/photos/1438833/pexels-photo-1438833.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Luxury townhouse in Sanepa with modern architecture and rooftop terrace', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-tr', gradient: 'concrete', locationEn: 'Sanepa', locationNp: 'सानेपा', region: 'Lalitpur', propertyType: 'House', bedrooms: 4, bathrooms: 3, floorArea: '2,600 sq ft', rentRange: 'Rs 75,000 – 1,10,000', features: 'Rooftop terrace, garden, parking' },
-  { id: 21, src: 'https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg?auto=compress&cs=tinysrgb&w=1920', alt: 'Mixed-use building with ground floor retail and upper floor apartments', duration: EXTERIOR_MS, shotType: 'exterior', kenBurns: 'zoom-pan-center', gradient: 'concrete', locationEn: 'Lalitpur', locationNp: 'ललितपुर', region: 'Lalitpur', propertyType: 'Apartment', bedrooms: 2, bathrooms: 2, floorArea: '1,400 sq ft', rentRange: 'Rs 38,000 – 52,000', features: 'Urban, commercial below' },
-]
+const SLIDES = []
 
 function ImageSlide({ slide, isActive, onLoad, prefersReducedMotion }) {
   const kenBurnsClass = prefersReducedMotion ? '' : `gallery-ken-burns gallery-ken-burns-${slide.kenBurns}`
@@ -102,6 +70,7 @@ function setFavorites(ids) {
 }
 
 export default function BackgroundGallery() {
+  const slideCount = SLIDES.length
   const containerRef = useRef(null)
   const [index, setIndex] = useState(0)
   const [isHovered, setIsHovered] = useState(false)
@@ -119,7 +88,6 @@ export default function BackgroundGallery() {
     const t = setTimeout(() => setShowConfetti(false), 3500)
     return () => clearTimeout(t)
   }, [showConfetti])
-  const [voiceActive, setVoiceActive] = useState(false)
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const [cursor, setCursor] = useState({ x: -999, y: -999 })
   const dragStartX = useRef(0)
@@ -133,14 +101,11 @@ export default function BackgroundGallery() {
   const progressRef = useRef(null)
   const startTimeRef = useRef(Date.now())
   const prevProgressRef = useRef(0)
-  const recognitionRef = useRef(null)
-  const indexRef = useRef(index)
-  indexRef.current = index
 
-  const currentSlide = SLIDES[index]
+  const currentSlide = slideCount > 0 ? SLIDES[index] : null
   const durationMs = currentSlide?.duration ?? EXTERIOR_MS
-  const nextIndex = (index + 1) % SLIDE_COUNT
-  const prevIndex = (index - 1 + SLIDE_COUNT) % SLIDE_COUNT
+  const nextIndex = slideCount > 0 ? (index + 1) % slideCount : 0
+  const prevIndex = slideCount > 0 ? (index - 1 + slideCount) % slideCount : 0
   const isFavorited = currentSlide && favorites.includes(currentSlide.id)
 
   // Haptic at 50% and 100% progress
@@ -154,52 +119,21 @@ export default function BackgroundGallery() {
     prevProgressRef.current = progress
   }, [progress])
 
-  // Voice recognition (Nepali + English)
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    if (!SpeechRecognition) return
-    const recognition = new SpeechRecognition()
-    recognition.continuous = true
-    recognition.lang = 'en-NP'
-    recognition.interimResults = false
-    recognition.maxAlternatives = 2
-    recognition.onresult = (e) => {
-      const transcript = (e.results[e.results.length - 1][0].transcript || '').toLowerCase()
-      const n = transcript.trim()
-      const next = /next|अर्को|arkho|aglo|अर्को तस्वीर/i.test(n)
-      const prev = /previous|back|पछिल्लो|pachillo|agillo/i.test(n)
-      const pause = /pause|stop|रोक्नुहोस्|roknu|rok/i.test(n)
-      const cur = indexRef.current
-      if (next) { goTo((cur + 1) % SLIDE_COUNT); setVoiceActive(true); setTimeout(() => setVoiceActive(false), 800) }
-      if (prev) { goTo((cur - 1 + SLIDE_COUNT) % SLIDE_COUNT); setVoiceActive(true); setTimeout(() => setVoiceActive(false), 800) }
-      if (pause) { setShowDetailsOverlay(true); setVoiceActive(true); setTimeout(() => setVoiceActive(false), 800) }
-    }
-    recognition.onerror = () => {}
-    recognitionRef.current = recognition
-    return () => { try { recognition.stop() } catch {} }
-  }, [index])
-
-  const startVoice = useCallback(() => {
-    if (!recognitionRef.current) return
-    try {
-      recognitionRef.current.start()
-      setVoiceActive(true)
-    } catch {}
-  }, [])
-
   const goTo = useCallback((i) => {
-    const wrapped = ((i % SLIDE_COUNT) + SLIDE_COUNT) % SLIDE_COUNT
+    if (slideCount === 0) return
+    const wrapped = ((i % slideCount) + slideCount) % slideCount
     setIndex(wrapped)
     setProgress(0)
     startTimeRef.current = Date.now()
     const count = parseInt(localStorage.getItem(SWIPE_COUNT_KEY) || '0', 10) + 1
     localStorage.setItem(SWIPE_COUNT_KEY, String(count))
     if (count === 100) setShowConfetti(true)
-  }, [])
+  }, [slideCount])
 
   const advance = useCallback(() => {
-    goTo((index + 1) % SLIDE_COUNT)
-  }, [index, goTo])
+    if (slideCount === 0) return
+    goTo((index + 1) % slideCount)
+  }, [index, goTo, slideCount])
 
   const toggleFavorite = useCallback(() => {
     if (!currentSlide) return
@@ -236,15 +170,19 @@ export default function BackgroundGallery() {
   }, [])
 
   useEffect(() => {
+    if (slideCount === 0) return
     const t = setTimeout(() => {
-      ;[nextIndex, (nextIndex + 1) % SLIDE_COUNT, (nextIndex + 2) % SLIDE_COUNT].forEach((i) => {
-        const img = new Image()
-        img.referrerPolicy = 'no-referrer'
-        img.src = SLIDES[i].src
+      ;[nextIndex, (nextIndex + 1) % slideCount, (nextIndex + 2) % slideCount].forEach((i) => {
+        const slide = SLIDES[i]
+        if (slide?.src) {
+          const img = new Image()
+          img.referrerPolicy = 'no-referrer'
+          img.src = slide.src
+        }
       })
     }, 200)
     return () => clearTimeout(t)
-  }, [nextIndex])
+  }, [nextIndex, slideCount])
 
   useEffect(() => {
     if (autoAdvanceRef.current) clearInterval(autoAdvanceRef.current)
@@ -373,7 +311,7 @@ export default function BackgroundGallery() {
   }, [handlePointerMove, handlePointerUp])
 
   const gradientOverlay = currentSlide ? getGradientOverlay(currentSlide.gradient) : 'from-stone-950/20'
-  const sameRegionSlides = currentSlide ? SLIDES.filter((s) => s.region === currentSlide.region && s.id !== currentSlide.id).slice(0, 3) : []
+  const sameRegionSlides = currentSlide && slideCount > 0 ? SLIDES.filter((s) => s.region === currentSlide.region && s.id !== currentSlide.id).slice(0, 3) : []
 
   return (
     <div
@@ -388,12 +326,15 @@ export default function BackgroundGallery() {
       onTouchEnd={handleTouchEnd}
       style={{ touchAction: 'pan-y pinch-zoom', cursor: isDragging ? 'grabbing' : 'grab' }}
     >
-      {isLoading && (
+      {slideCount === 0 && (
+        <div className="absolute inset-0 bg-slate-900/95" aria-hidden />
+      )}
+      {isLoading && slideCount > 0 && (
         <div className="absolute inset-0 bg-slate-900 gallery-skeleton z-30" aria-hidden />
       )}
 
       <div className="absolute inset-0">
-        {SLIDES.map((slide, i) => (
+        {slideCount > 0 && SLIDES.map((slide, i) => (
           <ImageSlide
             key={slide.id}
             slide={slide}
@@ -482,7 +423,7 @@ export default function BackgroundGallery() {
                   {sameRegionSlides.map((s) => (
                     <button
                       key={s.id}
-                      onClick={() => { goTo(SLIDES.findIndex((x) => x.id === s.id)); setShowDetailsOverlay(false) }}
+                      onClick={() => { const idx = SLIDES.findIndex((x) => x.id === s.id); if (idx >= 0) goTo(idx); setShowDetailsOverlay(false) }}
                       className="shrink-0 w-20 h-14 rounded-lg overflow-hidden border border-white/20 hover:border-white/40"
                     >
                       <img src={s.src} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
@@ -524,27 +465,27 @@ export default function BackgroundGallery() {
         )}
       </AnimatePresence>
 
-      {/* Voice indicator */}
-      {voiceActive && (
-        <div className="absolute top-4 right-4 z-20 px-3 py-1.5 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" /> Voice
+      {/* Thumbnails */}
+      {slideCount > 0 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 overflow-x-auto pb-2 z-20 pointer-events-auto">
+          {[nextIndex, (nextIndex + 1) % slideCount, (nextIndex + 2) % slideCount].map((i) => {
+            const slide = SLIDES[i]
+            if (!slide?.src) return null
+            return (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className="shrink-0 w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-white/25 gallery-thumbnail backdrop-blur-sm gallery-thumb-pattern"
+              >
+                <img src={slide.src} alt="" className="w-full h-full object-cover opacity-85" loading="lazy" referrerPolicy="no-referrer" />
+              </button>
+            )
+          })}
         </div>
       )}
 
-      {/* Thumbnails */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4 overflow-x-auto pb-2 z-20 pointer-events-auto">
-        {[nextIndex, (nextIndex + 1) % SLIDE_COUNT, (nextIndex + 2) % SLIDE_COUNT].map((i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className="shrink-0 w-14 h-9 sm:w-16 sm:h-10 rounded-lg overflow-hidden border border-white/25 gallery-thumbnail backdrop-blur-sm gallery-thumb-pattern"
-          >
-            <img src={SLIDES[i].src} alt="" className="w-full h-full object-cover opacity-85" loading="lazy" referrerPolicy="no-referrer" />
-          </button>
-        ))}
-      </div>
-
       {/* Prayer-wheel / marble progress – 5 segments */}
+      {slideCount > 0 && (
       <div className="absolute bottom-14 left-1/2 -translate-x-1/2 w-48 sm:w-64 z-20 pointer-events-auto flex gap-0.5">
         {[0, 1, 2, 3, 4].map((i) => {
           const segmentStart = i * 20
@@ -562,29 +503,7 @@ export default function BackgroundGallery() {
           )
         })}
       </div>
-
-      {/* Dot indicators (compact for 24) */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-1 z-20 pointer-events-auto flex-wrap justify-center max-w-full px-2">
-        {SLIDES.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={`h-1 rounded-full transition-all duration-300 ${i === index ? 'w-4 bg-white' : 'w-1 bg-white/50 hover:bg-white/70'}`}
-            aria-label={`${SLIDES[i].locationEn} ${i + 1}`}
-            aria-current={i === index ? 'true' : undefined}
-          />
-        ))}
-      </div>
-
-      {/* Voice button */}
-      <button
-        type="button"
-        onClick={startVoice}
-        className="absolute top-4 left-4 z-20 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-xs flex items-center gap-2"
-        aria-label="Voice commands"
-      >
-        🎤 Say &quot;next&quot;, &quot;previous&quot;, &quot;pause&quot;
-      </button>
+      )}
     </div>
   )
 }
