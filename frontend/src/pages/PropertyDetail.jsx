@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { 
   Bed, 
@@ -32,9 +32,9 @@ import {
   GitCompare
 } from 'lucide-react'
 import { propertyService, bookingService } from '../services/aiService'
-import PropertyMap from '../components/PropertyMap'
-import GoogleMapsProvider from '../components/GoogleMapsProvider'
 import { calculateRentConfidence, getBestForLabel, calculateFairFlexSavings } from '../utils/propertyUtils'
+
+const PropertyMap = lazy(() => import('../components/PropertyMap'))
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
 import ContactOwnerButton from '../components/ContactOwnerButton'
 import { getCurrentUserId, isAuthenticated } from '../utils/auth'
@@ -931,12 +931,32 @@ const PropertyDetail = () => {
               </div>
             </div>
 
-            {/* Property Map + Nearby Places */}
+            {/* Location */}
             <div className="pt-8 border-t border-neutral-800">
               <h2 className="text-xl font-semibold text-white mb-5">Location</h2>
-              <GoogleMapsProvider>
-                <PropertyMap property={property} onOpenInMaps={handleOpenMap} />
-              </GoogleMapsProvider>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 bg-neutral-800/50 rounded-xl border border-neutral-700">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="w-6 h-6 text-gray-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white font-medium">{propertyDetail?.location || 'Address not specified'}</p>
+                      <p className="text-gray-400 text-sm mt-1">Nepal</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleOpenMap}
+                    className="shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-neutral-700 text-gray-200 hover:bg-neutral-600 text-sm font-medium"
+                  >
+                    <MapPin className="w-4 h-4" /> View in Google Maps →
+                  </button>
+                </div>
+                {propertyDetail?.latitude != null && propertyDetail?.longitude != null && (
+                  <Suspense fallback={<div className="w-full h-[400px] rounded-[10px] bg-neutral-800/50 border border-neutral-700 animate-pulse" />}>
+                    <PropertyMap lat={propertyDetail.latitude} lng={propertyDetail.longitude} />
+                  </Suspense>
+                )}
+              </div>
             </div>
 
             {/* Utilities Included */}

@@ -1,7 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Home, Building2, MapPin, DollarSign, Bed, Bath, Square, FileText, Image as ImageIcon, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { propertyService } from '../services/aiService'
+
+const PropertyMapPicker = lazy(() => import('../components/PropertyMapPicker'))
 
 const AddProperty = () => {
   const navigate = useNavigate()
@@ -9,6 +11,8 @@ const AddProperty = () => {
     title: '',
     type: 'house',
     location: '',
+    latitude: null,
+    longitude: null,
     price: '',
     bedrooms: '',
     bathrooms: '',
@@ -153,6 +157,11 @@ const AddProperty = () => {
       fd.append('utilities', JSON.stringify(formData.utilities))
       fd.append('houseRules', JSON.stringify(formData.houseRules))
 
+      if (formData.latitude != null && formData.latitude !== '' && formData.longitude != null && formData.longitude !== '') {
+        fd.append('latitude', formData.latitude)
+        fd.append('longitude', formData.longitude)
+      }
+
       selectedFiles.forEach((file) => {
         fd.append('images', file)
       })
@@ -280,6 +289,34 @@ const AddProperty = () => {
                   />
                 </div>
                 {errors.location && <p className="mt-1 text-sm text-red-600">{errors.location}</p>}
+              </div>
+
+              {/* Map Picker - Select Property Location */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Select Property Location
+                </label>
+                <p className="text-sm text-gray-500 mb-2">
+                  Click on the map to set your property&apos;s exact location. This helps renters find your listing.
+                </p>
+                <Suspense fallback={<div className="w-full h-[400px] rounded-[10px] bg-gray-100 border border-gray-300 animate-pulse flex items-center justify-center text-gray-500">Loading map...</div>}>
+                  <PropertyMapPicker
+                    lat={formData.latitude}
+                    lng={formData.longitude}
+                    onLocationSelect={(lat, lng) => {
+                      setFormData(prev => ({
+                        ...prev,
+                        latitude: lat,
+                        longitude: lng
+                      }))
+                    }}
+                  />
+                </Suspense>
+                {formData.latitude != null && formData.longitude != null && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Selected: {Number(formData.latitude).toFixed(5)}, {Number(formData.longitude).toFixed(5)}
+                  </p>
+                )}
               </div>
 
               {/* Price */}

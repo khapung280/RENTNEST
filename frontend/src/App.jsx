@@ -6,6 +6,7 @@
 
 // Import React Router for navigation
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { lazy, Suspense } from 'react'
 
 // Import components that appear on every page
 import Navbar from './components/Navbar'        // Top navigation bar
@@ -19,7 +20,7 @@ import HousePage from './pages/HousePage'        // Houses page
 import FlatsApartmentsPage from './pages/FlatsApartmentsPage'  // Flats page
 import Login from './pages/Login'                // Login page
 import Register from './pages/Register'          // Register page
-import PropertyDetail from './pages/PropertyDetail'  // Property details
+const PropertyDetail = lazy(() => import('./pages/PropertyDetail'))
 import Booking from './pages/Booking'            // Booking page
 import MyBookings from './pages/MyBookings'      // My bookings
 import Profile from './pages/Profile'            // Profile page
@@ -46,6 +47,7 @@ function App() {
         
         {/* Main content area - different pages show here */}
         <main className="flex-grow">
+          <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" /></div>}>
           <Routes>
             
             {/* PUBLIC ROUTES - Anyone can visit */}
@@ -76,6 +78,7 @@ function App() {
             <Route path="/admin-dashboard/reports" element={<ProtectedRoute requiredRole="admin"><AdminReports /></ProtectedRoute>} />
             
           </Routes>
+          </Suspense>
         </main>
         
         {/* Footer - shows on every page at bottom */}
