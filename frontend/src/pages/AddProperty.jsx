@@ -297,7 +297,7 @@ const AddProperty = () => {
                   Select Property Location
                 </label>
                 <p className="text-sm text-gray-500 mb-2">
-                  Click on the map to set your property&apos;s exact location. This helps renters find your listing.
+                  Search an address or click on the map to set your property&apos;s exact location.
                 </p>
                 <Suspense fallback={<div className="w-full h-[400px] rounded-[10px] bg-gray-100 border border-gray-300 animate-pulse flex items-center justify-center text-gray-500">Loading map...</div>}>
                   <PropertyMapPicker
