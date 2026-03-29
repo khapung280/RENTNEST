@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   User,
@@ -23,7 +23,8 @@ import {
   ArrowRight,
   LayoutDashboard,
   Bookmark,
-  BadgeCheck
+  BadgeCheck,
+  Camera
 } from 'lucide-react'
 import { authService } from '../services/authService'
 import { userService, propertyService } from '../services/aiService'
@@ -44,7 +45,9 @@ const Profile = () => {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' })
   const [errors, setErrors] = useState({})
   const [isSaving, setIsSaving] = useState(false)
-  const [showSuccess, setShowSuccess] = useState(false)
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [avatarUploading, setAvatarUploading] = useState(false)
+  const avatarInputRef = useRef(null)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
 
@@ -149,7 +152,7 @@ const Profile = () => {
     setIsEditing(true)
     setFormData({ name: userData.name, email: userData.email, phone: userData.phone || '' })
     setErrors({})
-    setShowSuccess(false)
+    setSuccessMessage(null)
   }
 
   const handleCancel = () => {
@@ -196,13 +199,45 @@ const Profile = () => {
           : updated
         localStorage.setItem('user', JSON.stringify(merged))
         setIsEditing(false)
-        setShowSuccess(true)
-        setTimeout(() => setShowSuccess(false), 3000)
+        setSuccessMessage('Profile updated successfully.')
+        setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
       setErrors({ general: err.response?.data?.message || 'Failed to update profile' })
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const handleAvatarFile = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!/^image\/(jpeg|jpg|png|webp|gif)$/i.test(file.type)) {
+      setError('Please choose a JPEG, PNG, WebP, or GIF image.')
+      return
+    }
+    setAvatarUploading(true)
+    setError(null)
+    try {
+      const res = await userService.uploadAvatar(file)
+      if (res?.success && res?.data?.profilePicture) {
+        const url = res.data.profilePicture
+        setUserData((prev) => ({ ...prev, profilePicture: url }))
+        const stored = localStorage.getItem('user')
+        if (stored) {
+          try {
+            const u = JSON.parse(stored)
+            localStorage.setItem('user', JSON.stringify({ ...u, profilePicture: url }))
+          } catch (_) {}
+        }
+        setSuccessMessage('Profile photo updated.')
+        setTimeout(() => setSuccessMessage(null), 3000)
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not upload photo. Try a smaller file (max 2MB).')
+    } finally {
+      setAvatarUploading(false)
     }
   }
 
@@ -271,8 +306,15 @@ const Profile = () => {
         <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-28 md:pt-14 md:pb-32">
           <div className="flex flex-col md:flex-row md:items-end gap-8 md:gap-10">
             <div className="relative shrink-0">
+              <input
+                ref={avatarInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={handleAvatarFile}
+              />
               <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-violet-500/40 to-fuchsia-600/20 blur-md opacity-70" />
-              <div className="relative h-36 w-36 sm:h-40 sm:w-40 rounded-2xl bg-zinc-900 ring-2 ring-white/10 shadow-2xl overflow-hidden flex items-center justify-center">
+              <div className="relative h-36 w-36 sm:h-40 sm:w-40 rounded-2xl bg-zinc-900 ring-2 ring-white/10 shadow-2xl overflow-hidden flex items-center justify-center group">
                 {getDisplayImage() ? (
                   <img src={getDisplayImage()} alt="" className="w-full h-full object-cover" />
                 ) : (
@@ -280,7 +322,32 @@ const Profile = () => {
                     {userData.initials || '?'}
                   </span>
                 )}
+                {avatarUploading && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <Loader2 className="w-10 h-10 text-violet-400 animate-spin" />
+                  </div>
+                )}
+                <button
+                  type="button"
+                  disabled={avatarUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="absolute inset-0 flex items-center justify-center bg-black/0 hover:bg-black/50 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-0 disabled:pointer-events-none"
+                  aria-label="Change profile photo"
+                >
+                  <span className="rounded-full bg-violet-600 p-3 shadow-lg ring-2 ring-white/20">
+                    <Camera className="w-6 h-6 text-white" />
+                  </span>
+                </button>
               </div>
+              <button
+                type="button"
+                disabled={avatarUploading}
+                onClick={() => avatarInputRef.current?.click()}
+                className="mt-3 w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-zinc-600 bg-zinc-900/80 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-800 hover:border-zinc-500 transition-colors disabled:opacity-50"
+              >
+                <Camera className="w-4 h-4" />
+                {getDisplayImage() ? 'Change photo' : 'Upload photo'}
+              </button>
             </div>
 
             <div className="flex-1 min-w-0 pb-1">
@@ -340,10 +407,10 @@ const Profile = () => {
           </div>
         )}
 
-        {showSuccess && (
+        {successMessage && (
           <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-            <p className="text-sm font-medium text-emerald-200">Profile updated successfully.</p>
+            <p className="text-sm font-medium text-emerald-200">{successMessage}</p>
           </div>
         )}
 

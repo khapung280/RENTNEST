@@ -315,6 +315,18 @@ export const userService = {
     const response = await api.put('/users/me', data);
     return response.data;
   },
+  /** Upload profile image (multipart field name: image). Returns { success, data: { profilePicture } } */
+  uploadAvatar: async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const token = getAuthToken();
+    const response = await axios.post(`${API_BASE}/users/me/avatar`, formData, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : ''
+      }
+    });
+    return response.data;
+  },
   /** Public profile (safe fields) — same as GET /api/users/:id */
   getById: async (id) => {
     const response = await api.get(`/users/${id}`);

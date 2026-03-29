@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const { protect } = require('../middleware/auth');
+const { uploadAvatar } = require('../middleware/multerAvatar');
 
 const router = express.Router();
 
@@ -39,6 +40,58 @@ router.get('/me', protect, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while fetching user profile',
+      error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
+// @route   POST /api/users/me/avatar
+// @desc    Upload profile picture (multipart field: image) — saved under /uploads/avatars
+// @access  Private
+router.post('/me/avatar', protect, (req, res, next) => {
+  uploadAvatar(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ success: false, message: 'Image too large. Max 2MB.' });
+      }
+      if (err.message && err.message.includes('Only image files')) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      return res.status(400).json({ success: false, message: err.message || 'Upload failed' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No image file provided' });
+    }
+    next();
+  });
+}, async (req, res) => {
+  try {
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    const profilePicture = `${baseUrl}/uploads/avatars/${req.file.filename}`;
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { profilePicture },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({
+      success: true,
+      message: 'Profile picture updated successfully',
+      data: {
+        id: user._id,
+        profilePicture: user.profilePicture
+      }
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while saving profile picture',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
     });
   }
