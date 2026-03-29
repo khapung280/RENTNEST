@@ -1,5 +1,20 @@
-import { MapPin, Calendar, Clock, CheckCircle, XCircle, Eye, CreditCard, Loader2 } from 'lucide-react'
+import {
+  MapPin,
+  Calendar,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Eye,
+  CreditCard,
+  Loader2,
+  Home,
+  Building2,
+  User
+} from 'lucide-react'
 import { Link } from 'react-router-dom'
+
+const PLACEHOLDER_IMG =
+  'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=800&q=80'
 
 // BookingCard Component - Production-grade dark theme
 const BookingCard = ({
@@ -51,23 +66,62 @@ const BookingCard = ({
   }
 
   const formatDate = (dateString) => {
+    if (!dateString) return '—'
     const date = new Date(dateString)
+    if (Number.isNaN(date.getTime())) return '—'
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
   }
 
   const statusConfig = getStatusConfig(booking.status)
   const StatusIcon = statusConfig.icon
 
+  const propType = booking.property?.type
+  const isHouse = propType === 'house'
+  const isFlat = propType === 'flat_apartment'
+  const TypeIcon = isHouse ? Home : isFlat ? Building2 : null
+
+  const progressSteps = (() => {
+    const s = booking.status
+    const paid = booking.paymentStatus === 'paid'
+    const terminal = s === 'cancelled' || s === 'rejected'
+    return [
+      {
+        key: 'request',
+        label: 'Request sent',
+        done: true,
+        active: s === 'pending'
+      },
+      {
+        key: 'owner',
+        label: s === 'cancelled' ? 'Cancelled' : s === 'rejected' ? 'Declined' : 'Owner approval',
+        done: s === 'approved' || s === 'confirmed' || terminal,
+        active: s === 'pending'
+      },
+      {
+        key: 'pay',
+        label: terminal ? '—' : paid ? 'Paid' : 'Payment',
+        done: paid,
+        active: !terminal && (s === 'approved' || s === 'confirmed') && !paid && booking.paymentStatus
+      }
+    ]
+  })()
+
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all">
       <div className="flex flex-col md:flex-row">
         {/* Property Thumbnail */}
-        <div className="md:w-48 flex-shrink-0">
+        <div className="md:w-48 flex-shrink-0 relative">
           <img
-            src={booking.property?.image}
-            alt={booking.property?.title}
+            src={booking.property?.image || PLACEHOLDER_IMG}
+            alt={booking.property?.title || 'Property'}
             className="w-full h-48 md:h-full object-cover"
           />
+          {TypeIcon && (
+            <span className="absolute left-3 top-3 inline-flex items-center gap-1 rounded-lg border border-white/20 bg-black/50 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+              <TypeIcon className="h-3.5 w-3.5" />
+              {isHouse ? 'House' : 'Flat'}
+            </span>
+          )}
         </div>
 
         {/* Booking Content */}
@@ -82,6 +136,24 @@ const BookingCard = ({
                 <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
                 <span>{booking.property?.location}</span>
               </div>
+              {booking.owner?.name && (
+                <div className="flex items-center gap-2 text-sm text-zinc-400 mb-2">
+                  {booking.owner?.profilePicture ? (
+                    <img
+                      src={booking.owner.profilePicture}
+                      alt=""
+                      className="h-7 w-7 rounded-full object-cover border border-zinc-600"
+                    />
+                  ) : (
+                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-zinc-800 border border-zinc-600">
+                      <User className="h-3.5 w-3.5 text-zinc-500" />
+                    </span>
+                  )}
+                  <span>
+                    Host: <span className="text-zinc-200">{booking.owner.name}</span>
+                  </span>
+                </div>
+              )}
             </div>
             {/* Status Badge */}
             <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border ${statusConfig.bgColor} ${statusConfig.borderColor} ml-4 flex-shrink-0`}>
@@ -92,30 +164,74 @@ const BookingCard = ({
             </div>
           </div>
 
+          {/* Progress */}
+          <div className="mb-4 rounded-xl border border-zinc-800 bg-zinc-950/50 px-3 py-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">
+              Progress
+            </p>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-0">
+              {progressSteps.map((step, i) => (
+                <div key={step.key} className="flex items-center min-w-0">
+                  {i > 0 && (
+                    <div
+                      className={`hidden sm:block w-6 lg:w-10 h-0.5 mx-1 shrink-0 ${step.done || progressSteps[i - 1]?.done ? 'bg-emerald-600/60' : 'bg-zinc-700'}`}
+                    />
+                  )}
+                  <div
+                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium ${
+                      step.done
+                        ? 'text-emerald-300 bg-emerald-500/10'
+                        : step.active
+                          ? 'text-amber-200 bg-amber-500/15 ring-1 ring-amber-500/30'
+                          : 'text-zinc-500 bg-zinc-800/50'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] ${
+                        step.done ? 'bg-emerald-600 text-white' : step.active ? 'bg-amber-500 text-black' : 'bg-zinc-700 text-zinc-400'
+                      }`}
+                    >
+                      {step.done ? '✓' : i + 1}
+                    </span>
+                    <span className="truncate">{step.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Booking Details Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-4">
             <div>
               <p className="text-gray-400 text-sm mb-1">Stay Duration</p>
               <p className="text-sm font-semibold text-white">
-                {booking.duration} {booking.duration === 1 ? 'month' : 'months'}
+                {booking.duration == null
+                  ? '—'
+                  : `${booking.duration} ${booking.duration === 1 ? 'month' : 'months'}`}
               </p>
             </div>
             <div>
-              <p className="text-gray-400 text-sm mb-1">Move-in Date</p>
+              <p className="text-gray-400 text-sm mb-1">Move-in</p>
               <p className="text-sm font-semibold text-white">
                 {formatDate(booking.moveInDate || booking.checkInDate || booking.checkIn)}
               </p>
             </div>
             <div>
-              <p className="text-gray-400 text-sm mb-1">Booking Date</p>
+              <p className="text-gray-400 text-sm mb-1">Check-out</p>
+              <p className="text-sm font-semibold text-white">
+                {formatDate(booking.checkOutDate || booking.checkOut)}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Requested</p>
               <p className="text-sm font-semibold text-white">
                 {formatDate(booking.requestedDate || booking.createdAt)}
               </p>
             </div>
-            <div>
-              <p className="text-gray-400 text-sm mb-1">Total Amount</p>
+            <div className="col-span-2 sm:col-span-1">
+              <p className="text-gray-400 text-sm mb-1">Total</p>
               <p className="text-sm font-semibold text-white">
-                NPR {(booking.totalAmount || booking.property?.price || 0).toLocaleString()}
+                NPR {(booking.totalAmount ?? booking.property?.price ?? 0).toLocaleString()}
               </p>
             </div>
           </div>

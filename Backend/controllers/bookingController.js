@@ -133,8 +133,8 @@ exports.createBooking = async (req, res) => {
  */
 exports.getMyBookings = async (req, res) => {
   const data = await Booking.find({ renter: req.user.id })
-    .populate('property', 'title location image price')
-    .populate('owner', 'name email')
+    .populate('property', 'title location image price type bedrooms bathrooms areaSqft')
+    .populate('owner', 'name email profilePicture')
     .sort({ createdAt: -1 });
 
   res.json({
