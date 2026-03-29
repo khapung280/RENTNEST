@@ -149,18 +149,20 @@ const parseQuery = (query) => {
 const getFallbackResponse = (query) => {
   return {
     type: 'general_help',
-    message: `I can help you find properties! Here are some ways to search:
+    message: `Here’s how to get the best results:
 
-• **By location**: "Show me properties in Kathmandu" or "Houses in Pokhara"
-• **By budget**: "Properties under 20000" or "Budget 20k"
-• **By type**: "2 bedroom house" or "Flat in Kathmandu"
-• **Combined**: "3 bedroom house in Pokhara under 25k"
+**Search examples**
+• **Location:** "Flats in Lalitpur" or "House in Pokhara lakeside"
+• **Budget:** "Under 20000 NPR" or "Budget 25k per month"
+• **Size:** "3 bedroom house" or "2 BHK flat"
+• **Mix:** "Family friendly house Kathmandu under 30k"
 
-You can also ask about:
-• FairFlex pricing
-• How to book a property
-• Cancellation policy
-• Property verification`,
+**Topics I know well**
+• **FairFlex** — discounts for longer stays
+• **Booking flow** — request → owner approval → payment
+• **Cancellations** — pending vs approved bookings
+
+Tip: mention a **city** and **max rent** together for tighter matches.`,
     properties: []
   };
 };
@@ -349,7 +351,23 @@ const generateAIResponse = async (query, userId = null) => {
   if (isGreeting(query)) {
     return {
       type: 'greeting',
-      message: `Hello! 👋 How can I help you find a property today?\n\nI can help you:\n• Search for properties by location, price, or type\n• Understand FairFlex pricing\n• Get booking guidance\n\nTry asking: "Show me houses in Kathmandu" or "What is FairFlex?"`,
+      message: `Hello! 👋 I'm **RentNest AI** — your guide to rentals in Nepal.\n\n**I can help you:**\n• Search by **city**, **budget**, **bedrooms**, house vs flat\n• Explain **FairFlex** longer-stay savings\n• Walk through **booking** and what happens after you apply\n\n**Try:** "2 BHK under 25k in Pokhara" or "What is FairFlex?"`,
+      properties: []
+    };
+  }
+
+  // 1b. Thanks / goodbye (fast, friendly)
+  if (/^(thanks?|thank you|ty|thx|appreciate it)[\s!.]*$/i.test(query.trim())) {
+    return {
+      type: 'smalltalk',
+      message: `You're welcome! 🙏 If you need another search or have questions about **booking** or **FairFlex**, just ask.`,
+      properties: []
+    };
+  }
+  if (/^(bye|goodbye|see you|later)[\s!.]*$/i.test(query.trim())) {
+    return {
+      type: 'smalltalk',
+      message: `Goodbye — happy house hunting! Come back anytime you want to search or compare listings.`,
       properties: []
     };
   }
