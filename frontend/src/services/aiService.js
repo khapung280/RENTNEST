@@ -331,6 +331,11 @@ export const userService = {
   getById: async (id) => {
     const response = await api.get(`/users/${id}`);
     return response.data;
+  },
+  /** Approved public listings for an owner — GET /api/users/:id/listings */
+  getPublicListings: async (userId) => {
+    const response = await api.get(`/users/${userId}/listings`);
+    return response.data;
   }
 };
 

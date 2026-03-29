@@ -1,6 +1,8 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
+const Property = require('../models/Property');
 const { protect } = require('../middleware/auth');
 const { uploadAvatar } = require('../middleware/multerAvatar');
 
@@ -307,6 +309,49 @@ router.put('/me/profile-picture', [
       success: false,
       message: 'Server error while updating profile picture',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
+// @route   GET /api/users/:id/listings
+// @desc    Public approved listings for an owner (for profile page)
+// @access  Public
+router.get('/:id/listings', async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ success: false, message: 'Invalid user id' });
+    }
+
+    const owner = await User.findById(id).select('role');
+    if (!owner || owner.role !== 'owner') {
+      return res.json({
+        success: true,
+        count: 0,
+        data: []
+      });
+    }
+
+    const properties = await Property.find({
+      owner: id,
+      status: 'approved',
+      isActive: true
+    })
+      .select('title type location image price bedrooms bathrooms areaSqft')
+      .sort({ createdAt: -1 })
+      .limit(24)
+      .lean();
+
+    res.json({
+      success: true,
+      count: properties.length,
+      data: properties
+    });
+  } catch (error) {
+    console.error('Get user listings error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching listings'
     });
   }
 });

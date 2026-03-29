@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Send, User, Clock, MessageCircle } from 'lucide-react';
 import { messageService } from '../services/aiService';
+import { resolveMongoUserId } from '../utils/userDisplay';
 
 const ChatWindow = ({
   isOpen,
@@ -153,8 +154,8 @@ const ChatWindow = ({
 
   if (!isOpen) return null;
 
-  const otherUserId = otherUser?._id || otherUser;
-  const profileHref = otherUserId ? `/user/${String(otherUserId)}` : null;
+  const otherUserId = resolveMongoUserId(otherUser);
+  const profileHref = otherUserId ? `/user/${otherUserId}` : null;
 
   const renderHeader = () => (
     <div className="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-900/80">
