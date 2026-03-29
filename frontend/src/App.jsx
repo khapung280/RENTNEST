@@ -23,6 +23,9 @@ import Register from './pages/Register'          // Register page
 const PropertyDetail = lazy(() => import('./pages/PropertyDetail'))
 import Booking from './pages/Booking'            // Booking page
 import MyBookings from './pages/MyBookings'      // My bookings
+import PaymentSuccess from './pages/PaymentSuccess'
+import PaymentCancel from './pages/PaymentCancel'
+import PaymentKhaltiReturn from './pages/PaymentKhaltiReturn'
 import Profile from './pages/Profile'            // Profile page
 import OwnerDashboard from './pages/OwnerDashboard'  // Owner dashboard
 import AddProperty from './pages/AddProperty'    // Add property
@@ -63,7 +66,10 @@ function App() {
             {/* PROTECTED ROUTES - Must be logged in */}
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/my-bookings" element={<MyBookings />} />
+            <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+            <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
+            <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
+            <Route path="/payment/khalti-return" element={<ProtectedRoute><PaymentKhaltiReturn /></ProtectedRoute>} />
             
             {/* OWNER ROUTES - Must be logged in as owner */}
             <Route path="/owner-dashboard" element={<ProtectedRoute requiredRole="owner"><OwnerDashboard /></ProtectedRoute>} />

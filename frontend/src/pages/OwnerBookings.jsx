@@ -284,6 +284,18 @@ const OwnerBookings = () => {
                             <div className="text-gray-600 mb-1">Total Amount</div>
                             <div className="font-medium text-gray-900">NPR {booking.totalAmount?.toLocaleString() || 'N/A'}</div>
                           </div>
+                          <div>
+                            <div className="text-gray-600 mb-1">Payment (Stripe)</div>
+                            <div className="font-medium text-gray-900">
+                              {booking.status !== 'confirmed'
+                                ? '—'
+                                : booking.paymentStatus === 'paid'
+                                  ? `Paid${booking.paymentProvider ? ` (${booking.paymentProvider})` : ''}`
+                                  : booking.paymentStatus === 'processing'
+                                    ? 'Checkout started'
+                                    : 'Awaiting payment'}
+                            </div>
+                          </div>
                         </div>
 
                         {booking.specialRequests && (

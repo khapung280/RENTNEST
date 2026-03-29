@@ -3,6 +3,23 @@ const Booking = require('../models/Booking');
 const Property = require('../models/Property');
 
 /**
+ * Whole calendar months between check-in and check-out (min 1).
+ */
+const computeStayMonths = (checkIn, checkOut) => {
+  const start = new Date(checkIn);
+  const end = new Date(checkOut);
+  const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+  return Math.max(1, Math.ceil(diffDays / 30));
+};
+
+/** Match frontend FairFlex: 5% off at 3 months, 10% at 6 months */
+const fairflexMonthly = (basePrice, durationMonths) => {
+  const discounts = { 1: 0, 3: 0.05, 6: 0.1 };
+  const d = discounts[durationMonths] ?? 0;
+  return Math.round(Number(basePrice) * (1 - d));
+};
+
+/**
  * Check for overlapping bookings.
  * Same property, status !== "cancelled", and date ranges overlap.
  * Overlap: (checkInDate < existing.checkOutDate) AND (checkOutDate > existing.checkInDate)
@@ -80,13 +97,21 @@ exports.createBooking = async (req, res) => {
     });
   }
 
+  const durationMonths = computeStayMonths(checkIn, checkOut);
+  const monthlyRate = fairflexMonthly(prop.price, durationMonths);
+  const totalAmount = Math.round(monthlyRate * durationMonths);
+
   const booking = await Booking.create({
     renter: req.user.id,
     property,
     owner: prop.owner?._id || prop.owner,
     checkIn,
     checkOut,
-    status: 'pending'
+    status: 'pending',
+    monthlyRate,
+    durationMonths,
+    totalAmount,
+    paymentStatus: 'unpaid'
   });
 
   await booking.populate('property', 'title location image price');
@@ -115,6 +140,78 @@ exports.getMyBookings = async (req, res) => {
     success: true,
     count: data.length,
     data
+  });
+};
+
+/**
+ * @route   GET /api/bookings/:id
+ * @desc    Single booking (renter, owner of booking, or admin)
+ * @access  Private
+ */
+exports.getBookingById = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+  }
+
+  const booking = await Booking.findById(id)
+    .populate('property', 'title location image price')
+    .populate('renter', 'name email')
+    .populate('owner', 'name email');
+
+  if (!booking) {
+    return res.status(404).json({ success: false, message: 'Booking not found' });
+  }
+
+  const renterId = booking.renter?._id?.toString?.() || booking.renter?.toString?.();
+  const ownerId = booking.owner?._id?.toString?.() || booking.owner?.toString?.();
+  const uid = req.user.id.toString();
+
+  if (req.user.role !== 'admin' && renterId !== uid && ownerId !== uid) {
+    return res.status(403).json({ success: false, message: 'Access denied' });
+  }
+
+  res.json({ success: true, data: booking });
+};
+
+/**
+ * @route   PUT /api/bookings/:id/cancel
+ * @desc    Renter cancels own pending booking
+ * @access  Private (renter)
+ */
+exports.cancelBookingRenter = async (req, res) => {
+  const { id } = req.params;
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ success: false, message: 'Invalid booking ID' });
+  }
+
+  const booking = await Booking.findById(id);
+  if (!booking) {
+    return res.status(404).json({ success: false, message: 'Booking not found' });
+  }
+
+  const renterId = booking.renter?.toString?.();
+  if (renterId !== req.user.id.toString()) {
+    return res.status(403).json({ success: false, message: 'You can only cancel your own bookings' });
+  }
+
+  if (booking.status !== 'pending') {
+    return res.status(400).json({
+      success: false,
+      message: 'Only pending bookings can be cancelled this way'
+    });
+  }
+
+  booking.status = 'cancelled';
+  await booking.save();
+
+  await booking.populate('property', 'title location image price');
+  await booking.populate('owner', 'name email');
+
+  res.json({
+    success: true,
+    message: 'Booking cancelled',
+    data: booking
   });
 };
 

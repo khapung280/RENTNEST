@@ -15,6 +15,8 @@ connectDB();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const { handleStripeWebhook } = require("./controllers/paymentController");
+
 // CORS MUST BE FIRST
 app.use(cors({
   origin: [
@@ -25,6 +27,13 @@ app.use(cors({
   ],
   credentials: true
 }));
+
+// Stripe webhooks need the raw body for signature verification (must be before express.json)
+app.post(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook
+);
 
 // THEN JSON
 app.use(express.json());
@@ -38,6 +47,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/properties", require("./routes/propertyRoutes"));
 app.use("/api/bookings", require("./routes/bookingRoutes"));
+app.use("/api/payments", require("./routes/paymentRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/ai", require("./routes/aiRoutes"));

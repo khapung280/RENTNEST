@@ -1,8 +1,16 @@
-import { MapPin, Calendar, Clock, CheckCircle, XCircle, DollarSign, Eye } from 'lucide-react'
+import { MapPin, Calendar, Clock, CheckCircle, XCircle, DollarSign, Eye, CreditCard, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // BookingCard Component - Production-grade dark theme
-const BookingCard = ({ booking, onViewDetails, onCancel }) => {
+const BookingCard = ({
+  booking,
+  onViewDetails,
+  onCancel,
+  onPayStripe,
+  onPayKhalti,
+  onPayEsewa,
+  payLoading
+}) => {
   const getStatusConfig = (status) => {
     switch (status) {
       case 'approved':
@@ -14,13 +22,20 @@ const BookingCard = ({ booking, onViewDetails, onCancel }) => {
           label: status === 'confirmed' ? 'Confirmed' : 'Approved',
           borderColor: 'border-emerald-500/30'
         }
-      case 'rejected':
       case 'cancelled':
         return {
           icon: XCircle,
           color: 'text-gray-400',
           bgColor: 'bg-zinc-800',
-          label: status === 'cancelled' ? 'Cancelled' : 'Rejected',
+          label: 'Cancelled',
+          borderColor: 'border-zinc-700'
+        }
+      case 'rejected':
+        return {
+          icon: XCircle,
+          color: 'text-gray-400',
+          bgColor: 'bg-zinc-800',
+          label: 'Rejected',
           borderColor: 'border-zinc-700'
         }
       case 'pending':
@@ -101,13 +116,82 @@ const BookingCard = ({ booking, onViewDetails, onCancel }) => {
               <p className="text-gray-400 text-sm mb-1">Total Amount</p>
               <p className="text-sm font-semibold text-white flex items-center gap-1">
                 <DollarSign className="w-3.5 h-3.5" />
-                {(booking.totalAmount || booking.property?.price || 0).toLocaleString()}
+                NPR {(booking.totalAmount || booking.property?.price || 0).toLocaleString()}
               </p>
             </div>
           </div>
 
+          {(booking.status === 'approved' || booking.status === 'confirmed') &&
+            booking.paymentStatus && (
+              <div className="mb-4 flex items-center gap-2 text-sm">
+                <span className="text-gray-500">Payment:</span>
+                <span
+                  className={
+                    booking.paymentStatus === 'paid'
+                      ? 'text-emerald-400 font-medium'
+                      : booking.paymentStatus === 'processing'
+                        ? 'text-amber-400 font-medium'
+                        : 'text-amber-200/90'
+                  }
+                >
+                  {booking.paymentStatus === 'paid'
+                    ? `Paid${booking.paymentProvider ? ` (${booking.paymentProvider})` : ''}`
+                    : booking.paymentStatus === 'processing'
+                      ? 'Checkout started…'
+                      : 'Due — pay after approval'}
+                </span>
+              </div>
+            )}
+
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 mt-auto pt-4 border-t border-zinc-800">
+          <div className="flex flex-wrap items-center justify-end gap-3 mt-auto pt-4 border-t border-zinc-800">
+            {(booking.status === 'approved' || booking.status === 'confirmed') &&
+              booking.paymentStatus &&
+              booking.paymentStatus !== 'paid' && (
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+                  {onPayStripe && (
+                    <button
+                      type="button"
+                      onClick={onPayStripe}
+                      disabled={!!payLoading}
+                      className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-xl disabled:opacity-60"
+                    >
+                      {payLoading === 'stripe' ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <CreditCard className="w-4 h-4" />
+                      )}
+                      Card
+                    </button>
+                  )}
+                  {onPayKhalti && (
+                    <button
+                      type="button"
+                      onClick={onPayKhalti}
+                      disabled={!!payLoading}
+                      className="inline-flex items-center gap-2 px-3 py-2 bg-violet-700 hover:bg-violet-600 text-white text-sm font-medium rounded-xl disabled:opacity-60"
+                    >
+                      {payLoading === 'khalti' ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : null}
+                      Pay — Khalti
+                    </button>
+                  )}
+                  {onPayEsewa && (
+                    <button
+                      type="button"
+                      onClick={onPayEsewa}
+                      disabled={!!payLoading}
+                      className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-700 hover:bg-emerald-600 text-white text-sm font-medium rounded-xl disabled:opacity-60"
+                    >
+                      {payLoading === 'esewa' ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : null}
+                      Pay — eSewa
+                    </button>
+                  )}
+                </div>
+              )}
             {booking.status === 'pending' && onCancel && (
               <button
                 onClick={onCancel}

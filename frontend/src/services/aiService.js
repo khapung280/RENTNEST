@@ -250,6 +250,38 @@ export const bookingService = {
 };
 
 // ============================================
+// PAYMENTS — Stripe, Khalti, eSewa (server-side)
+// ============================================
+export const paymentService = {
+  createCheckoutSession: async (bookingId) => {
+    const response = await api.post('/payments/create-checkout-session', { bookingId });
+    return response.data;
+  },
+
+  verifySession: async (sessionId) => {
+    const response = await api.get('/payments/verify-session', {
+      params: { session_id: sessionId }
+    });
+    return response.data;
+  },
+
+  khaltiInitiate: async (bookingId) => {
+    const response = await api.post('/payments/khalti/initiate', { bookingId });
+    return response.data;
+  },
+
+  khaltiVerify: async (pidx) => {
+    const response = await api.get('/payments/khalti/verify', { params: { pidx } });
+    return response.data;
+  },
+
+  esewaInitiate: async (bookingId) => {
+    const response = await api.post('/payments/esewa/initiate', { bookingId });
+    return response.data;
+  }
+};
+
+// ============================================
 // USER SERVICE - Profile and account
 // ============================================
 export const userService = {

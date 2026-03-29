@@ -18,7 +18,8 @@ import {
   HelpCircle,
   CheckCircle2
 } from 'lucide-react'
-import { propertyService } from '../services/aiService'
+import { propertyService, bookingService } from '../services/aiService'
+import PaymentMethodsShowcase from '../components/PaymentMethodsShowcase'
 
 // Booking Page - Professional, trustworthy, and human-centered booking experience
 const Booking = () => {
@@ -170,11 +171,34 @@ const Booking = () => {
       return
     }
     
-    // Simulate API call
+    const token = localStorage.getItem('token')
+    if (!token) {
+      navigate('/login', { state: { from: `/booking/${id}` } })
+      return
+    }
+
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setIsSuccess(true)
+    try {
+      const checkIn = new Date(formData.moveInDate)
+      const checkOut = new Date(checkIn)
+      checkOut.setMonth(checkOut.getMonth() + selectedDuration)
+
+      const res = await bookingService.create({
+        property: property._id || property.id,
+        checkInDate: checkIn.toISOString(),
+        checkOutDate: checkOut.toISOString()
+      })
+
+      if (res.success) {
+        setIsSuccess(true)
+      } else {
+        window.alert(res.message || 'Could not submit booking')
+      }
+    } catch (err) {
+      window.alert(err.response?.data?.message || err.message || 'Could not submit booking')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   if (propertyLoading) {
@@ -375,6 +399,9 @@ const Booking = () => {
                   })}
                 </div>
               </div>
+
+              {/* Payment methods (Khalti, eSewa, cards — pay after approval) */}
+              <PaymentMethodsShowcase />
 
               {/* Section 3: Guest & Contact Information */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -601,6 +628,11 @@ const Booking = () => {
                     <p className="text-xs text-gray-500">
                       For {selectedDuration} {selectedDuration === 1 ? 'month' : 'months'} stay
                     </p>
+                  </div>
+
+                  <div className="mb-4 pt-2">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Pay later with</p>
+                    <PaymentMethodsShowcase compact />
                   </div>
 
                   {/* Pricing Note */}

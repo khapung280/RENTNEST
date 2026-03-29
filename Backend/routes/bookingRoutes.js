@@ -5,6 +5,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const {
   createBooking,
   getMyBookings,
+  getBookingById,
+  cancelBookingRenter,
   getPropertyBookings,
   updateBookingStatus,
   approveBooking,
@@ -56,6 +58,9 @@ router.post('/', [
 router.get('/my', protect, authorize('renter', 'owner'), asyncHandler(getMyBookings));
 router.get('/my-bookings', protect, authorize('renter', 'owner'), asyncHandler(getMyBookings));
 
+// PUT /api/bookings/:id/cancel — renter cancels pending booking
+router.put('/:id/cancel', protect, authorize('renter', 'owner'), asyncHandler(cancelBookingRenter));
+
 // ==================== OWNER ROUTES ====================
 
 // GET /api/bookings/property/:propertyId - Owner's bookings for a property
@@ -100,5 +105,8 @@ router.get('/', [
   query('page').optional().isInt({ min: 1 }),
   query('limit').optional().isInt({ min: 1, max: 100 })
 ], validate, asyncHandler(getAdminBookings));
+
+// GET /api/bookings/:id - Single booking (after /admin so "admin" is not matched as id)
+router.get('/:id', protect, authorize('renter', 'owner', 'admin'), asyncHandler(getBookingById));
 
 module.exports = router;
