@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Booking = require('../models/Booking');
 const Property = require('../models/Property');
+const { notifyBookingDecision } = require('../utils/notify');
 
 /**
  * Whole calendar months between check-in and check-out (min 1).
@@ -324,12 +325,16 @@ exports.updateBookingStatus = async (req, res) => {
     });
   }
 
+  const previousStatus = booking.status;
+
   booking.status = status;
   await booking.save();
 
   await booking.populate('renter', 'name email');
   await booking.populate('property', 'title location image price');
   await booking.populate('owner', 'name email');
+
+  await notifyBookingDecision(booking, status, previousStatus);
 
   res.json({
     success: true,

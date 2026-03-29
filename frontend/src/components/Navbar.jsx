@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, User } from 'lucide-react'
 import { getCurrentUser, isAuthenticated } from '../utils/auth'
 import RentNestLogo from './RentNestLogo'
+import NotificationBell from './NotificationBell'
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -81,6 +82,7 @@ const Navbar = () => {
           </Link>
 
           <div className="hidden md:flex items-center gap-1">
+            {isAuthenticated() && <NotificationBell />}
             {navLinks.map((link) =>
               link.isAction ? (
                 <button
@@ -112,7 +114,8 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="md:hidden">
+          <div className="flex items-center gap-0.5 md:hidden">
+            {isAuthenticated() && <NotificationBell />}
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="p-2.5 rounded-xl text-gray-300 hover:bg-white/5 transition-colors"

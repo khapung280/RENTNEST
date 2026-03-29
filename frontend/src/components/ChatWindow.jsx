@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { X, Send, User, Clock, MessageCircle } from 'lucide-react';
 import { messageService } from '../services/aiService';
 
@@ -138,29 +139,60 @@ const ChatWindow = ({
 
   if (!isOpen) return null;
 
+  const otherUserId = otherUser?._id || otherUser;
+  const profileHref = otherUserId ? `/user/${String(otherUserId)}` : null;
+
   const renderHeader = () => (
     <div className="flex items-center justify-between p-4 border-b border-neutral-800 bg-neutral-900/80">
-      <div className="flex items-center gap-3 flex-1 min-w-0">
-        {otherUser?.profilePicture ? (
-          <img
-            src={otherUser.profilePicture}
-            alt={otherUser.name}
-            className="w-10 h-10 rounded-full object-cover ring-2 ring-neutral-700"
-          />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white font-semibold text-sm">
-            {getInitials(otherUser)}
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-white truncate">
-            {otherUser?.name || 'User'}
-          </h3>
-          {property && (
-            <p className="text-xs text-gray-500 truncate">{property.title}</p>
+      {profileHref ? (
+        <Link
+          to={profileHref}
+          className="flex items-center gap-3 flex-1 min-w-0 rounded-xl hover:bg-neutral-800/60 -my-1 -ml-1 py-1 pl-1 pr-2 transition-colors"
+        >
+          {otherUser?.profilePicture ? (
+            <img
+              src={otherUser.profilePicture}
+              alt={otherUser.name}
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-neutral-700"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white font-semibold text-sm">
+              {getInitials(otherUser)}
+            </div>
           )}
+          <div className="flex-1 min-w-0 text-left">
+            <h3 className="font-semibold text-white truncate">
+              {otherUser?.name || 'User'}
+            </h3>
+            {property && (
+              <p className="text-xs text-gray-500 truncate">{property.title}</p>
+            )}
+            <p className="text-[10px] text-violet-400/90 mt-0.5">View profile</p>
+          </div>
+        </Link>
+      ) : (
+        <div className="flex items-center gap-3 flex-1 min-w-0">
+          {otherUser?.profilePicture ? (
+            <img
+              src={otherUser.profilePicture}
+              alt={otherUser.name}
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-neutral-700"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white font-semibold text-sm">
+              {getInitials(otherUser)}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-white truncate">
+              {otherUser?.name || 'User'}
+            </h3>
+            {property && (
+              <p className="text-xs text-gray-500 truncate">{property.title}</p>
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {onClose && (
         <button
           onClick={onClose}
@@ -187,19 +219,36 @@ const ChatWindow = ({
           isOwnMessage ? 'flex-row-reverse' : ''
         }`}
       >
-        {!isOwnMessage && (
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white text-xs font-semibold">
-            {otherUser?.profilePicture ? (
-              <img
-                src={otherUser.profilePicture}
-                alt=""
-                className="w-full h-full rounded-full object-cover"
-              />
-            ) : (
-              getInitials(otherUser)
-            )}
-          </div>
-        )}
+        {!isOwnMessage &&
+          (profileHref ? (
+            <Link
+              to={profileHref}
+              className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white text-xs font-semibold ring-1 ring-transparent hover:ring-violet-400 overflow-hidden"
+              title="View profile"
+            >
+              {otherUser?.profilePicture ? (
+                <img
+                  src={otherUser.profilePicture}
+                  alt=""
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                getInitials(otherUser)
+              )}
+            </Link>
+          ) : (
+            <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-violet-700 flex items-center justify-center text-white text-xs font-semibold">
+              {otherUser?.profilePicture ? (
+                <img
+                  src={otherUser.profilePicture}
+                  alt=""
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : (
+                getInitials(otherUser)
+              )}
+            </div>
+          ))}
         <div
           className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
             isOwnMessage

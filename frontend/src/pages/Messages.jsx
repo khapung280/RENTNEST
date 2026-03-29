@@ -3,9 +3,12 @@ import { MessageCircle, User, Home, ChevronLeft } from 'lucide-react';
 import { conversationService } from '../services/aiService';
 import ChatWindow from '../components/ChatWindow';
 import { getCurrentUserId } from '../utils/auth';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 
 const Messages = () => {
+  const [searchParams] = useSearchParams();
+  const conversationIdFromUrl = searchParams.get('c');
+
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedConversation, setSelectedConversation] = useState(null);
@@ -23,6 +26,23 @@ const Messages = () => {
       setLoading(false);
     }
   }, []);
+
+  // Open conversation from notification link: /messages?c=<conversationId>
+  useEffect(() => {
+    if (!conversationIdFromUrl || !conversations.length || !currentUserId) return;
+    const found = conversations.find(
+      (conv) => String(conv._id) === String(conversationIdFromUrl)
+    );
+    if (!found) return;
+    const curId = String(currentUserId);
+    const other = found.participants?.find((p) => {
+      const pid = (p?._id || p)?.toString?.() || '';
+      return pid && pid !== curId;
+    });
+    if (!other) return;
+    setSelectedConversation({ ...found, otherUser: other });
+    setMobileShowChat(true);
+  }, [conversationIdFromUrl, conversations, currentUserId]);
 
   const loadConversations = async () => {
     try {

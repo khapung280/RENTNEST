@@ -27,6 +27,7 @@ import PaymentSuccess from './pages/PaymentSuccess'
 import PaymentCancel from './pages/PaymentCancel'
 import PaymentKhaltiReturn from './pages/PaymentKhaltiReturn'
 import Profile from './pages/Profile'            // Profile page
+import UserPublicProfile from './pages/UserPublicProfile'
 import OwnerDashboard from './pages/OwnerDashboard'  // Owner dashboard
 import AddProperty from './pages/AddProperty'    // Add property
 import OwnerBookings from './pages/OwnerBookings'  // Owner bookings
@@ -66,6 +67,7 @@ function App() {
             {/* PROTECTED ROUTES - Must be logged in */}
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/user/:id" element={<UserPublicProfile />} />
             <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
             <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
             <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />

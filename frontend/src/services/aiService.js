@@ -250,6 +250,28 @@ export const bookingService = {
 };
 
 // ============================================
+// NOTIFICATIONS — in-app (booking + messages)
+// ============================================
+export const notificationService = {
+  getAll: async (params = {}) => {
+    const response = await api.get('/notifications', { params });
+    return response.data;
+  },
+  getUnreadCount: async () => {
+    const response = await api.get('/notifications/unread-count');
+    return response.data;
+  },
+  markRead: async (id) => {
+    const response = await api.patch(`/notifications/${id}/read`);
+    return response.data;
+  },
+  markAllRead: async () => {
+    const response = await api.patch('/notifications/read-all');
+    return response.data;
+  }
+};
+
+// ============================================
 // PAYMENTS — Stripe, Khalti, eSewa (server-side)
 // ============================================
 export const paymentService = {
@@ -291,6 +313,11 @@ export const userService = {
   },
   updateProfile: async (data) => {
     const response = await api.put('/users/me', data);
+    return response.data;
+  },
+  /** Public profile (safe fields) — same as GET /api/users/:id */
+  getById: async (id) => {
+    const response = await api.get(`/users/${id}`);
     return response.data;
   }
 };

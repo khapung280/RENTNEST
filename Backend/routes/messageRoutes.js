@@ -3,6 +3,7 @@ const { body, validationResult, query } = require('express-validator');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
 const { protect } = require('../middleware/auth');
+const { createNotification } = require('../utils/notify');
 
 const router = express.Router();
 
@@ -68,6 +69,21 @@ router.post('/', [
     await conversation.save();
 
     await message.populate('sender', 'name email profilePicture');
+
+    const senderName = req.user.name || 'Someone';
+    const preview =
+      content.length > 140 ? `${content.slice(0, 137)}...` : content;
+    for (const pid of conversation.participants) {
+      if (pid.toString() === req.user.id.toString()) continue;
+      await createNotification({
+        recipientId: pid,
+        type: 'message',
+        title: `New message from ${senderName}`,
+        body: preview,
+        link: `/messages?c=${conversationId}`,
+        meta: { conversationId }
+      });
+    }
 
     res.status(201).json({
       success: true,

@@ -272,7 +272,7 @@ router.get('/:id', async (req, res) => {
       });
     }
 
-    // Return public info only
+    // Return public info only (no email / phone)
     res.json({
       success: true,
       data: {
@@ -280,7 +280,8 @@ router.get('/:id', async (req, res) => {
         name: user.name,
         accountType: user.role,
         profilePicture: user.profilePicture,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        createdAt: user.createdAt
       }
     });
   } catch (error) {
