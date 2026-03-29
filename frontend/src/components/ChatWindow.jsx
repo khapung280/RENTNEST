@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { X, Send, User, Clock, MessageCircle } from 'lucide-react';
 import { messageService } from '../services/aiService';
@@ -21,23 +21,8 @@ const ChatWindow = ({
   const messagesEndRef = useRef(null);
   const shouldScrollToBottomRef = useRef(true);
 
-  useEffect(() => {
-    if (isOpen && conversationId) {
-      shouldScrollToBottomRef.current = true;
-      loadMessages();
-      const interval = setInterval(loadMessages, 5000);
-      return () => clearInterval(interval);
-    }
-  }, [isOpen, conversationId]);
-
-  useEffect(() => {
-    if (shouldScrollToBottomRef.current) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      shouldScrollToBottomRef.current = false;
-    }
-  }, [messages]);
-
-  const loadMessages = async () => {
+  const loadMessages = useCallback(async () => {
+    if (!conversationId) return;
     try {
       const response = await messageService.getByConversation(conversationId);
       if (response.success) {
@@ -46,11 +31,31 @@ const ChatWindow = ({
       }
     } catch (err) {
       console.error('Error loading messages:', err);
-      if (!messages.length) {
-        setError('Failed to load messages. Please try again.');
-      }
+      setMessages((prev) => {
+        if (!prev.length) {
+          setError('Failed to load messages. Please try again.');
+        }
+        return prev;
+      });
     }
-  };
+  }, [conversationId]);
+
+  useEffect(() => {
+    if (!isOpen || !conversationId) return;
+    setMessages([]);
+    shouldScrollToBottomRef.current = true;
+    setLoading(true);
+    loadMessages().finally(() => setLoading(false));
+    const interval = setInterval(loadMessages, 1200);
+    return () => clearInterval(interval);
+  }, [isOpen, conversationId, loadMessages]);
+
+  useEffect(() => {
+    if (shouldScrollToBottomRef.current) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      shouldScrollToBottomRef.current = false;
+    }
+  }, [messages]);
 
   const handleSend = async () => {
     if (!input.trim() || sending) return;
@@ -62,9 +67,18 @@ const ChatWindow = ({
 
     try {
       const response = await messageService.send(conversationId, content);
-      if (response.success) {
+      if (response.success && response.data) {
         shouldScrollToBottomRef.current = true;
-        await loadMessages();
+        const newMsg = response.data;
+        setMessages((prev) => {
+          const id = newMsg._id?.toString?.();
+          if (id && prev.some((m) => m._id?.toString?.() === id)) return prev;
+          return [...prev, newMsg];
+        });
+        onMessageSent?.();
+      } else if (response.success) {
+        shouldScrollToBottomRef.current = true;
+        loadMessages();
         onMessageSent?.();
       }
     } catch (err) {

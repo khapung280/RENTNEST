@@ -73,17 +73,22 @@ router.post('/', [
     const senderName = req.user.name || 'Someone';
     const preview =
       content.length > 140 ? `${content.slice(0, 137)}...` : content;
-    for (const pid of conversation.participants) {
-      if (pid.toString() === req.user.id.toString()) continue;
-      await createNotification({
-        recipientId: pid,
-        type: 'message',
-        title: `New message from ${senderName}`,
-        body: preview,
-        link: `/messages?c=${conversationId}`,
-        meta: { conversationId }
-      });
-    }
+    const recipientIds = conversation.participants.filter(
+      (pid) => pid.toString() !== req.user.id.toString()
+    );
+    // Do not block the HTTP response on notification writes (faster send for chat UX)
+    Promise.all(
+      recipientIds.map((pid) =>
+        createNotification({
+          recipientId: pid,
+          type: 'message',
+          title: `New message from ${senderName}`,
+          body: preview,
+          link: `/messages?c=${conversationId}`,
+          meta: { conversationId: String(conversationId) }
+        })
+      )
+    ).catch((err) => console.error('Message notify error:', err));
 
     res.status(201).json({
       success: true,
