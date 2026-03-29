@@ -247,7 +247,10 @@ const OwnerDashboard = () => {
         }
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not upload photo. Max 2MB.')
+      setError(
+        err.response?.data?.message ||
+          'Could not upload photo. Try a smaller image or a different format.'
+      )
     } finally {
       setAvatarUploading(false)
     }

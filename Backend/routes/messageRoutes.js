@@ -2,6 +2,7 @@ const express = require('express');
 const { body, validationResult, query } = require('express-validator');
 const Message = require('../models/Message');
 const Conversation = require('../models/Conversation');
+const User = require('../models/User');
 const { protect } = require('../middleware/auth');
 const { createNotification } = require('../utils/notify');
 
@@ -157,12 +158,22 @@ router.get('/', [
       .skip(skip)
       .limit(parseInt(limit));
 
+    const otherParticipantId = conversation.participants.find(
+      (p) => p.toString() !== req.user.id.toString()
+    );
+    let peerLastActiveAt = null;
+    if (otherParticipantId) {
+      const peer = await User.findById(otherParticipantId).select('lastActiveAt');
+      peerLastActiveAt = peer?.lastActiveAt || null;
+    }
+
     res.json({
       success: true,
       count: messages.length,
       total,
       page: parseInt(page),
       pages: Math.ceil(total / parseInt(limit)),
+      peerLastActiveAt,
       data: messages
     });
   } catch (error) {
@@ -171,6 +182,64 @@ router.get('/', [
       success: false,
       message: 'Error fetching messages',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
+    });
+  }
+});
+
+// @route   POST /api/messages/mark-incoming-read
+// @desc    Mark all messages from the other participant as read (viewer opened chat)
+// @access  Private
+router.post('/mark-incoming-read', [
+  protect,
+  body('conversationId')
+    .isMongoId()
+    .withMessage('Valid conversation ID is required')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array()
+      });
+    }
+
+    const { conversationId } = req.body;
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({
+        success: false,
+        message: 'Conversation not found'
+      });
+    }
+
+    const isParticipant = conversation.participants.some(
+      (p) => p.toString() === req.user.id
+    );
+    if (!isParticipant) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized'
+      });
+    }
+
+    const now = new Date();
+    await Message.updateMany(
+      {
+        conversation: conversationId,
+        sender: { $ne: req.user.id },
+        read: false
+      },
+      { $set: { read: true, readAt: now } }
+    );
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Mark incoming read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error marking messages as read'
     });
   }
 });
@@ -199,6 +268,13 @@ router.put('/:id/read', protect, async (req, res) => {
       return res.status(403).json({
         success: false,
         message: 'Not authorized'
+      });
+    }
+
+    if (message.sender.toString() === req.user.id.toString()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot mark your own message as read'
       });
     }
 

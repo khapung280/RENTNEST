@@ -52,6 +52,11 @@ const userSchema = new mongoose.Schema({
   isSuspended: {
     type: Boolean,
     default: false
+  },
+  /** Updated by POST /api/users/me/presence while user is active (chat, app heartbeat) */
+  lastActiveAt: {
+    type: Date,
+    default: null
   }
 }, {
   timestamps: true

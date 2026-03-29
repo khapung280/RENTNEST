@@ -4,7 +4,7 @@ const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
 const Property = require('../models/Property');
 const { protect } = require('../middleware/auth');
-const { uploadAvatar } = require('../middleware/multerAvatar');
+const { uploadAvatar, getAvatarMaxSizeMessage } = require('../middleware/multerAvatar');
 
 const router = express.Router();
 
@@ -47,6 +47,22 @@ router.get('/me', protect, async (req, res) => {
   }
 });
 
+// @route   POST /api/users/me/presence
+// @desc    Heartbeat so chat partners can show delivered (double tick) vs sent (single tick)
+// @access  Private
+router.post('/me/presence', protect, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.user.id, { lastActiveAt: new Date() });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Presence update error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Could not update presence'
+    });
+  }
+});
+
 // @route   POST /api/users/me/avatar
 // @desc    Upload profile picture (multipart field: image) — saved under /uploads/avatars
 // @access  Private
@@ -54,7 +70,7 @@ router.post('/me/avatar', protect, (req, res, next) => {
   uploadAvatar(req, res, (err) => {
     if (err) {
       if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(400).json({ success: false, message: 'Image too large. Max 2MB.' });
+        return res.status(400).json({ success: false, message: getAvatarMaxSizeMessage() });
       }
       if (err.message && err.message.includes('Only image files')) {
         return res.status(400).json({ success: false, message: err.message });

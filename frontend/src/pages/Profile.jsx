@@ -235,7 +235,10 @@ const Profile = () => {
         setTimeout(() => setSuccessMessage(null), 3000)
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Could not upload photo. Try a smaller file (max 2MB).')
+      setError(
+        err.response?.data?.message ||
+          'Could not upload photo. Try a smaller image or a different format.'
+      )
     } finally {
       setAvatarUploading(false)
     }

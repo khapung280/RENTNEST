@@ -125,6 +125,14 @@ export const messageService = {
     return response.data;
   },
 
+  /** Mark all messages from the other person as read (call while chat is open). */
+  markIncomingRead: async (conversationId) => {
+    const response = await api.post('/messages/mark-incoming-read', {
+      conversationId
+    });
+    return response.data;
+  },
+
   // Mark message as read (user has seen it)
   markAsRead: async (messageId) => {
     const response = await api.put(`/messages/${messageId}/read`);
@@ -335,6 +343,11 @@ export const userService = {
   /** Approved public listings for an owner — GET /api/users/:id/listings */
   getPublicListings: async (userId) => {
     const response = await api.get(`/users/${userId}/listings`);
+    return response.data;
+  },
+  /** Heartbeat for chat delivery receipts (double tick when partner is active). */
+  pingPresence: async () => {
+    const response = await api.post('/users/me/presence');
     return response.data;
   }
 };

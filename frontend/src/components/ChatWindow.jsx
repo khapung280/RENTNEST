@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { X, Send, User, Clock, MessageCircle } from 'lucide-react';
-import { messageService } from '../services/aiService';
+import { X, Send, User, Clock, MessageCircle, Check, CheckCheck } from 'lucide-react';
+import { messageService, userService } from '../services/aiService';
 import { resolveMongoUserId } from '../utils/userDisplay';
 
 const ChatWindow = ({
@@ -19,16 +19,38 @@ const ChatWindow = ({
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+  const [peerLastActiveAt, setPeerLastActiveAt] = useState(null);
   const messagesEndRef = useRef(null);
   const shouldScrollToBottomRef = useRef(true);
+
+  const ONLINE_THRESHOLD_MS = 90 * 1000;
+
+  const isPeerOnline = useCallback((lastAt) => {
+    if (!lastAt) return false;
+    return Date.now() - new Date(lastAt).getTime() < ONLINE_THRESHOLD_MS;
+  }, []);
 
   const loadMessages = useCallback(async () => {
     if (!conversationId) return;
     try {
       const response = await messageService.getByConversation(conversationId);
       if (response.success) {
-        setMessages(response.data || []);
+        const list = response.data || [];
+        setMessages(list);
+        if (Object.prototype.hasOwnProperty.call(response, 'peerLastActiveAt')) {
+          setPeerLastActiveAt(response.peerLastActiveAt ?? null);
+        }
         setError(null);
+        const hasUnreadFromOther = list.some((m) => {
+          const sid = (m.sender?._id || m.sender)?.toString?.();
+          if (!sid || !currentUserId || String(sid) === String(currentUserId)) {
+            return false;
+          }
+          return !m.read;
+        });
+        if (hasUnreadFromOther) {
+          messageService.markIncomingRead(conversationId).catch(() => {});
+        }
       }
     } catch (err) {
       console.error('Error loading messages:', err);
@@ -39,11 +61,20 @@ const ChatWindow = ({
         return prev;
       });
     }
-  }, [conversationId]);
+  }, [conversationId, currentUserId]);
+
+  useEffect(() => {
+    if (!isOpen || !conversationId) return;
+    const ping = () => userService.pingPresence().catch(() => {});
+    ping();
+    const presenceInterval = setInterval(ping, 30000);
+    return () => clearInterval(presenceInterval);
+  }, [isOpen, conversationId]);
 
   useEffect(() => {
     if (!isOpen || !conversationId) return;
     setMessages([]);
+    setPeerLastActiveAt(null);
     shouldScrollToBottomRef.current = true;
     setLoading(true);
     loadMessages().finally(() => setLoading(false));
@@ -107,6 +138,29 @@ const ChatWindow = ({
     if (minutes < 60) return `${minutes}m ago`;
     if (minutes < 1440) return `${Math.floor(minutes / 60)}h ago`;
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  };
+
+  const renderOwnDeliveryStatus = (msg) => {
+    if (msg.read) {
+      return (
+        <span className="inline-flex items-center gap-1" title="Read">
+          <CheckCheck className="w-3.5 h-3.5 shrink-0 text-sky-300" strokeWidth={2.5} />
+          <span className="text-sky-200/95 font-medium">Seen</span>
+        </span>
+      );
+    }
+    if (isPeerOnline(peerLastActiveAt)) {
+      return (
+        <span className="inline-flex items-center" title="Delivered">
+          <CheckCheck className="w-3.5 h-3.5 text-violet-200/85" strokeWidth={2.5} />
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center" title="Sent">
+        <Check className="w-3.5 h-3.5 text-violet-200/55" strokeWidth={2.5} />
+      </span>
+    );
   };
 
   const formatDateSeparator = (dateString) => {
@@ -272,14 +326,16 @@ const ChatWindow = ({
           }`}
         >
           <p className="text-sm whitespace-pre-wrap break-words">{msg.content}</p>
-          <div
-            className={`flex items-center gap-1 mt-1 text-xs ${
-              isOwnMessage ? 'text-violet-200' : 'text-gray-500'
-            }`}
-          >
-            <Clock size={10} />
-            <span>{formatTime(msg.createdAt)}</span>
-          </div>
+          {isOwnMessage ? (
+            <div className="flex items-center justify-end mt-1 min-h-[1.125rem]">
+              {renderOwnDeliveryStatus(msg)}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
+              <Clock size={10} />
+              <span>{formatTime(msg.createdAt)}</span>
+            </div>
+          )}
         </div>
         {isOwnMessage && (
           <div className="flex-shrink-0 w-8 h-8 rounded-full bg-neutral-700 flex items-center justify-center">
