@@ -178,8 +178,10 @@ const MyBookings = () => {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-12">
           <h1 className="text-3xl font-semibold text-gray-900 mb-3">My Bookings</h1>
-          <p className="text-base text-gray-600">
-            View booking requests and pay securely with Stripe after the owner confirms.
+          <p className="text-base text-gray-600 max-w-2xl">
+            All your rental requests for <strong>houses</strong> and <strong>flats</strong> in one place. Track
+            pending, approved, and cancelled stays. After the owner approves, pay with card (Stripe), Khalti,
+            or eSewa from this page.
           </p>
         </div>
       </div>

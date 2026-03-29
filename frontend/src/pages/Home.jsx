@@ -18,7 +18,8 @@ import {
   TrendingUp,
   Lightbulb,
   Calculator,
-  Info
+  Info,
+  CalendarDays
 } from 'lucide-react'
 import { propertyService } from '../services/aiService'
 import PropertyCardWithCompare from '../components/PropertyCardWithCompare'
@@ -405,18 +406,46 @@ const Home = () => {
       {/* Role-based Welcome Banner */}
       {isOwner && (
         <div className="bg-gradient-to-r from-violet-600 to-violet-500 text-white py-4 px-4 shadow-xl">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <Building2 className="w-5 h-5 flex-shrink-0" />
               <span className="font-medium">
                 Welcome back, {user?.name || 'Owner'}! Manage your properties and bookings.
               </span>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                to="/my-bookings"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 text-sm font-medium border border-white/30"
+              >
+                <CalendarDays className="w-4 h-4" />
+                My Bookings
+              </Link>
+              <Link
+                to="/owner-dashboard"
+                className="btn-outline !border-white/40 !text-white hover:!bg-white/20 hover:!border-white/60 flex items-center gap-2 shrink-0"
+              >
+                Go to Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+      {isAuthenticated() && user?.accountType === 'renter' && (
+        <div className="bg-gradient-to-r from-indigo-600 to-violet-600 text-white py-3 px-4 shadow-lg">
+          <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <CalendarDays className="w-5 h-5 flex-shrink-0 opacity-90" />
+              <span className="text-sm sm:text-base font-medium">
+                View your rental requests for houses &amp; flats — pending, approved, and payments.
+              </span>
+            </div>
             <Link
-              to="/owner-dashboard"
-              className="btn-outline !border-white/40 !text-white hover:!bg-white/20 hover:!border-white/60 flex items-center gap-2 shrink-0"
+              to="/my-bookings"
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-white text-indigo-700 text-sm font-semibold hover:bg-indigo-50 transition-colors shrink-0"
             >
-              Go to Dashboard
+              My Bookings
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

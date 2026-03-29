@@ -1,4 +1,4 @@
-import { MapPin, Calendar, Clock, CheckCircle, XCircle, DollarSign, Eye, CreditCard, Loader2 } from 'lucide-react'
+import { MapPin, Calendar, Clock, CheckCircle, XCircle, Eye, CreditCard, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 // BookingCard Component - Production-grade dark theme
@@ -114,8 +114,7 @@ const BookingCard = ({
             </div>
             <div>
               <p className="text-gray-400 text-sm mb-1">Total Amount</p>
-              <p className="text-sm font-semibold text-white flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5" />
+              <p className="text-sm font-semibold text-white">
                 NPR {(booking.totalAmount || booking.property?.price || 0).toLocaleString()}
               </p>
             </div>

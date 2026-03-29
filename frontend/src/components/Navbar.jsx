@@ -39,8 +39,15 @@ const Navbar = () => {
       { path: '/houses', label: 'Houses' },
       { path: '/flats-apartments', label: 'Flats & Apartments' },
       { path: '/about', label: 'About Us' },
-      { path: '/messages', label: 'Messages' },
     ]
+    // Client bookings: houses & flats the user requested to rent
+    if (
+      isAuthenticated() &&
+      (user?.accountType === 'renter' || user?.accountType === 'owner')
+    ) {
+      links.push({ path: '/my-bookings', label: 'My Bookings' })
+    }
+    links.push({ path: '/messages', label: 'Messages' })
     if (user?.accountType === 'owner') {
       links.push({ path: '/owner-dashboard', label: 'Owner Dashboard' })
     }
