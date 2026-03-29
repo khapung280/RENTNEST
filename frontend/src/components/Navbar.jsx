@@ -16,12 +16,23 @@ const Navbar = () => {
         const storedUser = localStorage.getItem('user')
         if (storedUser) {
           try {
-            setUser(JSON.parse(storedUser))
+            const raw = JSON.parse(storedUser)
+            // Backend uses role + accountType; older cached users may only have one
+            setUser({
+              ...raw,
+              accountType: raw.accountType || raw.role || 'renter',
+              role: raw.role || raw.accountType || 'renter',
+            })
           } catch (e) {
             setUser(getCurrentUser())
           }
         } else {
-          setUser(getCurrentUser())
+          const u = getCurrentUser()
+          setUser(
+            u
+              ? { ...u, accountType: u.accountType || u.role || 'renter' }
+              : null
+          )
         }
       } else {
         setUser(null)
@@ -40,11 +51,8 @@ const Navbar = () => {
       { path: '/flats-apartments', label: 'Flats & Apartments' },
       { path: '/about', label: 'About Us' },
     ]
-    // Client bookings: houses & flats the user requested to rent
-    if (
-      isAuthenticated() &&
-      (user?.accountType === 'renter' || user?.accountType === 'owner')
-    ) {
+    // Rental requests (houses & flats) — show for every logged-in user
+    if (isAuthenticated()) {
       links.push({ path: '/my-bookings', label: 'My Bookings' })
     }
     links.push({ path: '/messages', label: 'Messages' })
