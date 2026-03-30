@@ -241,7 +241,7 @@ const AIChatbot = () => {
         <button
           type="button"
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[9999] group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 pl-4 pr-5 py-3.5 text-white shadow-xl shadow-violet-600/30 transition-all duration-300 hover:scale-[1.03] hover:shadow-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-neutral-950"
+          className="fixed top-[max(5.25rem,env(safe-area-inset-top,0px)+4.25rem)] right-4 sm:right-6 z-[9999] group flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 pl-4 pr-5 py-3 text-white shadow-xl shadow-violet-600/30 transition-all duration-300 hover:scale-[1.03] hover:shadow-violet-500/40 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:ring-offset-2 focus:ring-offset-neutral-950"
           aria-label="Open AI assistant"
         >
           <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/15">
@@ -256,7 +256,7 @@ const AIChatbot = () => {
       {isOpen && (
         <div
           ref={panelRef}
-          className="fixed inset-x-3 bottom-3 top-[max(4rem,12vh)] sm:inset-auto sm:bottom-6 sm:right-6 sm:top-auto z-[9999] flex flex-col sm:h-[min(640px,calc(100vh-5rem))] sm:w-[min(440px,calc(100vw-2rem))] animate-slide-in-chat"
+          className="fixed inset-x-3 top-[max(5.25rem,env(safe-area-inset-top,0px)+4.25rem)] bottom-[max(5.5rem,env(safe-area-inset-bottom,0px)+4.5rem)] sm:inset-auto sm:top-[max(5.5rem,env(safe-area-inset-top,0px)+4.5rem)] sm:right-6 sm:bottom-auto sm:left-auto z-[9999] flex flex-col sm:h-[min(640px,calc(100vh-7rem))] sm:w-[min(440px,calc(100vw-2rem))] animate-slide-in-chat"
         >
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 shadow-2xl shadow-black/40 ring-1 ring-white/5">
             {/* Header */}
