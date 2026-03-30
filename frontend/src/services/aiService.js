@@ -11,8 +11,8 @@
 // Import Axios to make API calls
 import axios from 'axios';
 
-// Backend API base URL. Use VITE_API_URL when set (including localhost).
-const PRODUCTION_API = "https://rentnest-backend-wpqh.onrender.com/api";
+// Backend API base URL. Set VITE_API_URL on Vercel to your Render API (e.g. https://xxx.onrender.com).
+const PRODUCTION_API = "https://rentnest-jca7.onrender.com/api";
 const envUrl = import.meta.env.VITE_API_URL;
 const API_BASE = envUrl ? String(envUrl).replace(/\/api\/?$/, "") + "/api" : PRODUCTION_API;
 

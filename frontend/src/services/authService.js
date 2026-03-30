@@ -9,7 +9,7 @@ import axios from 'axios';
 
 // Backend API base URL (includes /api prefix). Read from environment.
 // Example: VITE_API_URL=http://localhost:5001/api
-const API_URL = import.meta.env.VITE_API_URL || 'https://rentnest-backend-wpqh.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://rentnest-jca7.onrender.com/api';
 
 // Create Axios instance - configured to talk to our backend
 const api = axios.create({

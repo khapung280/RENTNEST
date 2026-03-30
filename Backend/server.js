@@ -17,16 +17,39 @@ const PORT = process.env.PORT || 5000;
 
 const { handleStripeWebhook } = require("./controllers/paymentController");
 
-// CORS MUST BE FIRST
-app.use(cors({
-  origin: [
+function buildCorsOrigins() {
+  const defaults = [
     "http://localhost:5173",
     "http://localhost:5174",
     "http://localhost:5175",
-    "https://rentnest-xn1v.vercel.app"
-  ],
-  credentials: true
-}));
+    "https://rentnest-xn1v.vercel.app",
+    "https://rentnests.vercel.app"
+  ];
+  const fromFrontend = (process.env.FRONTEND_URL || "")
+    .split(",")
+    .map((s) => s.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  const extra = (process.env.CORS_ORIGINS || "")
+    .split(",")
+    .map((s) => s.trim().replace(/\/$/, ""))
+    .filter(Boolean);
+  return [...new Set([...defaults, ...fromFrontend, ...extra])];
+}
+
+// CORS MUST BE FIRST — browser blocks /properties if your Vercel origin is not listed
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      const allowed = buildCorsOrigins();
+      if (!origin || allowed.includes(origin)) {
+        return callback(null, true);
+      }
+      console.warn(`CORS blocked origin: ${origin}`);
+      return callback(null, false);
+    },
+    credentials: true
+  })
+);
 
 // Stripe webhooks need the raw body for signature verification (must be before express.json)
 app.post(
