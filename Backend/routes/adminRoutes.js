@@ -1,5 +1,5 @@
 const express = require('express');
-const { body, validationResult, query } = require('express-validator');
+const { validationResult, query } = require('express-validator');
 const User = require('../models/User');
 const Property = require('../models/Property');
 const Booking = require('../models/Booking');
@@ -213,113 +213,6 @@ router.get('/properties', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
-    });
-  }
-});
-
-// @route   PUT /api/admin/properties/:id/approve
-// @desc    Approve a property
-// @access  Private (Admin only)
-router.put('/properties/:id/approve', async (req, res) => {
-  try {
-    const property = await Property.findById(req.params.id);
-
-    if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
-
-    if (property.status === 'approved') {
-      return res.status(400).json({
-        success: false,
-        message: 'Property is already approved'
-      });
-    }
-
-    property.status = 'approved';
-    property.isActive = true;
-    await property.save();
-
-    await property.populate('owner', 'name email');
-
-    res.json({
-      success: true,
-      message: 'Property approved successfully',
-      data: property
-    });
-  } catch (error) {
-    console.error('Approve property error:', error);
-    if (error.name === 'CastError') {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
-    res.status(500).json({
-      success: false,
-      message: 'Server error while approving property',
-      error: process.env.NODE_ENV === 'development' ? error.message : {}
-    });
-  }
-});
-
-// @route   PUT /api/admin/properties/:id/reject
-// @desc    Reject a property
-// @access  Private (Admin only)
-router.put('/properties/:id/reject', [
-  body('reason').optional().trim().isLength({ max: 500 })
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
-    const property = await Property.findById(req.params.id);
-
-    if (!property) {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
-
-    if (property.status === 'rejected') {
-      return res.status(400).json({
-        success: false,
-        message: 'Property is already rejected'
-      });
-    }
-
-    property.status = 'rejected';
-    property.isActive = false;
-    await property.save();
-
-    await property.populate('owner', 'name email');
-
-    res.json({
-      success: true,
-      message: 'Property rejected successfully',
-      data: property
-    });
-  } catch (error) {
-    console.error('Reject property error:', error);
-    if (error.name === 'CastError') {
-      return res.status(404).json({
-        success: false,
-        message: 'Property not found'
-      });
-    }
-    res.status(500).json({
-      success: false,
-      message: 'Server error while rejecting property',
       error: process.env.NODE_ENV === 'development' ? error.message : {}
     });
   }

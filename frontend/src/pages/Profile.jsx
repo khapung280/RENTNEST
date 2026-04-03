@@ -285,8 +285,10 @@ const Profile = () => {
   }
 
   const getDisplayImage = () => userData.profilePicture || null
-  const approvedCount = properties.filter((p) => (p.status || '').toLowerCase() === 'approved').length
-  const pendingCount = properties.filter((p) => (p.status || '').toLowerCase() === 'pending').length
+  const liveListingsCount = properties.filter(
+    (p) => (p.status || '').toLowerCase() === 'approved' && p.isActive !== false
+  ).length
+  const notPublicCount = properties.length - liveListingsCount
   const memberSince = formatMemberSince(userData.createdAt)
   const roleLabel =
     String(userData.accountType || userData.role).charAt(0).toUpperCase() +
@@ -418,7 +420,7 @@ const Profile = () => {
         )}
 
         {isOwner && properties.length > 0 && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mb-8">
             {[
               {
                 label: 'Listings',
@@ -428,25 +430,18 @@ const Profile = () => {
                 accent: 'border-violet-500/30 from-violet-900/40 to-neutral-900/90'
               },
               {
-                label: 'Approved',
-                value: approvedCount,
-                sub: 'Live on site',
+                label: 'Live',
+                value: liveListingsCount,
+                sub: 'Visible on marketplace',
                 icon: CheckCircle2,
                 accent: 'border-emerald-500/30 from-emerald-900/30 to-neutral-900/90'
               },
               {
-                label: 'Pending',
-                value: pendingCount,
-                sub: 'Awaiting review',
+                label: 'Not public',
+                value: notPublicCount,
+                sub: 'Inactive, rejected, or legacy pending',
                 icon: Clock,
                 accent: 'border-amber-500/30 from-amber-900/25 to-neutral-900/90'
-              },
-              {
-                label: 'Active',
-                value: approvedCount,
-                sub: 'Approved listings',
-                icon: Building2,
-                accent: 'border-cyan-500/25 from-cyan-900/20 to-neutral-900/90'
               }
             ].map((s) => (
               <div
@@ -780,14 +775,19 @@ const Profile = () => {
                           )}
                           <span
                             className={`absolute top-3 right-3 px-2.5 py-1 rounded-lg text-xs font-semibold backdrop-blur-sm ${
-                              (p.status || '').toLowerCase() === 'approved'
+                              (p.status || '').toLowerCase() === 'approved' && p.isActive !== false
                                 ? 'bg-emerald-600/90 text-white'
                                 : (p.status || '').toLowerCase() === 'rejected'
                                   ? 'bg-red-600/90 text-white'
                                   : 'bg-amber-600/90 text-white'
                             }`}
                           >
-                            {(p.status || 'pending').charAt(0).toUpperCase() + (p.status || 'pending').slice(1)}
+                            {(p.status || '').toLowerCase() === 'approved' && p.isActive !== false
+                              ? 'Live'
+                              : (p.status || '').toLowerCase() === 'approved'
+                                ? 'Inactive'
+                                : (p.status || 'pending').charAt(0).toUpperCase() +
+                                  (p.status || 'pending').slice(1)}
                           </span>
                         </div>
                         <div className="p-5">

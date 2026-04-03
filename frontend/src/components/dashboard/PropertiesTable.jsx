@@ -17,10 +17,18 @@ const STATUS_STYLES_DARK = {
   rejected: 'bg-red-500/15 text-red-300 border border-red-500/20'
 }
 
-const getStatusBadge = (status, darkMode) => {
-  const s = (status || '').toLowerCase()
+const statusKeyForProperty = (property) => {
+  const s = (property.status || '').toLowerCase()
+  const active = property.isActive !== false
+  if (s === 'approved' && active) return 'approved'
+  if (s === 'approved') return 'pending'
+  return s || 'pending'
+}
+
+const getStatusBadge = (property, darkMode) => {
+  const key = statusKeyForProperty(property)
   const map = darkMode ? STATUS_STYLES_DARK : STATUS_STYLES_LIGHT
-  return map[s] ?? (darkMode ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-700')
+  return map[key] ?? (darkMode ? 'bg-zinc-700 text-zinc-300' : 'bg-gray-100 text-gray-700')
 }
 
 const PropertiesTable = ({ properties, bookingsByProperty, onDelete, onEdit, darkMode = false }) => {
@@ -35,11 +43,14 @@ const PropertiesTable = ({ properties, bookingsByProperty, onDelete, onEdit, dar
     return count * price
   }
 
-  const displayStatus = (status) => {
-    const s = (status || '').toLowerCase()
-    if (s === 'approved') return 'Active'
-    if (s === 'rejected') return 'Pending'
-    return (status || 'Pending').charAt(0).toUpperCase() + (status || '').slice(1)
+  const displayStatus = (property) => {
+    const s = (property.status || '').toLowerCase()
+    const active = property.isActive !== false
+    if (s === 'approved' && active) return 'Live'
+    if (s === 'approved') return 'Inactive'
+    if (s === 'rejected') return 'Rejected'
+    if (s === 'pending') return 'Pending'
+    return (property.status || 'Pending').charAt(0).toUpperCase() + (property.status || '').slice(1)
   }
 
   const wrap = darkMode
@@ -94,11 +105,11 @@ const PropertiesTable = ({ properties, bookingsByProperty, onDelete, onEdit, dar
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${getStatusBadge(
-                      property.status,
+                      property,
                       darkMode
                     )}`}
                   >
-                    {displayStatus(property.status)}
+                    {displayStatus(property)}
                   </span>
                 </td>
                 <td className={`px-6 py-4 ${cellText}`}>{getBookingCount(property._id)}</td>

@@ -351,7 +351,8 @@ router.post('/', [
       houseRules,
       owner: req.user.id,
       ownerName: owner.name,
-      status: 'pending',
+      status: 'approved',
+      isActive: true,
       latitude,
       longitude
     };
@@ -363,7 +364,7 @@ router.post('/', [
 
     res.status(201).json({
       success: true,
-      message: 'Property created successfully. Waiting for admin approval.',
+      message: 'Property created successfully. It is now live on the marketplace.',
       data: property
     });
   } catch (error) {

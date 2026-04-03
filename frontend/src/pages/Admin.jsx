@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Shield, Plus, Trash2, CheckCircle, Loader2, MapPin, DollarSign } from 'lucide-react'
+import { Shield, Plus, Trash2, Loader2, MapPin, DollarSign } from 'lucide-react'
 import { propertyService, adminService } from '../services/aiService'
 import Loader from '../components/Loader'
 
@@ -120,18 +120,6 @@ const Admin = () => {
     }
   }
 
-  const handleApprove = async (id) => {
-    try {
-      setActionLoading(id)
-      const res = await adminService.approveProperty(id)
-      if (res.success) fetchProperties()
-    } catch (err) {
-      console.error('Approve error:', err)
-    } finally {
-      setActionLoading(null)
-    }
-  }
-
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this property?')) return
     try {
@@ -155,7 +143,7 @@ const Admin = () => {
             </div>
             <div>
               <h1 className="font-display text-2xl font-bold text-surface-900">Admin Dashboard</h1>
-              <p className="text-sm text-surface-500">Manage properties</p>
+              <p className="text-sm text-surface-500">View and manage properties</p>
             </div>
           </div>
           <button
@@ -291,20 +279,9 @@ const Admin = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`badge-modern ${p.status === 'approved' ? '!bg-emerald-100 !text-emerald-800 !border-emerald-200' : p.status === 'rejected' ? '!bg-red-100 !text-red-800 !border-red-200' : '!bg-amber-100 !text-amber-800 !border-amber-200'}`}>
-                      {p.status || 'pending'}
+                    <span className={`badge-modern ${p.status === 'approved' && p.isActive !== false ? '!bg-emerald-100 !text-emerald-800 !border-emerald-200' : p.status === 'rejected' ? '!bg-red-100 !text-red-800 !border-red-200' : '!bg-amber-100 !text-amber-800 !border-amber-200'}`}>
+                      {p.status === 'approved' && p.isActive !== false ? 'live' : p.status || 'pending'}
                     </span>
-                    {p.status !== 'approved' && (
-                      <button
-                        type="button"
-                        onClick={() => handleApprove(p._id)}
-                        disabled={actionLoading === p._id}
-                        className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 text-sm font-medium disabled:opacity-50 transition-all duration-300"
-                      >
-                        {actionLoading === p._id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
-                        Approve
-                      </button>
-                    )}
                     <button
                       type="button"
                       onClick={() => handleDelete(p._id)}

@@ -359,14 +359,6 @@ export const adminService = {
   getAllProperties: async (params = {}) => {
     const response = await api.get('/admin/properties', { params });
     return response.data;
-  },
-  approveProperty: async (id) => {
-    const response = await api.put(`/admin/properties/${id}/approve`);
-    return response.data;
-  },
-  rejectProperty: async (id) => {
-    const response = await api.put(`/admin/properties/${id}/reject`);
-    return response.data;
   }
 };
 
