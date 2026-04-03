@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Users, Home, Calendar, BarChart3, TrendingUp, TrendingDown, Download, Filter, X, DollarSign, Activity } from 'lucide-react'
-import AdminSidebar from '../../components/AdminSidebar'
+import AdminShell from '../../components/AdminShell'
 
 // Admin Reports Page - Enhanced system reports and analytics
 const AdminReports = () => {
@@ -59,22 +59,17 @@ const AdminReports = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="bg-white border-b-2 border-gray-300 sticky top-0 z-10 shadow-sm">
+    <AdminShell>
+        <header className="shrink-0 border-b-2 border-gray-300 bg-white shadow-sm">
           <div className="px-6 py-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-3xl font-extrabold text-gray-900 mb-1.5 tracking-tight leading-tight">System Reports</h1>
                 <p className="text-sm font-semibold text-gray-700 leading-relaxed">
                   Platform usage and activity overview
                 </p>
               </div>
-              <div className="flex items-center gap-3">
-                {/* Date Range Filter */}
+              <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Filter className="w-5 h-5 text-gray-400" />
                   <select
@@ -88,7 +83,6 @@ const AdminReports = () => {
                     <option value="all">All Time</option>
                   </select>
                 </div>
-                {/* Export Button */}
                 <button
                   onClick={() => handleExport('PDF')}
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
@@ -99,8 +93,9 @@ const AdminReports = () => {
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="p-6">
           {/* Summary Cards Section */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
@@ -324,8 +319,8 @@ const AdminReports = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+        </div>
+    </AdminShell>
   )
 }
 

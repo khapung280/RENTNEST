@@ -1,6 +1,6 @@
 import { Users, Home, UserCircle, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import AdminSidebar from '../components/AdminSidebar'
+import AdminShell from '../components/AdminShell'
 
 // Admin Dashboard Page - Clean, professional dashboard for administrators
 const AdminDashboard = () => {
@@ -12,23 +12,17 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <AdminSidebar />
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="bg-white border-b-2 border-gray-300 sticky top-0 z-10 shadow-sm">
+    <AdminShell>
+        <header className="shrink-0 border-b-2 border-gray-300 bg-white shadow-sm">
           <div className="px-6 py-6">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-1.5 tracking-tight leading-tight">Dashboard</h1>
             <p className="text-sm font-semibold text-gray-700 leading-relaxed">
               System overview — browse users and listings (no listing approvals)
             </p>
           </div>
-        </div>
+        </header>
 
-        {/* Content */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="p-6">
           {/* Summary Cards Section */}
           <div className="mb-10">
@@ -104,8 +98,8 @@ const AdminDashboard = () => {
             </ul>
           </div>
         </div>
-      </main>
-    </div>
+        </div>
+    </AdminShell>
   )
 }
 

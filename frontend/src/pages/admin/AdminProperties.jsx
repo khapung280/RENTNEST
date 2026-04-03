@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Filter, X, Home, MapPin, User, Building2, Loader2, ExternalLink } from 'lucide-react'
-import AdminSidebar from '../../components/AdminSidebar'
+import AdminShell from '../../components/AdminShell'
 import { adminService } from '../../services/aiService'
 
 function statusBadgeClass(property) {
@@ -95,18 +95,17 @@ const AdminProperties = () => {
   }, [properties])
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="bg-white border-b-2 border-gray-300 sticky top-0 z-10 shadow-sm">
+    <AdminShell>
+        <header className="shrink-0 border-b-2 border-gray-300 bg-white shadow-sm">
           <div className="px-6 py-6">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-1.5 tracking-tight leading-tight">Properties</h1>
             <p className="text-sm font-semibold text-gray-700 leading-relaxed">
               Browse all owner listings (view only)
             </p>
           </div>
-        </div>
+        </header>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="p-6">
           {error && (
             <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between">
@@ -319,8 +318,8 @@ const AdminProperties = () => {
           </>
           )}
         </div>
-      </main>
-    </div>
+        </div>
+    </AdminShell>
   )
 }
 

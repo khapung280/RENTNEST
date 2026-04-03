@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Search, Filter, X, Shield, UserCheck, UserX, Users, Mail, User } from 'lucide-react'
-import AdminSidebar from '../../components/AdminSidebar'
+import AdminShell from '../../components/AdminShell'
 
 // Admin Users Page - Enhanced user management interface
 const AdminUsers = () => {
@@ -84,20 +84,17 @@ const AdminUsers = () => {
   }, [users])
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
-      <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        {/* Header */}
-        <div className="bg-white border-b-2 border-gray-300 sticky top-0 z-10 shadow-sm">
+    <AdminShell>
+        <header className="shrink-0 border-b-2 border-gray-300 bg-white shadow-sm">
           <div className="px-6 py-6">
             <h1 className="text-3xl font-extrabold text-gray-900 mb-1.5 tracking-tight leading-tight">User Management</h1>
             <p className="text-sm font-semibold text-gray-700 leading-relaxed">
               Manage platform users and roles
             </p>
           </div>
-        </div>
+        </header>
 
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
         <div className="p-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
@@ -343,8 +340,8 @@ const AdminUsers = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+        </div>
+    </AdminShell>
   )
 }
 

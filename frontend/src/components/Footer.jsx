@@ -1,10 +1,15 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Mail, Phone, MapPin } from 'lucide-react'
 import RentNestLogo from './RentNestLogo'
 
 const Footer = () => {
+  const { pathname } = useLocation()
+  const adminLayout = pathname.startsWith('/admin-dashboard')
+
   return (
-    <footer className="bg-neutral-900 border-t border-neutral-800 text-white mt-24">
+    <footer
+      className={`bg-neutral-900 border-t border-neutral-800 text-white mt-24 ${adminLayout ? 'pl-64' : ''}`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-16">
           <div>

@@ -21,8 +21,8 @@ const AdminSidebar = () => {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex-shrink-0">
-      <div className="h-full flex flex-col">
+    <aside className="fixed left-0 top-[4.5rem] z-30 flex h-[calc(100dvh-4.5rem)] w-64 flex-col overflow-y-auto border-r border-gray-200 bg-white">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {/* Sidebar Header */}
         <div className="p-6 border-b-2 border-gray-300">
           <h2 className="text-lg font-extrabold text-gray-900 tracking-tight">Admin Panel</h2>
