@@ -359,6 +359,14 @@ export const adminService = {
   getAllProperties: async (params = {}) => {
     const response = await api.get('/admin/properties', { params });
     return response.data;
+  },
+  getStats: async () => {
+    const response = await api.get('/admin/stats');
+    return response.data;
+  },
+  getUsers: async (params = {}) => {
+    const response = await api.get('/admin/users', { params });
+    return response.data;
   }
 };
 
