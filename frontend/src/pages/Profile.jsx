@@ -51,8 +51,9 @@ const Profile = () => {
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('overview')
 
+  const isAdmin = userData?.accountType === 'admin' || userData?.role === 'admin'
   const isOwner = userData?.accountType === 'owner' || userData?.role === 'owner'
-  const isRenter = !isOwner && (userData?.accountType === 'renter' || userData?.role === 'renter')
+  const isRenter = !isOwner && !isAdmin && (userData?.accountType === 'renter' || userData?.role === 'renter')
 
   useEffect(() => {
     loadProfile()
@@ -468,16 +469,18 @@ const Profile = () => {
             <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-5 shadow-xl">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mb-4">Shortcuts</h3>
               <nav className="space-y-2">
-                <Link
-                  to="/my-bookings"
-                  className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950/50 px-4 py-3 text-sm font-medium text-zinc-200 hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"
-                >
-                  <span className="flex items-center gap-3">
-                    <Bookmark className="w-4 h-4 text-violet-400" />
-                    My bookings
-                  </span>
-                  <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-violet-400 transition-colors" />
-                </Link>
+                {!isAdmin && (
+                  <Link
+                    to="/my-bookings"
+                    className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950/50 px-4 py-3 text-sm font-medium text-zinc-200 hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"
+                  >
+                    <span className="flex items-center gap-3">
+                      <Bookmark className="w-4 h-4 text-violet-400" />
+                      My bookings
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-zinc-600 group-hover:text-violet-400 transition-colors" />
+                  </Link>
+                )}
                 <Link
                   to="/messages"
                   className="flex items-center justify-between rounded-xl border border-zinc-800 bg-zinc-950/50 px-4 py-3 text-sm font-medium text-zinc-200 hover:border-violet-500/40 hover:bg-violet-500/5 transition-colors group"

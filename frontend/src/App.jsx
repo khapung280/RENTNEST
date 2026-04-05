@@ -5,7 +5,7 @@
 // It sets up all the routes (URLs) for different pages
 
 // Import React Router for navigation
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { lazy, Suspense } from 'react'
 
 // Import components that appear on every page
@@ -38,6 +38,15 @@ import AdminProperties from './pages/admin/AdminProperties'  // Admin properties
 import AdminReports from './pages/admin/AdminReports'  // Admin reports
 import AIChatbot from './components/AIChatbot'  // AI chatbot (on all pages)
 import Messages from './pages/Messages'          // Messages page
+import { getRoleFromToken } from './utils/auth'
+
+/** Admins use the admin dashboard, not renter "My bookings". */
+function RenterMyBookingsRoute() {
+  if (getRoleFromToken() === 'admin') {
+    return <Navigate to="/admin-dashboard" replace />
+  }
+  return <MyBookings />
+}
 
 // Main App function
 function App() {
@@ -68,7 +77,7 @@ function App() {
             <Route path="/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/user/:id" element={<UserPublicProfile />} />
-            <Route path="/my-bookings" element={<ProtectedRoute><MyBookings /></ProtectedRoute>} />
+            <Route path="/my-bookings" element={<ProtectedRoute><RenterMyBookingsRoute /></ProtectedRoute>} />
             <Route path="/payment/success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
             <Route path="/payment/cancel" element={<ProtectedRoute><PaymentCancel /></ProtectedRoute>} />
             <Route path="/payment/khalti-return" element={<ProtectedRoute><PaymentKhaltiReturn /></ProtectedRoute>} />

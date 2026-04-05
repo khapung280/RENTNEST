@@ -45,21 +45,30 @@ const Navbar = () => {
   }, [location])
 
   const navLinks = useMemo(() => {
+    let role = user?.accountType || user?.role
+    if (!role && isAuthenticated()) {
+      try {
+        const raw = JSON.parse(localStorage.getItem('user') || '{}')
+        role = raw.role || raw.accountType
+      } catch {
+        /* ignore */
+      }
+    }
+
     const links = [
       { path: '/', label: 'Home' },
       { path: '/houses', label: 'Houses' },
       { path: '/flats-apartments', label: 'Flats & Apartments' },
       { path: '/about', label: 'About Us' },
     ]
-    // Rental requests (houses & flats) — show for every logged-in user
-    if (isAuthenticated()) {
+    if (isAuthenticated() && role !== 'admin') {
       links.push({ path: '/my-bookings', label: 'My Bookings' })
     }
     links.push({ path: '/messages', label: 'Messages' })
-    if (user?.accountType === 'owner') {
+    if (role === 'owner') {
       links.push({ path: '/owner-dashboard', label: 'Owner Dashboard' })
     }
-    if (user?.accountType === 'admin') {
+    if (role === 'admin') {
       links.push({ path: '/admin-dashboard', label: 'Admin Dashboard' })
     }
     if (!isAuthenticated()) {
