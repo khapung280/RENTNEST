@@ -367,6 +367,19 @@ export const adminService = {
   getUsers: async (params = {}) => {
     const response = await api.get('/admin/users', { params });
     return response.data;
+  },
+  suspendUser: async (id) => {
+    const response = await api.put(`/admin/users/${id}/suspend`);
+    return response.data;
+  },
+  activateUser: async (id) => {
+    const response = await api.put(`/admin/users/${id}/activate`);
+    return response.data;
+  },
+  /** GET /api/health — no auth required on server */
+  pingHealth: async () => {
+    const response = await api.get('/health');
+    return response.data;
   }
 };
 

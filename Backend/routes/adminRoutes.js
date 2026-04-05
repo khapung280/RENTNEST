@@ -262,6 +262,41 @@ router.get('/stats', async (req, res) => {
     const propertiesAddedThisMonth = await Property.countDocuments({ createdAt: { $gte: startOfMonth } });
     const bookingsThisMonth = await Booking.countDocuments({ createdAt: { $gte: startOfMonth } });
 
+    const startPrevMonth = new Date(startOfMonth);
+    startPrevMonth.setMonth(startPrevMonth.getMonth() - 1);
+    const newUsersLastMonth = await User.countDocuments({
+      createdAt: { $gte: startPrevMonth, $lt: startOfMonth }
+    });
+    const propertiesLastMonth = await Property.countDocuments({
+      createdAt: { $gte: startPrevMonth, $lt: startOfMonth }
+    });
+    const bookingsLastMonth = await Booking.countDocuments({
+      createdAt: { $gte: startPrevMonth, $lt: startOfMonth }
+    });
+
+    const pctChange = (current, previous) => {
+      if (previous === 0) return current > 0 ? 100 : 0;
+      return Math.round(((current - previous) / previous) * 1000) / 10;
+    };
+
+    const monthlyTrends = [];
+    for (let offset = 5; offset >= 0; offset -= 1) {
+      const start = new Date();
+      start.setDate(1);
+      start.setHours(0, 0, 0, 0);
+      start.setMonth(start.getMonth() - offset);
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+      const label = start.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+      const key = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
+      const [u, p, b] = await Promise.all([
+        User.countDocuments({ createdAt: { $gte: start, $lt: end } }),
+        Property.countDocuments({ createdAt: { $gte: start, $lt: end } }),
+        Booking.countDocuments({ createdAt: { $gte: start, $lt: end } })
+      ]);
+      monthlyTrends.push({ key, label, users: u, properties: p, bookings: b });
+    }
+
     res.json({
       success: true,
       data: {
@@ -291,6 +326,22 @@ router.get('/stats', async (req, res) => {
         },
         revenue: {
           total: totalRevenue
+        },
+        comparison: {
+          newUsersMomPct: pctChange(newUsersThisMonth, newUsersLastMonth),
+          newPropertiesMomPct: pctChange(propertiesAddedThisMonth, propertiesLastMonth),
+          newBookingsMomPct: pctChange(bookingsThisMonth, bookingsLastMonth),
+          lastMonth: {
+            newUsers: newUsersLastMonth,
+            newProperties: propertiesLastMonth,
+            newBookings: bookingsLastMonth
+          }
+        },
+        trends: {
+          months: monthlyTrends
+        },
+        meta: {
+          generatedAt: new Date().toISOString()
         }
       }
     });
