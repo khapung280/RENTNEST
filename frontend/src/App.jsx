@@ -53,13 +53,12 @@ function App() {
   return (
     // BrowserRouter enables page navigation without reloading
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <div className="flex flex-col min-h-screen bg-white">
-        
+      <div className="flex min-h-screen flex-col bg-white">
         {/* Navbar - shows on every page at top */}
         <Navbar />
-        
-        {/* Main content area - different pages show here */}
-        <main className="flex-grow">
+
+        {/* flex-1 + min-h-0 lets admin shell fill viewport below nav without footer overlap */}
+        <main className="flex min-h-0 flex-1 flex-col">
           <Suspense fallback={<div className="flex items-center justify-center min-h-[50vh]"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600" /></div>}>
           <Routes>
             
