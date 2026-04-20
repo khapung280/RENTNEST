@@ -36,12 +36,18 @@ function buildCorsOrigins() {
   return [...new Set([...defaults, ...fromFrontend, ...extra])];
 }
 
+// Vercel may assign a new *.vercel.app hostname when the project slug changes.
+const RENTNEST_VERCEL = /^https:\/\/rentnest-[a-z0-9-]+\.vercel\.app$/i;
+
 // CORS MUST BE FIRST — browser blocks /properties if your Vercel origin is not listed
 app.use(
   cors({
     origin: (origin, callback) => {
       const allowed = buildCorsOrigins();
       if (!origin || allowed.includes(origin)) {
+        return callback(null, true);
+      }
+      if (RENTNEST_VERCEL.test(origin)) {
         return callback(null, true);
       }
       console.warn(`CORS blocked origin: ${origin}`);
