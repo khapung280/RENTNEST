@@ -50,13 +50,16 @@ const FlatsApartmentsPage = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Fetch properties from backend API
+  // Fetch properties from backend API (server filters by location when present — matches House page / home search)
   useEffect(() => {
     const fetchProperties = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await propertyService.getAll({ type: 'flat_apartment' })
+        const params = { type: 'flat_apartment' }
+        const loc = (searchLocation || '').trim()
+        if (loc) params.location = loc
+        const response = await propertyService.getAll(params)
         if (response.success && response.data) {
           setAllProperties(response.data)
         } else {
@@ -71,7 +74,12 @@ const FlatsApartmentsPage = () => {
     }
 
     fetchProperties()
-  }, [])
+  }, [searchLocation])
+
+  // Keep sidebar location select in sync with URL (e.g. home search navigation)
+  useEffect(() => {
+    setLocationFilter(searchLocation || '')
+  }, [searchLocation])
 
   // Get all flats/apartments with advanced features
   const allFlatsApartments = useMemo(() => {
@@ -148,7 +156,7 @@ const FlatsApartmentsPage = () => {
     const cleanedLocation = (searchLocation || '').trim()
     if (cleanedLocation) {
       const locLower = cleanedLocation.toLowerCase()
-      filtered = filtered.filter((property) => property.location.toLowerCase() === locLower)
+      filtered = filtered.filter((property) => (property.location || '').trim().toLowerCase() === locLower)
     }
 
     // Filter by price range

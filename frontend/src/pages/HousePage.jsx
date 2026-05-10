@@ -18,6 +18,7 @@ import {
   Users,
   ShieldCheck,
   Sparkles,
+  MapPin,
 } from 'lucide-react';
 import { calculateRentConfidence, getBestForLabel } from '../utils/propertyUtils';
 
@@ -83,6 +84,7 @@ const HousePage = () => {
   const minParam = searchParams.get('min') || '';
   const maxParam = searchParams.get('max') || '';
   const bedsParam = searchParams.get('beds') || '';
+  const locationParam = (searchParams.get('location') || '').trim();
   const verifiedParam = searchParams.get('verified') === 'true';
   const sortParam = searchParams.get('sort') || 'newest';
   const pageParam = parseInt(searchParams.get('page') || '1', 10);
@@ -108,13 +110,14 @@ const HousePage = () => {
 
   const apiParams = useMemo(() => {
     const params = { type: 'house', limit: LIMIT, page: currentPage };
+    if (locationParam) params.location = locationParam;
     if (minParam) params.minPrice = minParam;
     if (maxParam) params.maxPrice = maxParam;
     if (bedsParam) params.bedrooms = bedsParam;
     if (verifiedParam) params.verified = true;
     params.sortBy = sortBy === 'price-low' ? 'price_asc' : sortBy === 'price-high' ? 'price_desc' : sortBy;
     return params;
-  }, [minParam, maxParam, bedsParam, verifiedParam, sortBy, currentPage]);
+  }, [locationParam, minParam, maxParam, bedsParam, verifiedParam, sortBy, currentPage]);
 
   // Hydrate compare list from localStorage (e.g. from Property Detail "Add to compare")
   useEffect(() => {
@@ -173,6 +176,7 @@ const HousePage = () => {
 
   const applyFilters = () => {
     const params = new URLSearchParams();
+    if (locationParam) params.set('location', locationParam);
     if (priceRange !== 'all') {
       const [min, max] = priceRange.split('-');
       if (min && parseInt(min, 10) > 0) params.set('min', min);
@@ -222,6 +226,7 @@ const HousePage = () => {
   };
 
   const activeFiltersCount = [
+    locationParam,
     minParam || maxParam,
     bedsParam,
     verifiedParam,
@@ -230,6 +235,7 @@ const HousePage = () => {
   const applyQuickPreset = (preset) => {
     const p = preset.params();
     const params = new URLSearchParams();
+    if (locationParam) params.set('location', locationParam);
     if (p.min) params.set('min', p.min);
     if (p.max) params.set('max', p.max);
     if (p.beds) params.set('beds', p.beds);
@@ -449,7 +455,11 @@ const HousePage = () => {
               Houses for Rent
             </motion.h1>
             <motion.p variants={fadeUp} className="text-gray-400 text-lg max-w-xl mx-auto">
-              Browse verified rental houses. Filter by price, size & verified status—no location search here.
+              {locationParam ? (
+                <>Showing houses in <span className="text-white font-medium">{locationParam}</span>. Adjust filters below or clear the location chip.</>
+              ) : (
+                <>Browse verified rental houses. Filter by location (from search), price, size & verified status.</>
+              )}
             </motion.p>
           </motion.div>
 
@@ -462,10 +472,10 @@ const HousePage = () => {
               {QUICK_BROWSE.map((item) => {
                 const Icon = item.icon;
                 const isActive =
-                  (item.id === 'best-value' && maxParam === '15000' && !minParam && !bedsParam && !verifiedParam) ||
-                  (item.id === 'family' && bedsParam === '3' && !minParam && !maxParam && !verifiedParam) ||
-                  (item.id === 'verified' && verifiedParam && !minParam && !maxParam && !bedsParam) ||
-                  (item.id === 'under-20k' && maxParam === '20000' && !minParam && !bedsParam && !verifiedParam);
+                  (item.id === 'best-value' && maxParam === '15000' && !minParam && !bedsParam && !verifiedParam && !locationParam) ||
+                  (item.id === 'family' && bedsParam === '3' && !minParam && !maxParam && !verifiedParam && !locationParam) ||
+                  (item.id === 'verified' && verifiedParam && !minParam && !maxParam && !bedsParam && !locationParam) ||
+                  (item.id === 'under-20k' && maxParam === '20000' && !minParam && !bedsParam && !verifiedParam && !locationParam);
                 return (
                   <motion.button
                     key={item.id}
@@ -565,8 +575,26 @@ const HousePage = () => {
           </div>
 
           {/* Active filter chips */}
-          {(minParam || maxParam || bedsParam || verifiedParam) && (
+          {(locationParam || minParam || maxParam || bedsParam || verifiedParam) && (
             <div className="flex flex-wrap gap-2 mb-6">
+              {locationParam && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 border border-neutral-700 text-gray-300 text-sm">
+                  <MapPin className="w-3.5 h-3.5 text-violet-400 shrink-0" aria-hidden />
+                  {locationParam}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const params = new URLSearchParams(searchParams);
+                      params.delete('location');
+                      params.set('page', '1');
+                      setSearchParams(params);
+                    }}
+                    className="hover:bg-neutral-700 rounded p-0.5"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              )}
               {(minParam || maxParam) && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-neutral-800 border border-neutral-700 text-gray-300 text-sm">
                   {minParam && maxParam
